@@ -1,0 +1,94 @@
+{
+  "version": "registry-v2-rebuild",
+  "mode": "user-reported-logical-models-not-live-bindings",
+  "models": [
+    {
+      "key": "seedance-2",
+      "displayName": "Seedance 2.0",
+      "modality": "video",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "seedance-2-mini",
+      "displayName": "Seedance 2.0 Mini",
+      "modality": "video",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "kling-3",
+      "displayName": "Kling 3.0",
+      "modality": "video",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "kling-2",
+      "displayName": "Kling 2.0",
+      "modality": "video",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "image-2-unverified",
+      "displayName": "image2.0（供应商待核对）",
+      "modality": "image",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "seedream-5",
+      "displayName": "Seedream 5.0",
+      "modality": "image",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "qwen-image-2",
+      "displayName": "Qwen-Image 2.0",
+      "modality": "image",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    },
+    {
+      "key": "deepseek-v4",
+      "displayName": "DeepSeek V4",
+      "modality": "copy",
+      "apiModelId": null,
+      "endpoint": null,
+      "provider": null,
+      "capabilities": null,
+      "enabledForReal": false,
+      "verificationStatus": "unverified"
+    }
+  ]
+}

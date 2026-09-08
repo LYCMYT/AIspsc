@@ -1,0 +1,400 @@
+[
+  {
+    "id": "REQ-01",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "   ",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "PROMPT_REQUIRED"
+  },
+  {
+    "id": "REQ-02",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "",
+      "references": [
+        {
+          "assetId": "p1",
+          "role": "product"
+        }
+      ],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "PROMPT_REQUIRED"
+  },
+  {
+    "id": "REQ-03",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 4,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-04",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 5,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "TEXT_TO_VIDEO"
+  },
+  {
+    "id": "REQ-05",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 15,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "TEXT_TO_VIDEO"
+  },
+  {
+    "id": "REQ-06",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 16,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-07",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 0,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-08",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 4,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "TEXT_TO_VIDEO"
+  },
+  {
+    "id": "REQ-09",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 5,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-10",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      },
+      "modelId": "kling-3"
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-11",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      },
+      "referenceStrength": 0.8
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-12",
+    "kind": "routing",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [
+        {
+          "assetId": "p1",
+          "role": "product"
+        }
+      ],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "IMAGE_GUIDED_VIDEO"
+  },
+  {
+    "id": "REQ-13",
+    "kind": "routing",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [
+        {
+          "assetId": "p1",
+          "role": "product"
+        },
+        {
+          "assetId": "m1",
+          "role": "person"
+        }
+      ],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "IMAGE_GUIDED_VIDEO"
+  },
+  {
+    "id": "REQ-14",
+    "kind": "routing",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [
+        {
+          "assetId": "v1",
+          "role": "reference_video"
+        }
+      ],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "REFERENCE_VIDEO_GEN"
+  },
+  {
+    "id": "REQ-15",
+    "kind": "routing",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [
+        {
+          "assetId": "v1",
+          "role": "reference_video"
+        },
+        {
+          "assetId": "p1",
+          "role": "product"
+        }
+      ],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": true,
+    "expected": "MULTI_REFERENCE_VIDEO"
+  },
+  {
+    "id": "REQ-16",
+    "kind": "routing",
+    "input": {
+      "mode": "image",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "image": {
+        "ratio": "1:1",
+        "resolution": "1024"
+      }
+    },
+    "schemaValid": true,
+    "expected": "IMAGE_GENERATION"
+  },
+  {
+    "id": "REQ-17",
+    "kind": "routing",
+    "input": {
+      "mode": "copy",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "copy": {
+        "language": "zh-CN",
+        "maxCharacters": 300
+      }
+    },
+    "schemaValid": true,
+    "expected": "COPY_GENERATION"
+  },
+  {
+    "id": "REQ-18",
+    "kind": "schema",
+    "input": {
+      "mode": "copy",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 10,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      },
+      "copy": {
+        "language": "zh-CN",
+        "maxCharacters": 300
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-19",
+    "kind": "schema",
+    "input": {
+      "mode": "image",
+      "prompt": "生成商品展示短片",
+      "references": [
+        {
+          "assetId": "v1",
+          "role": "reference_video"
+        }
+      ],
+      "count": 1,
+      "image": {
+        "ratio": "1:1",
+        "resolution": "1024"
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  },
+  {
+    "id": "REQ-20",
+    "kind": "schema",
+    "input": {
+      "mode": "video",
+      "prompt": "生成商品展示短片",
+      "references": [],
+      "count": 1,
+      "video": {
+        "durationSeconds": 5.5,
+        "ratio": "9:16",
+        "resolution": "720p",
+        "audio": false
+      }
+    },
+    "schemaValid": false,
+    "expected": "INVALID_PARAMETERS"
+  }
+]

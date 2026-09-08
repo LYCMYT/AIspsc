@@ -1,0 +1,11 @@
+{
+  "name": "@rebuild/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@rebuild/contracts": "workspace:*",
+    "ajv": "8.20.0"
+  }
+}

@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="zh-CN" data-storage-scope="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>多模型 AI营销视频生产平台 · 设计预览</title>
+  <style>
+    :root{color-scheme:dark;--accent:#5964d8;--canvas:#090c19;--surface:#121626;--surface-2:#161a2a;--field:#0e1221;--line:#252b3b;--text:#f6f7fb;--muted:#a7aec2;--quiet:#7f879b;--radius:16px;--sidebar-width:224px;--content-gap:22px;--base-size:14px;--editor-width:304px;font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif;font-size:var(--base-size);font-synthesis:none}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--text)}body{overflow:hidden}button,input,textarea,select{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid color-mix(in srgb,var(--accent) 76%,white);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.hidden{display:none!important}
+    .design-bar{height:62px;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--line);background:#0b0e1b;position:relative;z-index:30}.preview-label{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:.2px}.preview-label:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}.design-note{color:var(--muted);font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:999px}.design-status{margin-left:auto;color:var(--muted);font-size:12px;min-width:160px;text-align:right}.toolbar-icon{width:36px;height:36px;display:grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--surface)}.toolbar-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7}
+    .design-layout{height:calc(100vh - 62px);display:grid;grid-template-columns:minmax(760px,1fr) var(--editor-width);min-width:0}.panel-collapsed .design-layout{grid-template-columns:minmax(760px,1fr) 0}.product-preview{min-width:0;overflow:auto;background:var(--canvas)}.editor{min-width:0;overflow:auto;border-left:1px solid var(--line);background:#0b0e1b}.panel-collapsed .editor{visibility:hidden;overflow:hidden}
+    .app-shell{min-height:100%;display:grid;grid-template-columns:var(--sidebar-width) minmax(0,1fr)}.sidebar{position:sticky;top:0;height:calc(100vh - 62px);display:flex;flex-direction:column;padding:26px 16px 18px;border-right:1px solid var(--line);background:#0b0e1b}.brand{display:flex;align-items:center;gap:11px;padding:3px 8px 31px}.brand-mark{width:35px;height:35px;position:relative;border:1px solid var(--line);border-radius:50%;background:radial-gradient(circle at 42% 38%,white 0 3%,#c7ccff 4% 9%,var(--accent) 11% 20%,var(--field) 23% 46%,color-mix(in srgb,var(--accent) 72%,var(--field)) 48% 54%,transparent 58%)}.brand-copy{min-width:0}.brand-copy strong{display:block;font-size:14px;line-height:1.4;white-space:nowrap}.brand-copy span{display:block;margin-top:2px;color:var(--muted);font-size:12px}.nav-caption{padding:0 12px 10px;color:var(--quiet);font-size:12px;letter-spacing:1.2px}.primary-nav{display:grid;gap:6px}.nav-button{width:100%;height:42px;display:flex;align-items:center;gap:12px;padding:0 13px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);text-align:left}.nav-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}.nav-button:hover{color:var(--text);background:var(--surface)}.nav-button.active{color:#e0e3ff;border-color:transparent;background:color-mix(in srgb,var(--accent) 14%,var(--surface))}.nav-button.active:after{display:none}.sidebar-footer{margin-top:auto;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.sidebar-footer small{display:block;color:var(--muted);font-size:12px}.credit{display:flex;align-items:baseline;gap:7px;margin-top:7px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}.credit strong{color:var(--text);font-size:24px;font-weight:600}.mock-badge{padding:3px 7px;border-radius:5px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:#d7daff}
+    .product{min-width:0}.product-top{height:68px;display:flex;align-items:center;justify-content:flex-end;padding:0 clamp(20px,3vw,34px);border-bottom:1px solid color-mix(in srgb,var(--line) 72%,transparent)}.product-title{color:var(--muted);font-size:12px}.product-meta{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}.live-dot{width:6px;height:6px;border-radius:50%;background:#8cdbbb}.avatar{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:var(--accent);color:#f7f8ff;font-size:12px;font-weight:700}.product-main{max-width:1380px;margin:0 auto;padding:clamp(20px,2.7vw,32px);min-width:0}.view{display:none}.view.active{display:grid;gap:var(--content-gap)}.page-heading{display:flex;align-items:end;justify-content:space-between;gap:16px}.page-heading h1{margin:0;font-size:26px;font-weight:590;letter-spacing:.1px}.page-heading p{margin:6px 0 0;color:var(--muted);font-size:13px}.panel{min-width:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:0 12px 32px rgb(0 0 0 / 12%)}
+    .composer{overflow:hidden}.composer-main{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(420px,1.5fr);gap:18px;padding:20px}.upload-card{min-height:190px;width:100%;display:grid;place-items:center;align-content:center;gap:10px;padding:20px;border:1px dashed color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:calc(var(--radius) - 4px);background:var(--field);color:var(--muted)}.upload-card:hover{border-color:color-mix(in srgb,var(--accent) 68%,var(--line));background:color-mix(in srgb,var(--accent) 4%,var(--field))}.upload-plus{width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:#d5d8f5;font-size:25px;font-weight:300}.upload-card strong{color:var(--text);font-size:15px}.upload-card small{font-size:12px;text-align:center}.prompt-box{min-height:190px;display:grid;grid-template-rows:auto 1fr auto;padding:17px 18px;border:1px solid var(--line);border-radius:calc(var(--radius) - 4px);background:var(--field)}.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.prompt-head strong{font-size:15px}.prompt-head span{color:var(--muted);font-size:12px}.prompt-box textarea{width:100%;min-height:110px;resize:none;padding:13px 0;border:0;background:transparent;color:var(--text);line-height:1.7}.prompt-box textarea::placeholder{color:var(--quiet)}.prompt-count{text-align:right;color:var(--quiet);font-size:12px}.composer-toolbar{display:grid;grid-template-columns:190px minmax(250px,1fr) auto auto;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid var(--line)}.control-button,.action-button{min-height:44px;border:1px solid var(--line);border-radius:9px;background:var(--field);padding:8px 12px}.control-button{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left}.control-button span{display:grid;gap:2px}.control-button small{color:var(--muted);font-size:12px}.control-button strong{font-size:12px}.quota{display:grid;gap:2px;text-align:right;white-space:nowrap}.quota small,.quota span{color:var(--muted);font-size:12px}.quota strong{font-size:12px}.action-button{padding:8px 22px;background:var(--accent);border-color:var(--accent);font-weight:650}.popover{position:absolute;z-index:25;display:none;width:250px;padding:6px;border:1px solid var(--line);border-radius:11px;background:var(--surface);box-shadow:0 16px 36px rgb(0 0 0 / 34%)}.popover.open{display:grid}.mode-wrap{position:relative}.mode-menu{left:0;bottom:52px}.option{display:grid;grid-template-columns:32px 1fr;gap:9px;padding:10px;border:0;border-radius:8px;background:transparent;text-align:left}.option:hover,.option.selected{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}.option-icon{width:31px;height:31px;display:grid;place-items:center;border-radius:8px;background:var(--surface-2);color:#d5d8f5}.option strong{font-size:12px}.option small{color:var(--muted);font-size:12px;line-height:1.5}
+    .history-section{display:grid;gap:12px}.section-head{display:flex;align-items:center;justify-content:space-between}.section-head h2{margin:0;font-size:17px;font-weight:580}.section-head span{color:var(--muted);font-size:12px}.empty-row{min-height:112px;display:flex;align-items:center;justify-content:center;gap:14px;padding:18px}.empty-symbol{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:var(--field);color:#d5d8f5}.empty-copy h3{margin:0 0 5px;font-size:14px}.empty-copy p{margin:0;color:var(--muted);font-size:12px}
+    .upload-zone{min-height:220px;display:grid;place-items:center;align-content:center;gap:10px;padding:26px;border:1px dashed color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:var(--radius);background:var(--surface)}.upload-zone .upload-plus{width:52px;height:52px;border-radius:14px}.upload-zone h2{margin:3px 0 0;font-size:18px}.upload-zone p{margin:0;color:var(--muted);font-size:12px}.secondary-action{min-height:40px;padding:8px 16px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--text)}.mode-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:16px}.mode-card{min-height:68px;display:grid;align-content:center;gap:4px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--field);text-align:left}.mode-card:first-child{border-color:color-mix(in srgb,var(--accent) 72%,var(--line));background:color-mix(in srgb,var(--accent) 10%,var(--field))}.mode-card strong{font-size:12px}.mode-card small{color:var(--muted);font-size:12px}.tool-empty{min-height:160px;display:grid;place-items:center;align-content:center;gap:8px;padding:24px;text-align:center}.tool-empty h2{margin:0;font-size:17px}.tool-empty p{margin:0;color:var(--muted);font-size:12px}.empty-ring{width:52px;height:52px;border:1px solid var(--line);border-radius:15px;background:var(--field);position:relative}.empty-ring:before,.empty-ring:after{content:"";position:absolute;border:1px solid color-mix(in srgb,var(--accent) 34%,var(--line));border-radius:50%}.empty-ring:before{inset:12px}.empty-ring:after{inset:20px;background:var(--accent)}.library-toolbar{display:flex;align-items:center;gap:10px;padding:14px}.library-toolbar input{flex:1;min-width:180px}.field-control{min-height:40px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--text)}.view-empty{min-height:300px}.placeholder-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.placeholder-card{height:108px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);opacity:.5}
+    .dialog-backdrop{position:fixed;inset:62px 0 0;z-index:50;display:none;align-items:center;justify-content:center;padding:24px;background:rgb(2 4 11 / 76%)}.dialog-backdrop.open{display:flex}.dialog{width:min(700px,calc(100vw - 60px));max-height:calc(100vh - 110px);overflow:auto;border:1px solid var(--line);border-radius:18px;background:#111625;box-shadow:0 24px 70px rgb(0 0 0 / 55%)}.dialog-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}.dialog-head h2{margin:0;font-size:18px}.icon-button{width:36px;height:36px;display:grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--surface-2)}.dialog-body{display:grid;gap:18px;padding:20px}.role-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.role-tab{min-height:42px;border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--muted)}.role-tab.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--field));color:var(--text)}.reference-stage{min-height:190px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.reference-choice{display:grid;place-items:center;align-content:center;gap:9px;border:1px dashed var(--line);border-radius:12px;background:var(--field);color:var(--muted)}.reference-choice strong{color:var(--text)}.sample-art{width:92px;height:92px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 44%,#26315b),#c6a07a 46%,#293043 47% 100%);position:relative;overflow:hidden}.sample-art:before{content:"演示";position:absolute;left:8px;top:8px;padding:2px 6px;border-radius:4px;background:rgb(8 11 22 / 78%);font-size:12px;color:#d7dbff}.dialog-actions{display:flex;justify-content:flex-end;gap:10px;padding:0 20px 20px}.dialog-actions button{min-height:40px;padding:8px 16px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2)}.dialog-actions .primary{background:var(--accent);border-color:var(--accent)}.parameter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.parameter-grid label{display:grid;gap:7px;color:var(--muted);font-size:12px}.parameter-grid input,.parameter-grid select{width:100%}.check{display:flex!important;grid-column:1/-1;align-items:center;gap:8px}.check input{width:16px}.parameter-note{grid-column:1/-1;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--muted);font-size:12px;line-height:1.6}
+    .editor-header{position:sticky;top:0;z-index:4;padding:18px;border-bottom:1px solid var(--line);background:#0c101d}.editor-header h2{margin:0;font-size:16px}.editor-header p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.6}.editor-body{display:grid;gap:20px;padding:18px}.editor-section{display:grid;gap:12px}.editor-section+.editor-section{padding-top:18px;border-top:1px solid var(--line)}.editor-section h3{margin:0;color:#dfe2ef;font-size:12px;font-weight:650;letter-spacing:.5px}.edit-toggle{width:100%;min-height:40px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--muted)}.edit-toggle[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--text)}.edit-mode [data-copy-key]{cursor:crosshair}.edit-mode [data-copy-key]:hover,.copy-selected{outline:2px dashed var(--accent);outline-offset:4px;border-radius:4px}.selected-copy-label{min-height:16px;color:var(--muted);font-size:12px}.copy-textarea{width:100%;min-height:92px;resize:vertical;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--text);line-height:1.6}.copy-textarea:disabled{opacity:.5}.control-field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}.control-field label{font-size:12px;color:var(--muted)}.control-field output{min-width:54px;color:var(--text);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.color-input{width:58px;height:30px;padding:2px;border:1px solid var(--line);border-radius:7px;background:var(--field)}.range-input{grid-column:1/-1;width:100%;accent-color:var(--accent)}.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.editor-action,.import-action{min-height:40px;display:flex;align-items:center;justify-content:center;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font-size:12px;text-align:center}.editor-action:hover,.import-action:hover{border-color:var(--accent)}.import-action{position:relative;grid-column:1/-1}.import-action input{position:absolute;inset:0;opacity:0;cursor:pointer}.reset-button{width:100%;min-height:38px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--muted);font-size:12px}
+    /* Keep the editable preview visually quiet so product content remains primary. */
+    .dialog{border-radius:16px;background:var(--surface);box-shadow:0 22px 56px rgb(0 0 0 / 48%)}
+    .editor-header{background:#0b0e1b}
+    .role-tab{min-height:40px}
+    .role-tab.active,.edit-toggle[aria-pressed="true"]{border-color:color-mix(in srgb,var(--accent) 72%,var(--line));background:color-mix(in srgb,var(--accent) 10%,var(--field))}
+    .parameter-note{background:color-mix(in srgb,var(--field) 76%,var(--surface))}
+    .single-control{display:flex;align-items:center;justify-content:space-between;gap:8px;white-space:nowrap}.single-control strong{overflow:hidden;text-overflow:ellipsis}.select-wrap{position:relative;min-width:0}.select-menu{position:fixed;inset:auto;min-width:220px;max-width:min(320px,calc(100vw - 24px));overflow-y:auto;overscroll-behavior:contain}.select-menu[hidden]{display:none}.select-option{height:44px;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:var(--muted);text-align:left;white-space:nowrap}.select-option>strong,.select-option>.option-copy{flex:1;min-width:0}.select-option:hover,.select-option:focus-visible,.select-option[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--text)}.select-option[aria-disabled="true"]{color:var(--quiet);cursor:not-allowed;opacity:.58}.select-option[aria-selected="true"]:after{content:"✓";margin-left:auto;color:#d7daff}.library-toolbar .select-wrap{flex:0 0 132px}.library-toolbar .select-trigger{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--text)}
+    .parameter-anchor{position:relative;min-width:0}.parameter-popover{position:fixed;inset:auto;margin:0;width:min(408px,calc(100vw - 24px));padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);color:var(--text);box-shadow:0 20px 52px rgb(0 0 0 / 48%);overflow:auto;overscroll-behavior:contain}.parameter-popover:popover-open{display:grid;gap:18px}.parameter-popover::backdrop{background:transparent}.parameter-popover-body{display:grid;gap:18px}.parameter-group{display:grid;gap:10px;margin:0;padding:0;border:0}.parameter-group>legend{padding:0;color:var(--muted);font-size:13px}.parameter-choices{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--field)}.parameter-choice{position:relative;min-height:36px;display:flex;flex:1;min-width:0;align-items:center;justify-content:center;gap:8px;padding:8px 4px;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer}.ratio-group .parameter-choice{min-height:68px;flex-direction:column}.parameter-choice input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.parameter-choice:has(input:checked){background:var(--surface);color:var(--text)}.parameter-choice:has(input:focus-visible){outline:2px solid color-mix(in srgb,var(--accent) 76%,white);outline-offset:1px}.ratio-icon{display:block;border:1px solid currentColor;border-radius:2px;opacity:.8}.ratio-icon[data-ratio="16:9"]{width:20px;height:11px}.ratio-icon[data-ratio="1:1"]{width:15px;height:15px}.ratio-icon[data-ratio="9:16"]{width:10px;height:18px}.choice-label{font-size:12px}.count-choices .parameter-choice{min-height:36px}.parameter-compact-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:16px}.parameter-input{display:grid;gap:8px;color:var(--muted);font-size:13px}.parameter-input input{width:100%;min-height:40px}.parameter-input .select-trigger{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--text)}.parameter-audio{min-height:40px;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;white-space:nowrap}.parameter-audio input{width:16px;height:16px}
+    .page-heading p,.tool-empty>p,.recent-empty .empty-copy>p,.history-section .section-head>span{display:none}
+    /* Product typography and the compact composer mirror the current application contract. */
+    .brand-copy span,.nav-caption,.sidebar-footer small,.mock-row,.product-title,.product-meta,.prompt-head span,.prompt-count,.control-button small,.quota small,.quota span,.option small,.mode-card small,.empty-copy p,.upload-card small,.upload-zone p,.tool-empty p,.sample-art:before,.dialog-head+*,.editor-header p,.selected-copy-label,.control-field output,.editor-action,.import-action,.reset-button{font-size:12px}.control-button strong,.upload-card strong,.option strong,.mode-card strong,.editor-section h3{font-size:14px}
+    .panel{border-radius:clamp(8px,var(--radius),26px)}.mode-wrap,.mode-wrap>.control-button{width:100%}.composer-main{grid-template-columns:156px minmax(0,1fr);min-height:236px;gap:0;padding:0}.upload-card{min-height:140px;height:140px;align-self:start;margin:24px 0 24px 24px;width:132px;padding:16px 10px;border-radius:clamp(6px,calc(var(--radius) - 4px),22px)}.prompt-box{min-height:236px;padding:25px 30px 21px;border:0;border-radius:0;background:transparent}.prompt-box textarea{min-height:170px;padding:28px 0 22px;border:0;background:transparent;font-size:max(15px,var(--base-size))}.prompt-box textarea:focus-visible{outline:0}.prompt-box{position:relative}.composer-toolbar{grid-template-columns:148px 132px minmax(160px,1fr) auto;padding:14px 18px}.control-button{min-width:0;padding:4px 12px}.control-button span,.control-button small,.control-button strong{line-height:1.2}.action-button{min-width:108px}.recent-empty{min-height:230px;display:grid;justify-items:center;align-content:center;gap:12px;padding:26px 28px;text-align:center;color:var(--muted)}.recent-empty h3{margin:0;color:var(--text)}.history-illustration{width:142px;height:102px;display:grid;place-items:center;margin-bottom:2px;color:#cfd3ef}.history-illustration svg{width:100%;height:100%;overflow:visible;filter:none}.history-illustration path,.history-illustration circle{stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.history-illustration path:not(.flight-path){fill:color-mix(in srgb,var(--accent) 10%,transparent)}.history-illustration .flight-path{fill:none;stroke-dasharray:5 5}.mode-hidden{display:none!important}[data-copy-key]:not(h1):not(h2):not(h3){font-size:max(12px,var(--base-size))}
+    [data-copy-key][contenteditable="plaintext-only"]{cursor:text;outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}.layout-mode [data-design-id]{cursor:pointer}.layout-mode [data-design-id]:hover{outline:1px dashed color-mix(in srgb,var(--accent) 72%,white);outline-offset:3px}.layout-mode .design-selected{outline:2px solid var(--accent)!important;outline-offset:4px}.layout-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.layout-actions .edit-toggle{grid-column:1/-1}.layout-actions button:not(.edit-toggle){min-height:36px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted)}.layout-inspector[hidden]{display:none}.layout-inspector{display:grid;gap:10px}.layout-inspector label{display:grid;grid-template-columns:1fr 86px;align-items:center;gap:8px;color:var(--muted);font-size:12px}.layout-inspector input{width:86px;min-height:34px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--field);color:var(--text)}.layout-inspector input[type="color"]{padding:2px}.design-selection{position:fixed;z-index:70;display:none;pointer-events:none;border:1px solid var(--accent);border-radius:4px;box-shadow:0 0 0 1px rgb(89 100 216 / 28%)}.design-selection.active{display:block}.design-handle{position:absolute;pointer-events:auto;border:1px solid color-mix(in srgb,var(--accent) 70%,white);background:var(--accent);color:white;touch-action:none}.design-move{left:50%;top:-15px;width:36px;height:18px;transform:translateX(-50%);border-radius:6px;cursor:move}.design-resize{right:-7px;bottom:-7px;width:14px;height:14px;padding:0;border-radius:4px;cursor:nwse-resize}.design-handle:focus-visible{outline:2px solid white;outline-offset:2px}
+    @media(max-width:1180px){:root{--editor-width:280px}.composer-main{grid-template-columns:148px minmax(0,1fr)}.upload-card{width:124px;margin-left:20px}.composer-toolbar{grid-template-columns:138px 126px minmax(148px,1fr) auto;gap:9px}.app-shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr)}}
+    @media(max-width:920px){body{overflow:auto}.design-layout,.panel-collapsed .design-layout{height:auto;min-height:calc(100vh - 62px);grid-template-columns:1fr}.product-preview{overflow:visible}.editor{border-left:0;border-top:1px solid var(--line)}.panel-collapsed .editor{display:none}.app-shell{grid-template-columns:184px minmax(590px,1fr)}.sidebar{height:calc(100vh - 62px)}.brand-copy strong{font-size:12px}.composer-main{grid-template-columns:220px minmax(340px,1fr)}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="design-bar">
+    <div class="preview-label">设计预览</div>
+    <div class="design-note">仅调整界面，不执行生成</div>
+    <div id="design-status" class="design-status" role="status" aria-live="polite">修改自动保存在本机</div>
+    <button id="toggle-editor" class="toolbar-icon" type="button" aria-label="折叠编辑面板" title="折叠编辑面板">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h10v14H9M5 8l-4 4 4 4"/></svg>
+    </button>
+  </header>
+
+  <div class="design-layout">
+    <div id="product-preview" class="product-preview">
+      <div class="app-shell">
+        <aside class="sidebar" aria-label="产品侧栏">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <div class="brand-copy"><strong>多模型 AI</strong><span>营销视频生产平台</span></div>
+          </div>
+          <nav class="primary-nav" aria-label="主导航">
+            <button class="nav-button active" type="button" data-view-target="create" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 10v10h6v-6h6v6h6V10L12 3Z"/></svg>创作</button>
+            <button class="nav-button" type="button" data-view-target="assets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5h6l2 2h10v13H3V7Z"/></svg>资产库</button>
+            <button class="nav-button" type="button" data-view-target="history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>历史记录</button>
+            <button class="nav-button" type="button" data-view-target="decompose"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18H4V3ZM8 3v18m8-18v18M4 8h4m8 0h4M4 16h4m8 0h4"/></svg>视频拆解</button>
+            <button class="nav-button" type="button" data-view-target="recognize"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5m0 8v5h-5M8 21H3v-5m5-4h8m-4-4v8"/></svg>素材识别</button>
+          </nav>
+          <div class="sidebar-footer">
+            <small>演示额度</small><div class="credit"><span>可用</span><strong>1286</strong></div>
+          </div>
+        </aside>
+
+        <section class="product">
+          <header class="product-top"><div class="product-meta"><span class="live-dot"></span><span>演示环境</span><span class="mock-badge">Mock</span><div class="avatar">AI</div></div></header>
+          <main class="product-main">
+            <section class="view active" data-view="create" aria-label="创作页面">
+              <section class="panel composer" aria-label="创作输入" data-design-id="create-composer">
+                <div class="composer-main">
+                  <button id="open-reference" class="upload-card" type="button" aria-label="上传素材" data-design-id="create-upload"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><strong data-copy-key="upload-title">上传素材</strong></button>
+                  <label class="prompt-box"><span class="sr-only">Prompt</span><textarea aria-label="Prompt" maxlength="5000" required placeholder="输入视频创意、图片需求或文案想法…"></textarea></label>
+                </div>
+                <div class="composer-toolbar" data-design-id="create-toolbar">
+                  <div class="mode-wrap select-wrap"><button id="mode-trigger" class="control-button single-control select-trigger" type="button" role="combobox" aria-label="生成类型" aria-controls="mode-menu" aria-haspopup="listbox" aria-expanded="false" data-select-trigger><strong id="mode-value">视频生成</strong></button><div id="mode-menu" class="popover mode-menu select-menu" role="listbox" aria-label="生成类型选项" hidden><button class="select-option selected" type="button" role="option" aria-selected="true" data-mode="视频生成" data-mode-code="video"><span class="option-icon">▷</span><strong>视频生成</strong></button><button class="select-option" type="button" role="option" aria-selected="false" data-mode="图片生成" data-mode-code="image"><span class="option-icon">▧</span><strong>图片生成</strong></button><button class="select-option" type="button" role="option" aria-selected="false" data-mode="文案生成" data-mode-code="copy"><span class="option-icon">T</span><strong>文案生成</strong></button></div></div>
+                  <div class="select-wrap"><button id="reference-mode-trigger" class="control-button single-control select-trigger" type="button" role="combobox" aria-label="参考方式" aria-controls="reference-mode-menu" aria-haspopup="listbox" aria-expanded="false" data-select-trigger><strong id="reference-mode-value">全能参考</strong></button><div id="reference-mode-menu" class="popover select-menu" role="listbox" aria-label="参考方式选项" hidden><button class="select-option selected" type="button" role="option" aria-selected="true" data-select-value="全能参考">全能参考</button><button class="select-option" type="button" role="option" aria-selected="false" aria-disabled="true" disabled data-select-value="首尾帧">首尾帧</button></div></div>
+                  <div class="parameter-anchor"><button id="open-parameters" class="control-button single-control" type="button" aria-label="生成参数" aria-haspopup="dialog" aria-expanded="false"><strong id="parameter-summary">9:16 · 720p · 1</strong></button>
+                    <div id="parameter-dialog" class="parameter-popover" role="dialog" aria-label="生成参数" popover="manual">
+                      <div class="parameter-popover-body">
+                        <fieldset class="parameter-group ratio-group" data-param-modes="video" role="radiogroup" aria-label="选择比例"><legend>选择比例</legend><div class="parameter-choices"><label class="parameter-choice"><input type="radio" name="video-ratio" value="16:9"><span class="ratio-icon" data-ratio="16:9" aria-hidden="true"></span><span class="choice-label">16:9</span></label><label class="parameter-choice"><input type="radio" name="video-ratio" value="1:1"><span class="ratio-icon" data-ratio="1:1" aria-hidden="true"></span><span class="choice-label">1:1</span></label><label class="parameter-choice"><input type="radio" name="video-ratio" value="9:16" checked><span class="ratio-icon" data-ratio="9:16" aria-hidden="true"></span><span class="choice-label">9:16</span></label></div></fieldset>
+                        <fieldset class="parameter-group ratio-group mode-hidden" data-param-modes="image" role="radiogroup" aria-label="选择比例"><legend>选择比例</legend><div class="parameter-choices"><label class="parameter-choice"><input type="radio" name="image-ratio" value="16:9"><span class="ratio-icon" data-ratio="16:9" aria-hidden="true"></span><span class="choice-label">16:9</span></label><label class="parameter-choice"><input type="radio" name="image-ratio" value="1:1" checked><span class="ratio-icon" data-ratio="1:1" aria-hidden="true"></span><span class="choice-label">1:1</span></label><label class="parameter-choice"><input type="radio" name="image-ratio" value="9:16"><span class="ratio-icon" data-ratio="9:16" aria-hidden="true"></span><span class="choice-label">9:16</span></label></div></fieldset>
+                        <fieldset class="parameter-group" data-param-modes="video" role="radiogroup" aria-label="选择分辨率"><legend>选择分辨率</legend><div class="parameter-choices"><label class="parameter-choice"><input type="radio" name="video-resolution" value="720p" checked><span class="choice-label">720p</span></label><label class="parameter-choice"><input type="radio" name="video-resolution" value="1080p"><span class="choice-label">1080p</span></label></div></fieldset>
+                        <fieldset class="parameter-group mode-hidden" data-param-modes="image" role="radiogroup" aria-label="选择分辨率"><legend>选择分辨率</legend><div class="parameter-choices"><label class="parameter-choice"><input type="radio" name="image-resolution" value="1024" checked><span class="choice-label">1024</span></label></div></fieldset>
+                        <fieldset class="parameter-group" data-param-modes="video image copy" role="radiogroup" aria-label="选择生成数量"><legend>选择生成数量</legend><div class="parameter-choices count-choices"><label class="parameter-choice"><input type="radio" name="count" value="1" checked><span class="choice-label">1</span></label><label class="parameter-choice"><input type="radio" name="count" value="2"><span class="choice-label">2</span></label><label class="parameter-choice"><input type="radio" name="count" value="3"><span class="choice-label">3</span></label><label class="parameter-choice"><input type="radio" name="count" value="4"><span class="choice-label">4</span></label></div></fieldset>
+                        <div class="parameter-compact-row" data-param-modes="video"><label class="parameter-input">时长（秒）<input id="duration" class="field-control" type="number" min="5" max="15" step="1" value="10" aria-label="时长（秒）" required></label><label class="parameter-audio"><input id="audio" type="checkbox" aria-label="生成音频">生成音频</label></div>
+                        <div class="parameter-compact-row mode-hidden" data-param-modes="copy"><div class="parameter-input select-wrap">语言<button id="copy-language-trigger" class="select-trigger" type="button" role="combobox" aria-label="语言" aria-controls="copy-language-menu" aria-haspopup="listbox" aria-expanded="false" data-select-trigger data-value="zh-CN"><span data-select-display>简体中文</span></button><div id="copy-language-menu" class="popover select-menu" role="listbox" aria-label="语言选项" hidden><button class="select-option selected" type="button" role="option" aria-selected="true" data-select-value="zh-CN">简体中文</button></div></div><label class="parameter-input">最多字符<input id="copy-length" class="field-control" type="number" min="1" max="2000" step="1" value="300" aria-label="最多字符" required></label></div>
+                      </div>
+                    </div>
+                  </div>
+                  <button id="generate-preview" class="action-button" type="button">生成</button>
+                </div>
+              </section>
+              <section class="history-section" aria-labelledby="history-preview-title" data-design-id="create-history"><div class="section-head"><h2 id="history-preview-title" data-copy-key="history-title">生成历史</h2></div><div class="panel recent-empty" data-design-id="create-history-empty"><span class="history-illustration" aria-hidden="true"><svg viewBox="0 0 160 120" fill="none"><path d="M35 72 80 91l45-19-45-18-45 18Z"/><path d="M35 72v18l45 19 45-19V72M80 91v18"/><path d="m88 39 39-20-17 40-7-14-15-6Z"/><path d="M103 45 127 19"/><path class="flight-path" d="M28 48c17-20 36-20 48-7 11 12 1 24-11 17-8-5-4-15 8-18"/><circle cx="24" cy="50" r="2"/><circle cx="137" cy="73" r="2"/></svg></span><div class="empty-copy"><h3 data-copy-key="history-empty-title">暂无记录</h3><p data-copy-key="history-empty-help">你的生成历史将显示在这里。</p></div></div></section>
+            </section>
+
+            <section class="view" data-view="assets" aria-label="资产库页面">
+              <div class="page-heading"><div><h1 data-copy-key="assets-title">资产库</h1><p data-copy-key="assets-subtitle">管理创作参考与已入库成果。</p></div></div>
+              <div class="panel library-toolbar" data-design-id="assets-toolbar"><div class="select-wrap"><button class="select-trigger single-control" type="button" role="combobox" aria-label="素材类型" aria-controls="asset-type-menu" aria-haspopup="listbox" aria-expanded="false" data-select-trigger><span data-select-display>全部类型</span></button><div id="asset-type-menu" class="popover select-menu" role="listbox" aria-label="素材类型选项" hidden><button class="select-option" type="button" role="option" aria-selected="true" data-select-value="全部类型">全部类型</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="视频">视频</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="图片">图片</button></div></div><div class="select-wrap"><button class="select-trigger single-control" type="button" role="combobox" aria-label="素材来源" aria-controls="asset-source-menu" aria-haspopup="listbox" aria-expanded="false" data-select-trigger><span data-select-display>全部来源</span></button><div id="asset-source-menu" class="popover select-menu" role="listbox" aria-label="素材来源选项" hidden><button class="select-option" type="button" role="option" aria-selected="true" data-select-value="全部来源">全部来源</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="上传素材">上传素材</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="已入库成果">已入库成果</button></div></div><input class="field-control" aria-label="搜索素材" placeholder="搜索标题或标签"></div>
+              <div class="panel tool-empty view-empty" data-design-id="assets-empty"><div class="empty-ring"></div><h2 data-copy-key="assets-empty-title">暂无资产</h2><p data-copy-key="assets-empty-help">上传的源素材与审核后手动入库的成果会显示在这里。</p></div>
+            </section>
+
+            <section class="view" data-view="history" aria-label="历史记录页面">
+              <div class="page-heading"><div><h1 data-copy-key="history-page-title">历史记录</h1><p data-copy-key="history-page-subtitle">查看生成结果，逐条审核并入库。</p></div></div>
+              <div class="panel library-toolbar" data-design-id="history-toolbar"><div class="select-wrap"><button class="select-trigger single-control" type="button" role="combobox" aria-label="任务状态" aria-controls="history-status-menu" aria-haspopup="listbox" aria-expanded="false" data-select-trigger><span data-select-display>全部状态</span></button><div id="history-status-menu" class="popover select-menu" role="listbox" aria-label="任务状态选项" hidden><button class="select-option" type="button" role="option" aria-selected="true" data-select-value="全部状态">全部状态</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="处理中">处理中</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="待审核">待审核</button><button class="select-option" type="button" role="option" aria-selected="false" data-select-value="已完成">已完成</button></div></div><input class="field-control" aria-label="搜索历史" placeholder="搜索 Prompt 或任务编号"></div>
+              <div class="panel tool-empty view-empty" data-design-id="history-empty"><div class="empty-ring"></div><h2 data-copy-key="history-page-empty-title">暂无历史记录</h2><p data-copy-key="history-page-empty-help">提交的生成任务会显示在这里。</p></div>
+            </section>
+
+            <section class="view" data-view="decompose" aria-label="视频拆解页面">
+              <div class="page-heading"><div><h1 data-copy-key="decompose-title">视频拆解</h1><p data-copy-key="decompose-subtitle">上传视频，选择拆解方式。</p></div></div>
+              <button class="upload-zone preview-only" type="button" aria-label="上传拆解视频" data-design-id="decompose-upload"><span class="upload-plus">+</span><h2 data-copy-key="decompose-upload-title">点击或拖拽视频到此处</h2><p>MP4 / WebM · 最大 200 MB · 至少 5 秒</p><span class="secondary-action">上传视频</span></button>
+              <section class="panel" aria-label="拆解方式" data-design-id="decompose-modes"><div class="mode-grid"><button class="mode-card" type="button"><strong>顺序拆解</strong><small>每 15 秒一段</small></button><button class="mode-card" type="button"><strong>平均拆解</strong><small>均匀分布窗口</small></button><button class="mode-card" type="button"><strong>场景检测</strong><small>固定测试源边界</small></button><button class="mode-card" type="button"><strong>手动区间</strong><small>选择 5–15 秒</small></button></div></section>
+              <div class="panel tool-empty" data-design-id="decompose-empty"><div class="empty-ring"></div><h2 data-copy-key="decompose-empty-title">暂无拆解内容</h2><p data-copy-key="decompose-empty-help">上传视频后，选择拆解方式。</p></div>
+            </section>
+
+            <section class="view" data-view="recognize" aria-label="素材识别页面">
+              <div class="page-heading"><div><h1 data-copy-key="recognize-title">素材识别</h1><p data-copy-key="recognize-subtitle">上传素材，查看文件信息与整理标签。</p></div></div>
+              <button class="upload-zone preview-only" type="button" aria-label="上传识别素材" data-design-id="recognize-upload"><span class="upload-plus">+</span><h2 data-copy-key="recognize-upload-title">点击或拖拽素材到此处</h2><p>PNG / JPG / WebP / MP4 / WebM · 最大 200 MB</p><span class="secondary-action">上传素材</span></button>
+              <div class="panel tool-empty" data-design-id="recognize-empty"><div class="empty-ring"></div><h2 data-copy-key="recognize-empty-title">暂无识别结果</h2><p data-copy-key="recognize-empty-help">上传素材后，查看文件信息。</p></div>
+            </section>
+          </main>
+        </section>
+      </div>
+    </div>
+
+    <aside class="editor" aria-label="设计编辑面板">
+      <header class="editor-header"><h2>界面调整</h2><p>双击改文字，选中区域调布局。</p></header>
+      <div class="editor-body">
+        <section class="editor-section" aria-labelledby="layout-title"><h3 id="layout-title">布局与区域</h3>
+          <div class="layout-actions"><button id="edit-layout" class="edit-toggle" type="button" aria-pressed="false">编辑布局</button><button id="undo-design" type="button" disabled>撤销</button><button id="redo-design" type="button" disabled>重做</button></div>
+          <div id="layout-inspector" class="layout-inspector" hidden>
+            <label>区域宽度<input id="node-width" type="number" min="80" max="1200" step="1" aria-label="区域宽度"></label>
+            <label>区域高度<input id="node-height" type="number" min="36" max="700" step="1" aria-label="区域高度"></label>
+            <label>区域内边距<input id="node-padding" type="number" min="0" max="48" step="1" aria-label="区域内边距"></label>
+            <label>区域圆角<input id="node-radius" type="number" min="0" max="32" step="1" aria-label="区域圆角"></label>
+            <label>区域文字颜色<input id="node-color" type="color" aria-label="区域文字颜色"></label>
+            <label>区域背景色<input id="node-background" type="color" aria-label="区域背景色"></label>
+            <label>区域字号<input id="node-font-size" type="number" min="12" max="40" step="1" aria-label="区域字号"></label>
+          </div>
+        </section>
+        <section class="editor-section" aria-labelledby="style-title"><h3 id="style-title">视觉样式</h3>
+          <div class="control-field"><label for="accent-color">主题色</label><input id="accent-color" class="color-input" type="color" aria-label="主题色" data-token="accent"></div>
+          <div class="control-field"><label for="background-color">背景色</label><input id="background-color" class="color-input" type="color" aria-label="背景色" data-token="canvas"></div>
+          <div class="control-field"><label for="panel-color">面板色</label><input id="panel-color" class="color-input" type="color" aria-label="面板色" data-token="surface"></div>
+          <div class="control-field"><label for="radius-range">圆角</label><span id="radius-output">16 px</span><input id="radius-range" class="range-input" type="range" min="8" max="26" step="1" aria-label="圆角" data-token="radius"></div>
+          <div class="control-field"><label for="sidebar-range">侧栏宽度</label><span id="sidebar-output">224 px</span><input id="sidebar-range" class="range-input" type="range" min="190" max="280" step="2" aria-label="侧栏宽度" data-token="sidebarWidth"></div>
+          <div class="control-field"><label for="gap-range">内容间距</label><span id="gap-output">22 px</span><input id="gap-range" class="range-input" type="range" min="14" max="36" step="1" aria-label="内容间距" data-token="contentGap"></div>
+          <div class="control-field"><label for="font-range">正文字号</label><span id="font-output">14 px</span><input id="font-range" class="range-input" type="range" min="12" max="18" step="1" aria-label="正文字号" data-token="baseSize"></div>
+        </section>
+        <section class="editor-section" aria-labelledby="copy-title"><h3 id="copy-title">页面文案</h3><button id="edit-copy" class="edit-toggle" type="button" aria-pressed="false">编辑文案</button><div id="selected-copy-label" class="selected-copy-label">尚未选择文案</div><textarea id="copy-text" class="copy-textarea" aria-label="选中文案" maxlength="240" disabled placeholder="开启编辑后，点击预览中的文案"></textarea></section>
+        <section class="editor-section" aria-labelledby="portable-title"><h3 id="portable-title">修改稿</h3><div class="export-grid"><label class="import-action">导入修改稿 JSON<input id="import-json" type="file" accept="application/json,.json" aria-label="导入修改稿 JSON"></label><button id="export-json" class="editor-action" type="button">导出修改稿</button><button id="export-html" class="editor-action" type="button">导出 HTML</button></div><button id="reset-design" class="reset-button" type="button">恢复默认设计</button></section>
+      </div>
+    </aside>
+  </div>
+
+  <div id="reference-dialog" class="dialog-backdrop" role="dialog" aria-modal="true" aria-labelledby="reference-dialog-title">
+    <div class="dialog"><div class="dialog-head"><h2 id="reference-dialog-title">选择参考素材</h2><button class="icon-button" type="button" data-close-dialog="reference-dialog" aria-label="关闭参考素材选择">×</button></div><div class="dialog-body"><div class="role-tabs" role="tablist" aria-label="参考素材类型"><button class="role-tab" type="button" role="tab" aria-selected="false" data-role="reference_video">参考视频</button><button class="role-tab" type="button" role="tab" aria-selected="false" data-role="person">模特</button><button class="role-tab active" type="button" role="tab" aria-selected="true" data-role="product">产品</button><button class="role-tab" type="button" role="tab" aria-selected="false" data-role="background">背景</button></div><div class="reference-stage"><button class="reference-choice preview-only" type="button"><span class="upload-plus">+</span><strong>上传文件</strong><small>选择本机素材</small></button><button class="reference-choice" id="choose-demo-reference" type="button"><span class="sample-art" aria-hidden="true"></span><strong>演示素材</strong><small>固定样例 · 非 AI 分析</small></button></div></div><div class="dialog-actions"><button type="button" data-close-dialog="reference-dialog">取消</button><button class="primary" type="button" data-close-dialog="reference-dialog">完成选择</button></div></div>
+  </div>
+
+  <div id="design-selection" class="design-selection"><button id="move-design-node" class="design-handle design-move" type="button" aria-label="移动选中区域"></button><button id="resize-design-node" class="design-handle design-resize" type="button" aria-label="调整选中区域大小"></button></div>
+
+  <script id="factory-design-defaults" type="application/json">{"texts":{"create-title":"创作","create-subtitle":"为电商投流制作视频、图片与文案。","upload-title":"上传素材","history-title":"生成历史","history-empty-title":"暂无记录","history-empty-help":"你的生成历史将显示在这里。","assets-title":"资产库","assets-subtitle":"管理创作参考与已入库成果。","assets-empty-title":"暂无资产","assets-empty-help":"上传的源素材与审核后手动入库的成果会显示在这里。","history-page-title":"历史记录","history-page-subtitle":"查看生成结果，逐条审核并入库。","history-page-empty-title":"暂无历史记录","history-page-empty-help":"提交的生成任务会显示在这里。","decompose-title":"视频拆解","decompose-subtitle":"上传视频，选择拆解方式。","decompose-upload-title":"点击或拖拽视频到此处","decompose-empty-title":"暂无拆解内容","decompose-empty-help":"上传视频后，选择拆解方式。","recognize-title":"素材识别","recognize-subtitle":"上传素材，查看文件信息与整理标签。","recognize-upload-title":"点击或拖拽素材到此处","recognize-empty-title":"暂无识别结果","recognize-empty-help":"上传素材后，查看文件信息。"}}</script>
+  <script id="embedded-design-state" type="application/json">{}</script>
+  <script>
+    (() => {
+      'use strict';
+      const storageScope = document.documentElement.dataset.storageScope || '';
+      const STORAGE_KEY = `ai-video-design-panel:v1${storageScope ? `:${storageScope}` : ''}`;
+      const VERSION = 1;
+      const root = document.documentElement;
+      const preview = document.getElementById('product-preview');
+      const status = document.getElementById('design-status');
+      const copyNodes = [...document.querySelectorAll('[data-copy-key]')];
+      const designNodes = [...document.querySelectorAll('[data-design-id]')];
+      const designNodeIds = new Set(designNodes.map(node => node.dataset.designId));
+      const factoryTexts = JSON.parse(document.getElementById('factory-design-defaults').textContent).texts;
+      const designNodeLabels = {
+        'create-composer': '创作区', 'create-upload': '上传区', 'create-toolbar': '工具栏',
+        'create-history': '生成历史', 'create-history-empty': '生成历史空态',
+        'assets-toolbar': '资产筛选区', 'assets-empty': '资产结果区',
+        'history-toolbar': '历史筛选区', 'history-empty': '历史结果区',
+        'decompose-upload': '拆解上传区', 'decompose-modes': '拆解方式区', 'decompose-empty': '拆解结果区',
+        'recognize-upload': '识别上传区', 'recognize-empty': '识别结果区'
+      };
+      const copyLabels = {
+        'create-title': '创作标题', 'create-subtitle': '创作副标题', 'upload-title': '上传素材标题',
+        'history-title': '生成历史标题', 'history-empty-title': '生成历史空态标题', 'history-empty-help': '生成历史空态说明',
+        'assets-title': '资产库标题', 'assets-subtitle': '资产库副标题', 'assets-empty-title': '资产空态标题', 'assets-empty-help': '资产空态说明',
+        'history-page-title': '历史记录标题', 'history-page-subtitle': '历史记录副标题', 'history-page-empty-title': '历史空态标题', 'history-page-empty-help': '历史空态说明',
+        'decompose-title': '视频拆解标题', 'decompose-subtitle': '视频拆解副标题', 'decompose-upload-title': '拆解上传标题', 'decompose-empty-title': '拆解结果标题', 'decompose-empty-help': '拆解结果说明',
+        'recognize-title': '素材识别标题', 'recognize-subtitle': '素材识别副标题', 'recognize-upload-title': '识别上传标题', 'recognize-empty-title': '识别结果标题', 'recognize-empty-help': '识别结果说明'
+      };
+      const defaults = {
+        version: VERSION,
+        updatedAt: new Date(0).toISOString(),
+        view: 'create',
+        tokens: { accent: '#5964d8', canvas: '#090c19', surface: '#121626', radius: 16, sidebarWidth: 224, contentGap: 22, baseSize: 14 },
+        texts: Object.fromEntries(copyNodes.map(node => [node.dataset.copyKey, factoryTexts[node.dataset.copyKey]])),
+        nodes: {}
+      };
+      const tokenMeta = {
+        accent: { variable: '--accent', input: 'accent-color' },
+        canvas: { variable: '--canvas', input: 'background-color' },
+        surface: { variable: '--surface', input: 'panel-color' },
+        radius: { variable: '--radius', input: 'radius-range', output: 'radius-output', suffix: 'px' },
+        sidebarWidth: { variable: '--sidebar-width', input: 'sidebar-range', output: 'sidebar-output', suffix: 'px' },
+        contentGap: { variable: '--content-gap', input: 'gap-range', output: 'gap-output', suffix: 'px' },
+        baseSize: { variable: '--base-size', input: 'font-range', output: 'font-output', suffix: 'px' }
+      };
+      const tokenBounds = { radius: [8, 26], sidebarWidth: [190, 280], contentGap: [14, 36], baseSize: [12, 18] };
+      const tokenSteps = { radius: 1, sidebarWidth: 2, contentGap: 1, baseSize: 1 };
+      const nodeBounds = { x: [-160, 160], y: [-120, 120], width: [80, 1200], height: [36, 700], padding: [0, 48], radius: [0, 32], fontSize: [12, 40] };
+      const nodeFields = new Set([...Object.keys(nodeBounds), 'color', 'background']);
+
+      function safeState(value) {
+        if (!value || value.version !== VERSION || typeof value.tokens !== 'object' || typeof value.texts !== 'object') return null;
+        const tokens = { ...defaults.tokens };
+        for (const [key, fallback] of Object.entries(defaults.tokens)) {
+          const incoming = value.tokens[key];
+          if (typeof fallback === 'number' && Number.isFinite(Number(incoming))) {
+            const bounds = tokenBounds[key];
+            const clamped = bounds ? Math.min(bounds[1], Math.max(bounds[0], Number(incoming))) : Number(incoming);
+            const step = tokenSteps[key] || 1;
+            tokens[key] = bounds ? bounds[0] + Math.round((clamped - bounds[0]) / step) * step : clamped;
+          }
+          if (typeof fallback === 'string' && /^#[0-9a-f]{6}$/i.test(String(incoming))) tokens[key] = String(incoming);
+        }
+        const texts = { ...defaults.texts };
+        for (const key of Object.keys(texts)) if (typeof value.texts[key] === 'string') texts[key] = value.texts[key].slice(0, 240);
+        const nodes = {};
+        if (value.nodes && typeof value.nodes === 'object' && !Array.isArray(value.nodes)) {
+          for (const [id, incoming] of Object.entries(value.nodes)) {
+            if (!designNodeIds.has(id) || !incoming || typeof incoming !== 'object' || Array.isArray(incoming)) continue;
+            const safe = {};
+            for (const [key, raw] of Object.entries(incoming)) {
+              if (!nodeFields.has(key)) continue;
+              if ((key === 'color' || key === 'background') && /^#[0-9a-f]{6}$/i.test(String(raw))) safe[key] = String(raw).toLowerCase();
+              if (nodeBounds[key] && Number.isFinite(Number(raw))) safe[key] = Math.round(Math.min(nodeBounds[key][1], Math.max(nodeBounds[key][0], Number(raw))));
+            }
+            if (Object.keys(safe).length) nodes[id] = safe;
+          }
+        }
+        return { version: VERSION, updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : new Date().toISOString(), view: ['create','assets','history','decompose','recognize'].includes(value.view) ? value.view : 'create', tokens, texts, nodes };
+      }
+      function readJSON(text) { try { return safeState(JSON.parse(text)); } catch { return null; } }
+      function storedState() { try { return readJSON(localStorage.getItem(STORAGE_KEY) || ''); } catch { return null; } }
+      const embedded = readJSON(document.getElementById('embedded-design-state').textContent || '');
+      const stored = storedState();
+      let state = embedded
+        ? (storageScope && stored && Date.parse(stored.updatedAt) > Date.parse(embedded.updatedAt) ? stored : embedded)
+        : stored || structuredClone(defaults);
+      let selectedCopyKey = '';
+      let editMode = false;
+      let dialogReturnFocus = null;
+      let parameterReturnFocus = null;
+      let currentMode = 'video';
+      let layoutMode = false;
+      let selectedDesignId = '';
+      let directEdit = null;
+      let inspectorSnapshot = null;
+      const undoStack = [];
+      const redoStack = [];
+
+      function save(message = '修改已保存在本机') {
+        state.updatedAt = new Date().toISOString();
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { message = '当前环境无法使用本地存储，可导出修改稿'; }
+        status.textContent = message;
+      }
+      function stateSnapshot() { return structuredClone({ texts: state.texts, nodes: state.nodes || {} }); }
+      function restoreSnapshot(snapshot, message) {
+        state.texts = structuredClone(snapshot.texts);
+        state.nodes = structuredClone(snapshot.nodes);
+        for (const node of copyNodes) node.textContent = state.texts[node.dataset.copyKey] ?? defaults.texts[node.dataset.copyKey];
+        applyNodeStyles();
+        if (selectedDesignId) selectDesignNode(selectedDesignId);
+        save(message);
+      }
+      function rememberUndo(snapshot) {
+        undoStack.push(snapshot);
+        if (undoStack.length > 60) undoStack.shift();
+        redoStack.length = 0;
+        updateHistoryButtons();
+      }
+      function updateHistoryButtons() {
+        document.getElementById('undo-design').disabled = undoStack.length === 0;
+        document.getElementById('redo-design').disabled = redoStack.length === 0;
+      }
+      function applyNodeStyle(node) {
+        const value = state.nodes?.[node.dataset.designId] || {};
+        node.style.transform = value.x || value.y ? `translate(${value.x || 0}px, ${value.y || 0}px)` : '';
+        node.style.width = value.width == null ? '' : `${value.width}px`;
+        node.style.height = value.height == null ? '' : `${value.height}px`;
+        node.style.padding = value.padding == null ? '' : `${value.padding}px`;
+        node.style.borderRadius = value.radius == null ? '' : `${value.radius}px`;
+        node.style.color = value.color || '';
+        node.style.backgroundColor = value.background || '';
+        node.style.fontSize = value.fontSize == null ? '' : `${value.fontSize}px`;
+      }
+      function applyNodeStyles() {
+        for (const node of designNodes) applyNodeStyle(node);
+        requestAnimationFrame(updateSelectionOverlay);
+      }
+      function applyState() {
+        for (const [key, meta] of Object.entries(tokenMeta)) {
+          const value = state.tokens[key];
+          root.style.setProperty(meta.variable, `${value}${meta.suffix || ''}`);
+          const input = document.getElementById(meta.input);
+          input.value = value;
+          if (meta.output) document.getElementById(meta.output).textContent = `${value} px`;
+        }
+        for (const node of copyNodes) node.textContent = state.texts[node.dataset.copyKey] ?? defaults.texts[node.dataset.copyKey];
+        applyNodeStyles();
+        showView(state.view, false);
+      }
+      function showView(name, persist = true) {
+        document.querySelectorAll('[data-view]').forEach(view => view.classList.toggle('active', view.dataset.view === name));
+        document.querySelectorAll('[data-view-target]').forEach(button => {
+          const active = button.dataset.viewTarget === name;
+          button.classList.toggle('active', active);
+          if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
+        });
+        state.view = name;
+        closePopovers();
+        if (persist) save(`已切换到${document.querySelector(`[data-view-target="${name}"]`).textContent.trim()}预览`);
+      }
+      function menuOptions(menu) {
+        return [...menu.querySelectorAll('[role="option"]')].filter(option => option.getAttribute('aria-disabled') !== 'true' && !option.disabled);
+      }
+      function closeDropdowns(returnFocus = false) {
+        const openMenus = [...document.querySelectorAll('.select-menu:not([hidden])')];
+        for (const menu of openMenus) {
+          menu.hidden = true;
+          menu.classList.remove('open');
+          menu.style.left = '';
+          menu.style.top = '';
+          menu.style.width = '';
+          menu.style.maxHeight = '';
+          menu.style.visibility = '';
+          const trigger = document.querySelector(`[aria-controls="${CSS.escape(menu.id)}"]`);
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+        if (returnFocus && openMenus.length) {
+          const trigger = document.querySelector(`[aria-controls="${CSS.escape(openMenus.at(-1).id)}"]`);
+          if (trigger instanceof HTMLElement) trigger.focus();
+        }
+      }
+      function scrollableAncestors(element) {
+        const ancestors = [];
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          const style = getComputedStyle(parent);
+          if (/(auto|scroll)/.test(style.overflowY) && parent.scrollHeight > parent.clientHeight + 1) ancestors.push(parent);
+        }
+        return ancestors;
+      }
+      function makeDownwardSpace(trigger, desiredHeight) {
+        for (const scroller of scrollableAncestors(trigger)) {
+          const triggerRect = trigger.getBoundingClientRect();
+          const scrollerRect = scroller.getBoundingClientRect();
+          const visibleBottom = Math.min(innerHeight - 12, scrollerRect.bottom - 12);
+          const deficit = Math.ceil(triggerRect.bottom + 8 + desiredHeight - visibleBottom);
+          if (deficit > 0) scroller.scrollTop += deficit;
+        }
+      }
+      function positionDropdown(trigger, menu) {
+        const anchor = trigger.getBoundingClientRect();
+        const width = Math.min(320, Math.max(220, anchor.width));
+        const top = anchor.bottom + 8;
+        menu.style.left = `${Math.max(12, Math.min(anchor.left, innerWidth - width - 12))}px`;
+        menu.style.top = `${top}px`;
+        menu.style.width = `${width}px`;
+        menu.style.maxHeight = `${Math.max(0, innerHeight - top - 12)}px`;
+      }
+      function openDropdown(trigger, edge = 'selected') {
+        const menu = document.getElementById(trigger.getAttribute('aria-controls'));
+        const wasOpen = !menu.hidden;
+        closeDropdowns();
+        if (wasOpen) return;
+        menu.hidden = false;
+        menu.classList.add('open');
+        menu.style.visibility = 'hidden';
+        makeDownwardSpace(trigger, Math.min(320, menu.scrollHeight));
+        positionDropdown(trigger, menu);
+        menu.style.visibility = '';
+        trigger.setAttribute('aria-expanded', 'true');
+        const options = menuOptions(menu);
+        const selected = options.find(option => option.getAttribute('aria-selected') === 'true');
+        const target = edge === 'end' ? options.at(-1) : edge === 'start' ? options[0] : selected || options[0];
+        if (target instanceof HTMLElement) target.focus();
+      }
+      function selectDropdownOption(option) {
+        if (option.getAttribute('aria-disabled') === 'true' || option.disabled) return;
+        const menu = option.closest('[role="listbox"]');
+        const trigger = document.querySelector(`[aria-controls="${CSS.escape(menu.id)}"]`);
+        menu.querySelectorAll('[role="option"]').forEach(item => {
+          const selected = item === option;
+          item.classList.toggle('selected', selected);
+          item.setAttribute('aria-selected', String(selected));
+        });
+        const label = option.dataset.mode || option.textContent.trim();
+        const display = trigger.querySelector('strong,[data-select-display]');
+        if (display) display.textContent = label;
+        trigger.dataset.value = option.dataset.selectValue || option.dataset.modeCode || label;
+        if (option.dataset.modeCode) {
+          updateMode(option.dataset.modeCode, option.dataset.mode);
+          status.textContent = `已预览${option.dataset.mode}模式`;
+        }
+        closeDropdowns();
+        trigger.focus();
+      }
+      function parameterPanelOpen() {
+        const panel = document.getElementById('parameter-dialog');
+        return panel.matches(':popover-open') || panel.dataset.fallbackOpen === 'true';
+      }
+      function positionParameterPanel(trigger) {
+        const panel = document.getElementById('parameter-dialog');
+        const anchor = trigger.getBoundingClientRect();
+        const width = Math.min(408, innerWidth - 24);
+        const left = Math.max(12, Math.min(anchor.left, innerWidth - width - 12));
+        const top = anchor.bottom + 8;
+        panel.style.width = `${width}px`;
+        panel.style.left = `${left}px`;
+        panel.style.maxHeight = `${Math.max(0, innerHeight - top - 12)}px`;
+        panel.style.top = `${top}px`;
+        panel.style.bottom = '';
+      }
+      function openParameterPanel(trigger) {
+        closeDropdowns();
+        const panel = document.getElementById('parameter-dialog');
+        parameterReturnFocus = trigger;
+        makeDownwardSpace(trigger, 440);
+        if (!parameterPanelOpen()) {
+          if (typeof panel.showPopover === 'function') panel.showPopover();
+          else { panel.dataset.fallbackOpen = 'true'; panel.style.display = 'block'; }
+        }
+        document.getElementById('open-parameters').setAttribute('aria-expanded', 'true');
+        positionParameterPanel(trigger);
+        const focusTarget = panel.querySelector('[data-param-modes]:not(.mode-hidden) input:checked, [data-param-modes]:not(.mode-hidden) input');
+        if (focusTarget instanceof HTMLElement) focusTarget.focus();
+      }
+      function closeParameterPanel(returnFocus = true) {
+        const panel = document.getElementById('parameter-dialog');
+        if (!parameterPanelOpen()) return;
+        closeDropdowns();
+        if (panel.matches(':popover-open')) panel.hidePopover();
+        else { delete panel.dataset.fallbackOpen; panel.style.display = ''; }
+        panel.style.left = '';
+        panel.style.top = '';
+        panel.style.bottom = '';
+        panel.style.width = '';
+        panel.style.maxHeight = '';
+        document.getElementById('open-parameters').setAttribute('aria-expanded', 'false');
+        if (returnFocus && parameterReturnFocus instanceof HTMLElement) parameterReturnFocus.focus();
+        parameterReturnFocus = null;
+      }
+      function closePopovers() {
+        closeDropdowns();
+        closeParameterPanel(false);
+      }
+      function openDialog(id) {
+        closePopovers();
+        dialogReturnFocus = document.activeElement;
+        const dialog = document.getElementById(id);
+        document.querySelector('.design-bar').inert = true;
+        document.querySelector('.design-layout').inert = true;
+        dialog.classList.add('open');
+        dialog.querySelector('button').focus();
+      }
+      function closeDialog(id) {
+        document.getElementById(id).classList.remove('open');
+        document.querySelector('.design-bar').inert = false;
+        document.querySelector('.design-layout').inert = false;
+        if (dialogReturnFocus instanceof HTMLElement) dialogReturnFocus.focus();
+        dialogReturnFocus = null;
+      }
+      function updateMode(code, label) {
+        currentMode = code;
+        document.getElementById('mode-value').textContent = label;
+        document.querySelectorAll('[data-mode]').forEach(option => {
+          const selected = option.dataset.modeCode === code;
+          option.classList.toggle('selected', selected);
+          option.setAttribute('aria-selected', String(selected));
+        });
+        const upload = document.getElementById('open-reference');
+        upload.disabled = code === 'copy';
+        upload.title = code === 'copy' ? '文案生成不接受参考素材' : '';
+        const referenceMode = document.getElementById('reference-mode-trigger');
+        referenceMode.disabled = code === 'copy';
+        referenceMode.title = code === 'copy' ? '文案生成不接受参考素材' : '';
+        const videoReference = document.querySelector('[data-role="reference_video"]');
+        videoReference.disabled = code !== 'video';
+        videoReference.title = code === 'image' ? '图片生成不接受参考视频' : code === 'copy' ? '文案生成不接受参考素材' : '';
+        document.querySelectorAll('[data-param-modes]').forEach(field => field.classList.toggle('mode-hidden', !field.dataset.paramModes.split(' ').includes(code)));
+        updateParameterSummary();
+      }
+      function checkedValue(name) {
+        return document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+      }
+      function updateParameterSummary() {
+        const count = checkedValue('count');
+        if (currentMode === 'video') document.getElementById('parameter-summary').textContent = `${checkedValue('video-ratio')} · ${checkedValue('video-resolution')} · ${count}`;
+        if (currentMode === 'image') document.getElementById('parameter-summary').textContent = `${checkedValue('image-ratio')} · ${checkedValue('image-resolution')} · ${count}`;
+        if (currentMode === 'copy') document.getElementById('parameter-summary').textContent = `简体中文 · ${document.getElementById('copy-length').value} 字 · ${count}`;
+      }
+      function parameterInputMessage(input) {
+        if (input.checkValidity()) return '';
+        return input.id === 'duration' ? '参数错误：时长必须是 5–15 秒整数' : '参数错误：最多字符必须是 1–2000 的整数';
+      }
+      function handleParameterInput(input, report = false) {
+        updateParameterSummary();
+        const message = parameterInputMessage(input);
+        status.textContent = message || '参数仅更新设计预览';
+        if (message && report) input.reportValidity();
+      }
+      function computedHex(value, fallback) {
+        const match = String(value).match(/rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)/i);
+        return match ? `#${match.slice(1, 4).map(part => Number(part).toString(16).padStart(2, '0')).join('')}` : fallback;
+      }
+      function selectedDesignNode() {
+        return designNodes.find(node => node.dataset.designId === selectedDesignId) || null;
+      }
+      function updateSelectionOverlay() {
+        const overlay = document.getElementById('design-selection');
+        const node = selectedDesignNode();
+        if (!layoutMode || !node || !node.offsetParent) { overlay.classList.remove('active'); return; }
+        const rect = node.getBoundingClientRect();
+        overlay.style.left = `${rect.left}px`;
+        overlay.style.top = `${rect.top}px`;
+        overlay.style.width = `${rect.width}px`;
+        overlay.style.height = `${rect.height}px`;
+        overlay.classList.add('active');
+      }
+      function populateInspector(node) {
+        const value = state.nodes?.[node.dataset.designId] || {};
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        document.getElementById('node-width').value = Math.round(value.width ?? rect.width);
+        document.getElementById('node-height').value = Math.round(value.height ?? rect.height);
+        document.getElementById('node-padding').value = Math.round(value.padding ?? (parseFloat(style.paddingTop) || 0));
+        document.getElementById('node-radius').value = Math.round(value.radius ?? (parseFloat(style.borderTopLeftRadius) || 0));
+        document.getElementById('node-color').value = value.color || computedHex(style.color, '#f6f7fb');
+        document.getElementById('node-background').value = value.background || computedHex(style.backgroundColor, '#121626');
+        document.getElementById('node-font-size').value = Math.round(value.fontSize ?? (parseFloat(style.fontSize) || 14));
+      }
+      function selectDesignNode(id) {
+        const node = designNodes.find(item => item.dataset.designId === id);
+        if (!node) return;
+        designNodes.forEach(item => item.classList.toggle('design-selected', item === node));
+        selectedDesignId = id;
+        document.getElementById('layout-inspector').hidden = false;
+        populateInspector(node);
+        updateSelectionOverlay();
+        status.textContent = `已选择区域：${designNodeLabels[id] || '页面区域'}`;
+      }
+      function clearDesignSelection() {
+        designNodes.forEach(node => node.classList.remove('design-selected'));
+        selectedDesignId = '';
+        document.getElementById('layout-inspector').hidden = true;
+        document.getElementById('design-selection').classList.remove('active');
+      }
+      function setNodeProperty(property, rawValue) {
+        const node = selectedDesignNode();
+        if (!node) return;
+        let value = rawValue;
+        if (nodeBounds[property]) {
+          if (!Number.isFinite(Number(rawValue))) return;
+          value = Math.round(Math.min(nodeBounds[property][1], Math.max(nodeBounds[property][0], Number(rawValue))));
+        } else if (!/^#[0-9a-f]{6}$/i.test(String(rawValue))) return;
+        state.nodes ||= {};
+        state.nodes[selectedDesignId] ||= {};
+        state.nodes[selectedDesignId][property] = value;
+        applyNodeStyle(node);
+        updateSelectionOverlay();
+        save('区域样式已保存在本机');
+      }
+      function startDirectEdit(node) {
+        if (directEdit) commitDirectEdit();
+        directEdit = { node, before: state.texts[node.dataset.copyKey] ?? node.textContent };
+        node.setAttribute('contenteditable', 'plaintext-only');
+        node.classList.add('direct-editing');
+        node.focus();
+        const selection = getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(node); selection.removeAllRanges(); selection.addRange(range);
+        status.textContent = '正在直接编辑文案';
+      }
+      function commitDirectEdit(cancel = false) {
+        if (!directEdit) return;
+        const { node, before } = directEdit;
+        const key = node.dataset.copyKey;
+        const next = cancel ? before : (node.textContent || '').slice(0, 240);
+        node.textContent = next;
+        node.removeAttribute('contenteditable');
+        node.classList.remove('direct-editing');
+        directEdit = null;
+        if (!cancel && next !== before) {
+          rememberUndo(stateSnapshot());
+          state.texts[key] = next;
+          if (selectedCopyKey === key) document.getElementById('copy-text').value = next;
+          save('文案已保存在本机');
+        } else status.textContent = cancel ? '已取消文案修改' : '文案未更改';
+      }
+      function beginNodePointerEdit(event, kind) {
+        const node = selectedDesignNode();
+        if (!layoutMode || !node) return;
+        event.preventDefault();
+        const start = { x: event.clientX, y: event.clientY };
+        const initial = { ...(state.nodes?.[selectedDesignId] || {}) };
+        const rect = node.getBoundingClientRect();
+        const canvas = preview.getBoundingClientRect();
+        const snapshot = stateSnapshot();
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        const move = moveEvent => {
+          const dx = Math.round(moveEvent.clientX - start.x);
+          const dy = Math.round(moveEvent.clientY - start.y);
+          if (kind === 'move') {
+            const baseX = initial.x || 0;
+            const baseY = initial.y || 0;
+            setNodeProperty('x', baseX + dx);
+            setNodeProperty('y', baseY + dy);
+          } else {
+            setNodeProperty('width', Math.min(canvas.right - rect.left, rect.width + dx));
+            setNodeProperty('height', Math.min(canvas.bottom - rect.top, rect.height + dy));
+            populateInspector(node);
+          }
+        };
+        const end = () => {
+          document.removeEventListener('pointermove', move);
+          document.removeEventListener('pointerup', end);
+          document.removeEventListener('pointercancel', end);
+          if (JSON.stringify(snapshot.nodes) !== JSON.stringify(state.nodes)) rememberUndo(snapshot);
+        };
+        document.addEventListener('pointermove', move);
+        document.addEventListener('pointerup', end);
+        document.addEventListener('pointercancel', end);
+      }
+      function download(name, type, content) {
+        const url = URL.createObjectURL(new Blob([content], { type }));
+        const link = document.createElement('a');
+        link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+      }
+
+      preview.addEventListener('click', event => {
+        if (!layoutMode || event.target.closest('[contenteditable="plaintext-only"]')) return;
+        const node = event.target.closest('[data-design-id]');
+        if (!node) return;
+        event.preventDefault();
+        event.stopPropagation();
+        selectDesignNode(node.dataset.designId);
+      }, true);
+      copyNodes.forEach(node => {
+        if (node.closest('button')) return;
+        node.addEventListener('dblclick', event => { event.preventDefault(); event.stopPropagation(); startDirectEdit(node); });
+        node.addEventListener('blur', () => { if (directEdit?.node === node) commitDirectEdit(); });
+        node.addEventListener('keydown', event => {
+          if (directEdit?.node !== node) return;
+          if (event.isComposing || event.keyCode === 229) return;
+          if (event.key === 'Escape') { event.preventDefault(); commitDirectEdit(true); node.blur(); }
+          else if (event.key === 'Enter') { event.preventDefault(); commitDirectEdit(); node.blur(); }
+          else if (event.key === 'Tab') commitDirectEdit();
+        });
+        node.addEventListener('paste', event => {
+          if (directEdit?.node !== node) return;
+          event.preventDefault(); document.execCommand('insertText', false, event.clipboardData.getData('text/plain').slice(0, 240));
+        });
+      });
+      document.querySelectorAll('[data-view-target]').forEach(button => button.addEventListener('click', () => showView(button.dataset.viewTarget)));
+      document.getElementById('toggle-editor').addEventListener('click', event => {
+        const collapsed = document.body.classList.toggle('panel-collapsed');
+        event.currentTarget.setAttribute('aria-label', collapsed ? '展开编辑面板' : '折叠编辑面板');
+        event.currentTarget.title = collapsed ? '展开编辑面板' : '折叠编辑面板';
+      });
+      document.querySelectorAll('[data-select-trigger]').forEach(trigger => {
+        trigger.addEventListener('click', event => { event.stopPropagation(); if (!trigger.closest('#parameter-dialog')) closeParameterPanel(false); openDropdown(trigger); });
+        trigger.addEventListener('keydown', event => {
+          if (!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;
+          event.preventDefault();
+          openDropdown(trigger, event.key === 'End' || event.key === 'ArrowUp' ? 'end' : 'start');
+        });
+      });
+      document.querySelectorAll('.select-option').forEach(option => {
+        option.addEventListener('click', event => { event.stopPropagation(); selectDropdownOption(option); });
+        option.addEventListener('keydown', event => {
+          const menu = option.closest('[role="listbox"]');
+          const options = menuOptions(menu);
+          const index = options.indexOf(option);
+          if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeDropdowns(true); return; }
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectDropdownOption(option); return; }
+          if (!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;
+          event.preventDefault();
+          const next = event.key === 'Home' ? options[0] : event.key === 'End' ? options.at(-1) : options[(index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length];
+          if (next instanceof HTMLElement) next.focus();
+        });
+      });
+      document.getElementById('open-reference').addEventListener('click', event => { if (!event.currentTarget.disabled) openDialog('reference-dialog'); });
+      document.getElementById('open-parameters').addEventListener('click', event => { if (parameterPanelOpen() && parameterReturnFocus === event.currentTarget) closeParameterPanel(); else openParameterPanel(event.currentTarget); });
+      document.querySelectorAll('[data-close-parameter]').forEach(button => button.addEventListener('click', () => closeParameterPanel()));
+      document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => closeDialog(button.dataset.closeDialog)));
+      document.querySelectorAll('.role-tab').forEach(button => button.addEventListener('click', () => {
+        document.querySelectorAll('.role-tab').forEach(tab => { const active = tab === button; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)); });
+        status.textContent = `正在预览${button.textContent.trim()}素材位置`;
+      }));
+      document.getElementById('choose-demo-reference').addEventListener('click', () => { status.textContent = '已在设计稿中预览演示素材位置'; });
+      document.querySelectorAll('.preview-only').forEach(button => button.addEventListener('click', () => { status.textContent = '仅调整界面，不执行生成或分析'; }));
+      const prompt = document.querySelector('[aria-label="Prompt"]');
+      prompt.addEventListener('input', () => prompt.setCustomValidity(''));
+      document.getElementById('generate-preview').addEventListener('click', () => {
+        const valid = Boolean(prompt.value.trim());
+        prompt.setCustomValidity(valid ? '' : '请输入 Prompt');
+        if (!valid) { prompt.reportValidity(); prompt.focus(); status.textContent = '请输入 Prompt'; return; }
+        status.textContent = '仅调整界面，不执行生成或分析';
+      });
+      document.querySelectorAll('#parameter-dialog input').forEach(input => {
+        input.addEventListener('input', () => handleParameterInput(input));
+        input.addEventListener('change', () => handleParameterInput(input));
+        if (input.type === 'number') input.addEventListener('blur', () => handleParameterInput(input, !input.checkValidity()));
+      });
+
+      document.getElementById('edit-layout').addEventListener('click', event => {
+        layoutMode = !layoutMode;
+        event.currentTarget.setAttribute('aria-pressed', String(layoutMode));
+        preview.classList.toggle('layout-mode', layoutMode);
+        if (!layoutMode) clearDesignSelection();
+        status.textContent = layoutMode ? '点击预览区域进行布局调整' : '已退出布局编辑';
+      });
+      const inspectorProperties = {
+        'node-width': 'width', 'node-height': 'height', 'node-padding': 'padding', 'node-radius': 'radius',
+        'node-color': 'color', 'node-background': 'background', 'node-font-size': 'fontSize'
+      };
+      const inspector = document.getElementById('layout-inspector');
+      inspector.addEventListener('focusin', event => { if (event.target.matches('input')) inspectorSnapshot = stateSnapshot(); });
+      inspector.addEventListener('input', event => {
+        const property = inspectorProperties[event.target.id];
+        if (property) setNodeProperty(property, event.target.value);
+      });
+      const finishInspectorChange = () => {
+        if (!inspectorSnapshot) return;
+        if (JSON.stringify(inspectorSnapshot.nodes) !== JSON.stringify(state.nodes)) rememberUndo(inspectorSnapshot);
+        inspectorSnapshot = null;
+      };
+      inspector.addEventListener('change', finishInspectorChange);
+      inspector.addEventListener('focusout', finishInspectorChange);
+      document.getElementById('move-design-node').addEventListener('pointerdown', event => beginNodePointerEdit(event, 'move'));
+      document.getElementById('resize-design-node').addEventListener('pointerdown', event => beginNodePointerEdit(event, 'resize'));
+      document.querySelectorAll('#move-design-node,#resize-design-node').forEach(handle => handle.addEventListener('keydown', event => {
+        if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key) || !selectedDesignNode()) return;
+        event.preventDefault();
+        const snapshot = stateSnapshot(); const step = event.shiftKey ? 10 : 1; const value = state.nodes?.[selectedDesignId] || {};
+        const resize = handle.id === 'resize-design-node';
+        const property = resize ? (event.key.includes('Left') || event.key.includes('Right') ? 'width' : 'height') : (event.key.includes('Left') || event.key.includes('Right') ? 'x' : 'y');
+        const current = resize ? (property === 'width' ? selectedDesignNode().getBoundingClientRect().width : selectedDesignNode().getBoundingClientRect().height) : (value[property] || 0);
+        setNodeProperty(property, current + (event.key === 'ArrowRight' || event.key === 'ArrowDown' ? step : -step));
+        rememberUndo(snapshot); populateInspector(selectedDesignNode());
+      }));
+      document.getElementById('undo-design').addEventListener('click', () => {
+        if (!undoStack.length) return;
+        redoStack.push(stateSnapshot());
+        restoreSnapshot(undoStack.pop(), '已撤销上一步设计修改');
+        updateHistoryButtons();
+      });
+      document.getElementById('redo-design').addEventListener('click', () => {
+        if (!redoStack.length) return;
+        undoStack.push(stateSnapshot());
+        restoreSnapshot(redoStack.pop(), '已重做设计修改');
+        updateHistoryButtons();
+      });
+
+      for (const [key, meta] of Object.entries(tokenMeta)) {
+        document.getElementById(meta.input).addEventListener('input', event => {
+          state.tokens[key] = event.target.type === 'range' ? Number(event.target.value) : event.target.value;
+          root.style.setProperty(meta.variable, `${state.tokens[key]}${meta.suffix || ''}`);
+          if (meta.output) document.getElementById(meta.output).textContent = `${state.tokens[key]} px`;
+          save();
+        });
+      }
+      document.getElementById('edit-copy').addEventListener('click', event => {
+        editMode = !editMode;
+        event.currentTarget.setAttribute('aria-pressed', String(editMode));
+        preview.classList.toggle('edit-mode', editMode);
+        status.textContent = editMode ? '点击预览中的文案进行修改' : '已退出文案编辑';
+      });
+      copyNodes.forEach(node => node.addEventListener('click', event => {
+        if (!editMode) return;
+        event.preventDefault(); event.stopPropagation();
+        copyNodes.forEach(item => item.classList.remove('copy-selected'));
+        node.classList.add('copy-selected'); selectedCopyKey = node.dataset.copyKey;
+        const textarea = document.getElementById('copy-text'); textarea.disabled = false; textarea.value = state.texts[selectedCopyKey];
+        document.getElementById('selected-copy-label').textContent = `已选择：${copyLabels[selectedCopyKey] || '页面文案'}`;
+        textarea.focus();
+      }));
+      document.getElementById('copy-text').addEventListener('input', event => {
+        if (!selectedCopyKey) return;
+        state.texts[selectedCopyKey] = event.target.value.slice(0, 240);
+        document.querySelector(`[data-copy-key="${CSS.escape(selectedCopyKey)}"]`).textContent = state.texts[selectedCopyKey];
+        save('文案已保存在本机');
+      });
+      document.getElementById('reset-design').addEventListener('click', () => {
+        if (directEdit) commitDirectEdit(true);
+        state = structuredClone(defaults); selectedCopyKey = ''; editMode = false; layoutMode = false;
+        preview.classList.remove('edit-mode'); document.getElementById('edit-copy').setAttribute('aria-pressed', 'false');
+        preview.classList.remove('layout-mode'); document.getElementById('edit-layout').setAttribute('aria-pressed', 'false'); clearDesignSelection();
+        undoStack.length = 0; redoStack.length = 0; updateHistoryButtons();
+        document.getElementById('copy-text').value = ''; document.getElementById('copy-text').disabled = true;
+        document.getElementById('selected-copy-label').textContent = '尚未选择文案'; copyNodes.forEach(node => node.classList.remove('copy-selected'));
+        applyState(); save('已恢复默认设计');
+      });
+      document.getElementById('import-json').addEventListener('change', async event => {
+        const file = event.target.files && event.target.files[0]; event.target.value = '';
+        if (!file) return;
+        try {
+          const imported = readJSON(await file.text());
+          if (!imported) { status.textContent = '修改稿格式无效，请选择本面板导出的 JSON'; return; }
+          state = imported; applyState(); save('修改稿已导入并保存在本机');
+        } catch { status.textContent = '无法读取修改稿，请重新选择文件'; }
+      });
+      document.getElementById('export-json').addEventListener('click', () => {
+        if (directEdit) commitDirectEdit();
+        save('修改稿 JSON 已导出');
+        download('ai-video-design-draft.json', 'application/json;charset=utf-8', JSON.stringify(state, null, 2));
+      });
+      document.getElementById('export-html').addEventListener('click', () => {
+        if (directEdit) commitDirectEdit();
+        save('HTML 已导出，可离线打开');
+        const clone = document.documentElement.cloneNode(true);
+        clone.dataset.storageScope = `export-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        clone.querySelector('#embedded-design-state').textContent = JSON.stringify(state).replace(/</g, '\\u003c');
+        clone.querySelector('body').classList.remove('panel-collapsed');
+        clone.querySelector('#product-preview').classList.remove('edit-mode', 'layout-mode');
+        clone.querySelectorAll('.copy-selected').forEach(node => node.classList.remove('copy-selected'));
+        clone.querySelectorAll('.design-selected').forEach(node => node.classList.remove('design-selected'));
+        clone.querySelectorAll('[contenteditable]').forEach(node => node.removeAttribute('contenteditable'));
+        clone.querySelector('#edit-copy').setAttribute('aria-pressed', 'false');
+        clone.querySelector('#edit-layout').setAttribute('aria-pressed', 'false');
+        clone.querySelector('#layout-inspector').hidden = true;
+        clone.querySelector('#design-selection').classList.remove('active');
+        clone.querySelector('#copy-text').textContent = '';
+        clone.querySelector('#copy-text').setAttribute('disabled', '');
+        clone.querySelector('#selected-copy-label').textContent = '尚未选择文案';
+        clone.querySelectorAll('.select-menu').forEach(menu => { menu.classList.remove('open'); menu.hidden = true; });
+        clone.querySelectorAll('[data-select-trigger]').forEach(trigger => trigger.setAttribute('aria-expanded', 'false'));
+        clone.querySelector('#parameter-dialog').style.cssText = '';
+        clone.querySelector('#parameter-dialog').removeAttribute('data-fallback-open');
+        clone.querySelector('#open-parameters').setAttribute('aria-expanded', 'false');
+        clone.querySelector('#mode-value').textContent = '视频生成';
+        clone.querySelectorAll('[data-mode]').forEach(option => {
+          const selected = option.dataset.modeCode === 'video';
+          option.classList.toggle('selected', selected);
+          option.setAttribute('aria-selected', String(selected));
+        });
+        clone.querySelector('#toggle-editor').setAttribute('aria-label', '折叠编辑面板');
+        clone.querySelector('#toggle-editor').setAttribute('title', '折叠编辑面板');
+        clone.querySelector('#design-status').textContent = '修改自动保存在本机';
+        clone.querySelectorAll('.role-tab').forEach(tab => {
+          const active = tab.dataset.role === 'product';
+          tab.classList.toggle('active', active);
+          tab.setAttribute('aria-selected', String(active));
+        });
+        clone.querySelectorAll('.dialog-backdrop.open').forEach(dialog => dialog.classList.remove('open'));
+        clone.querySelector('.design-bar').removeAttribute('inert');
+        clone.querySelector('.design-layout').removeAttribute('inert');
+        download('ai-video-design-panel.html', 'text/html;charset=utf-8', '<!doctype html>\n' + clone.outerHTML);
+      });
+      document.addEventListener('click', event => {
+        if (!event.target.closest('.select-wrap')) closeDropdowns();
+        if (parameterPanelOpen() && !event.target.closest('#parameter-dialog') && !event.target.closest('#open-parameters')) closeParameterPanel(false);
+      });
+      document.addEventListener('focusin', event => {
+        const menu = [...document.querySelectorAll('.select-menu:not([hidden])')].at(-1);
+        if (!menu) return;
+        const trigger = document.querySelector(`[aria-controls="${CSS.escape(menu.id)}"]`);
+        if (!menu.contains(event.target) && event.target !== trigger) closeDropdowns(false);
+      });
+      document.addEventListener('keydown', event => {
+        const openMenu = [...document.querySelectorAll('.select-menu:not([hidden])')].at(-1);
+        if (event.key === 'Escape' && openMenu) { event.preventDefault(); closeDropdowns(true); return; }
+        const openDialogNode = document.querySelector('.dialog-backdrop.open');
+        if (event.key === 'Tab' && openDialogNode) {
+          const focusable = [...openDialogNode.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled)')];
+          if (!focusable.length) return;
+          const first = focusable[0]; const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+          return;
+        }
+        if (event.key !== 'Escape') return;
+        if (openDialogNode) closeDialog(openDialogNode.id);
+        else if (parameterPanelOpen()) closeParameterPanel();
+        else closePopovers();
+      });
+      function repositionOpenLayers() {
+        if (parameterPanelOpen() && parameterReturnFocus instanceof HTMLElement) positionParameterPanel(parameterReturnFocus);
+        document.querySelectorAll('.select-menu:not([hidden])').forEach(menu => {
+          const trigger = document.querySelector(`[aria-controls="${CSS.escape(menu.id)}"]`);
+          if (trigger instanceof HTMLElement) positionDropdown(trigger, menu);
+        });
+        updateSelectionOverlay();
+      }
+      window.addEventListener('resize', repositionOpenLayers);
+      document.addEventListener('scroll', repositionOpenLayers, true);
+      applyState(); updateMode('video', '视频生成');
+    })();
+  </script>
+</body>
+</html>

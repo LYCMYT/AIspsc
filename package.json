@@ -1,0 +1,25 @@
+{
+  "name": "ai-marketing-video-rebuild",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.3.4",
+  "engines": { "node": ">=24.19.0 <25" },
+  "scripts": {
+    "dev": "vite --config apps/web/vite.config.ts --host 127.0.0.1",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p tsconfig.base.json",
+    "test:unit": "vitest run --project unit",
+    "test:contracts": "vitest run --project contracts",
+    "build": "vite build --config apps/web/vite.config.ts",
+    "test:e2e": "playwright test --config apps/web/playwright.config.ts",
+    "capture": "playwright test --config apps/web/playwright.config.ts --grep @capture",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:contracts && pnpm build"
+  },
+  "dependencies": {
+    "vue": "3.5.42", "pinia": "4.0.3", "@vue/devtools-api": "8.2.1", "vue-router": "5.3.1", "ajv": "8.20.0", "idb": "8.0.3"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3", "@types/node": "24.13.3", "vite": "8.2.2", "@vitejs/plugin-vue": "6.0.8", "@vue/compiler-sfc": "3.5.42", "vue-tsc": "3.3.11", "vitest": "5.0.0", "@playwright/test": "1.63.0", "eslint": "10.10.0", "@eslint/js": "10.0.1", "typescript-eslint": "8.70.0", "eslint-plugin-vue": "10.11.0", "vue-eslint-parser": "10.4.1", "globals": "17.12.0", "fake-indexeddb": "6.2.5", "yaml": "2.9.0"
+  }
+}

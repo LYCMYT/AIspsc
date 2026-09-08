@@ -1,0 +1,20 @@
+import { expect, test } from './fixtures';
+test('A09 four split modes use actual fixed-source intervals and reject invalid manual selection', async ({ page }) => {
+  await page.goto('/decompose');
+  await page.getByRole('button', { name: '使用固定测试视频' }).click();
+  await expect(page.locator('.source-info')).toContainText('32 秒 · 720 × 1280');
+  await expect.poll(() => page.locator('.source-panel video').evaluate((video) => (video as HTMLVideoElement).duration)).toBe(32);
+  await page.getByRole('button', { name: '规划区间', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '27.000–32.000 秒', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '平均拆解', exact: true }).click();
+  await page.getByRole('button', { name: '规划区间', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '8.500–23.500 秒', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '场景检测', exact: true }).click();
+  await page.getByRole('button', { name: '规划区间', exact: true }).click();
+  await expect(page.getByText('为满足参考长度扩展', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '手动区间', exact: true }).click();
+  await page.getByLabel('结束时间（秒）').fill('40');
+  await page.getByRole('button', { name: '规划区间', exact: true }).click();
+  await expect(page.getByText('区间需在视频范围内，且时长为 5–15 秒', { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /下载切片/ })).toHaveCount(0);
+});

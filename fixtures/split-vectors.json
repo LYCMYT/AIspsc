@@ -1,0 +1,268 @@
+[
+  {
+    "id": "SPLIT-01",
+    "mode": "sequential",
+    "durationMs": 0,
+    "expectedIntervals": null,
+    "expectedError": "MEDIA_TOO_SHORT"
+  },
+  {
+    "id": "SPLIT-02",
+    "mode": "sequential",
+    "durationMs": 4999,
+    "expectedIntervals": null,
+    "expectedError": "MEDIA_TOO_SHORT"
+  },
+  {
+    "id": "SPLIT-03",
+    "mode": "sequential",
+    "durationMs": 5000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 5000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-04",
+    "mode": "sequential",
+    "durationMs": 14999,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 14999
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-05",
+    "mode": "sequential",
+    "durationMs": 15000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-06",
+    "mode": "sequential",
+    "durationMs": 16000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 11000,
+        "endMs": 16000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-07",
+    "mode": "sequential",
+    "durationMs": 19000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 14000,
+        "endMs": 19000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-08",
+    "mode": "sequential",
+    "durationMs": 20000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 15000,
+        "endMs": 20000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-09",
+    "mode": "sequential",
+    "durationMs": 30000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 15000,
+        "endMs": 30000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-10",
+    "mode": "sequential",
+    "durationMs": 32000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 15000,
+        "endMs": 30000
+      },
+      {
+        "startMs": 27000,
+        "endMs": 32000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-11",
+    "mode": "sequential",
+    "durationMs": 63000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 15000,
+        "endMs": 30000
+      },
+      {
+        "startMs": 30000,
+        "endMs": 45000
+      },
+      {
+        "startMs": 45000,
+        "endMs": 60000
+      },
+      {
+        "startMs": 58000,
+        "endMs": 63000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-12",
+    "mode": "average",
+    "durationMs": 5000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 5000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-13",
+    "mode": "average",
+    "durationMs": 15000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-14",
+    "mode": "average",
+    "durationMs": 16000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 1000,
+        "endMs": 16000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-15",
+    "mode": "average",
+    "durationMs": 30000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 15000,
+        "endMs": 30000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-16",
+    "mode": "average",
+    "durationMs": 32000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 8500,
+        "endMs": 23500
+      },
+      {
+        "startMs": 17000,
+        "endMs": 32000
+      }
+    ],
+    "expectedError": null
+  },
+  {
+    "id": "SPLIT-17",
+    "mode": "average",
+    "durationMs": 63000,
+    "expectedIntervals": [
+      {
+        "startMs": 0,
+        "endMs": 15000
+      },
+      {
+        "startMs": 12000,
+        "endMs": 27000
+      },
+      {
+        "startMs": 24000,
+        "endMs": 39000
+      },
+      {
+        "startMs": 36000,
+        "endMs": 51000
+      },
+      {
+        "startMs": 48000,
+        "endMs": 63000
+      }
+    ],
+    "expectedError": null
+  }
+]

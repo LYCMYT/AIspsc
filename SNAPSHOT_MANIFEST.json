@@ -1,0 +1,1550 @@
+{
+  "schemaVersion": 1,
+  "description": "Allowlisted public B1 source snapshot. This manifest does not include itself.",
+  "fileCount": 257,
+  "totalByteLength": 11585572,
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "e0f993057a777b40e056e80fa69596711a39a8f67a7ef2d8bba5c9757751046a",
+      "byteLength": 98,
+      "binary": false
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "a10d3ca1c4bf351285bcad10491ed58af1976f3d0fee55ff74b82ec73596a071",
+      "byteLength": 1405,
+      "binary": false
+    },
+    {
+      "path": "IMPLEMENTATION_REPORT.md",
+      "sha256": "17537cecf61ceab10b161d978b480cc97c7573859793cd4b4b8a3c1dfde4f6c8",
+      "byteLength": 2613,
+      "binary": false
+    },
+    {
+      "path": "README.md",
+      "sha256": "92214345781fb4fa8c0f113f285ae6f4f981dd81ec64f629d6abd104d81fcdc9",
+      "byteLength": 3135,
+      "binary": false
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "sha256": "541dc92f0da4be0bedc4e4f1d7bd34ac03e6091394ab7ee6706d2f16fa1bf04d",
+      "byteLength": 1967,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/assets.spec.ts",
+      "sha256": "ce96d9a6207980af5547649214324337ae776d7c2d21c604a574d12773a228c1",
+      "byteLength": 1112,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/capture.spec.ts",
+      "sha256": "87273fdba9dc282559027fb755de11cc65d9ff4b0f0c341871beee25812ce3e7",
+      "byteLength": 8819,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/create-history.spec.ts",
+      "sha256": "600a3a16400a2d511d987d1f6c5dbcec721aee3c6b3070b735181ee0e2419749",
+      "byteLength": 5076,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/design-panel.spec.ts",
+      "sha256": "ebbc213d011d8feca158501fc604076dcc3af5439d32bd7658b89e9d823cef14",
+      "byteLength": 12357,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/fixtures.ts",
+      "sha256": "df0c00cedffb36872e5bfee15ad3d869fb72bb4e6e91bda0892dd4100f167f57",
+      "byteLength": 3458,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/guardrails.spec.ts",
+      "sha256": "983f0f2f7e8bc9253af04b55c55597db93ab17f3db2194cc5e9472ed3cf49a65",
+      "byteLength": 8722,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/media-layout.spec.ts",
+      "sha256": "043e222705f9d9ca18bf4d855f71d42580848629a9062d7205d4335375e9d3a6",
+      "byteLength": 775,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/recognize.spec.ts",
+      "sha256": "50544087cec5d1f807770dd7e4898d0da16284411829fb1c932cc047c086158d",
+      "byteLength": 1030,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/resilience.spec.ts",
+      "sha256": "971b595844004fa258b44acee1bcbf26b29325fbf8695fd8e1c3687d34422a05",
+      "byteLength": 5125,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/review-library.spec.ts",
+      "sha256": "29fdea7535a839373834eebfdc499d23bbd4acc2aacf27df1079425e6d1e63b9",
+      "byteLength": 5624,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/shell.spec.ts",
+      "sha256": "7ef2ca356f79a1698272874c01e26fbea1b2ce36bb465c0ad8023e973f7de023",
+      "byteLength": 856,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/split-regression.spec.ts",
+      "sha256": "361425af8b6babcf1cc45f900b98c5e745419ec08116993455e9f6c7b0904bc7",
+      "byteLength": 2613,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/split.spec.ts",
+      "sha256": "5f26c68cec98dbaf573fb90209490f0ad04188c1dc4d7224ad46481ddee6f27d",
+      "byteLength": 1633,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/ui3.spec.ts",
+      "sha256": "79cdc84f2b9f0cde3b4e67778f1cb5b8d58970afd9a466b4d6749e1a2521a193",
+      "byteLength": 13128,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/ui5.spec.ts",
+      "sha256": "e0f2b6bd4dd2e3ae3f7f4e43199247d38caa48192998e2c37755a1ec3145a8cb",
+      "byteLength": 1927,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/ui6.spec.ts",
+      "sha256": "356a5f5d82f8a71fd2affdbd9333525b2585110a641841a6fa0f27b0a1ccfdcd",
+      "byteLength": 5828,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/ui7-editor.spec.ts",
+      "sha256": "179450454f700ca6535a97113f6cdaa1fdae8d67c1f2c175bcaea655f5634e7e",
+      "byteLength": 10048,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/ui7.spec.ts",
+      "sha256": "6ae55feaa064ab562c6d545c3125caba90bd9b596f731447a3f96492fbe77e21",
+      "byteLength": 6191,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/ui8.spec.ts",
+      "sha256": "a91c205ba10e24ff31ee652d0a96dd6d3f91bceda203be3c991b254326ee03d1",
+      "byteLength": 6653,
+      "binary": false
+    },
+    {
+      "path": "apps/web/e2e/upload-ui.spec.ts",
+      "sha256": "d1d51336ee2313ef175a4eb5b8b05ecd1409256ca5d46f63692fd8360c28a044",
+      "byteLength": 9647,
+      "binary": false
+    },
+    {
+      "path": "apps/web/index.html",
+      "sha256": "320eae791ae1c4376ce3368cb7d41130907aa132730dde01c308728d7c479426",
+      "byteLength": 324,
+      "binary": false
+    },
+    {
+      "path": "apps/web/package.json",
+      "sha256": "7573f48b88f257681d960af641bbc075ae4a349c28814cc3e085d8c5f7dd3f76",
+      "byteLength": 73,
+      "binary": false
+    },
+    {
+      "path": "apps/web/playwright.config.ts",
+      "sha256": "d05ba7214a5e0bfd747f0fc080c3bd6208c100d77aec11ed86d8366b3377234c",
+      "byteLength": 921,
+      "binary": false
+    },
+    {
+      "path": "apps/web/public/demo/MEDIA_MANIFEST.json",
+      "sha256": "8fb665df63e7a6dbec05618a484c228a0932c83e911fde2f29347f2766f1a64b",
+      "byteLength": 62151,
+      "binary": false
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-average-1.mp4",
+      "sha256": "d71519c7464b863e1d36b43956d63146c587d5f0c64e71fea83d4841d7d73049",
+      "byteLength": 60871,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-average-2.mp4",
+      "sha256": "737fa1692692330ae5d39dc9aa760c6a31cfffd3868c046edfa1faec406059fc",
+      "byteLength": 72606,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-average-3.mp4",
+      "sha256": "833957b98984ec90e04648a4a6fb90c6181bb2d1599dba0b11c4b4c90e5348f6",
+      "byteLength": 62165,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-scene-1.mp4",
+      "sha256": "e39977014f1b55cf69cf49b61969b110e53522e3666b9844f71c9f82945a07b7",
+      "byteLength": 22245,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-scene-2.mp4",
+      "sha256": "315e74f7c8bc627e1c75f97cfb42e319f7fd678bed2ad5446c2b7a49e5eafafe",
+      "byteLength": 36368,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-scene-3.mp4",
+      "sha256": "3a24c29752a81a497f1ee66aaf803973145a14a411c904cc70a197eea9a48a58",
+      "byteLength": 36226,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-scene-4.mp4",
+      "sha256": "abf09ee91c6d51e15084a9534832d381cfbccab9891d43ffb2273b1db09f07d7",
+      "byteLength": 50364,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-sequential-1.mp4",
+      "sha256": "d71519c7464b863e1d36b43956d63146c587d5f0c64e71fea83d4841d7d73049",
+      "byteLength": 60871,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-sequential-2.mp4",
+      "sha256": "3612c442afd700feb102d1df34b0ae333e2f0c352db6cdbc8307e9272ea80792",
+      "byteLength": 62614,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/clips/scene-sequential-3.mp4",
+      "sha256": "8a8f078bae574ae7f888057f9815edbb4a91b76c84cc2e71fea9a7ea7c5cd56a",
+      "byteLength": 23302,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/images/image-16x9-1024.png",
+      "sha256": "d01dbd1055c516ec511d8f682afcc755e2ce2ea884694c84159a4e7782700667",
+      "byteLength": 3261,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/images/image-1x1-1024.png",
+      "sha256": "6bdfdc92f7882924c47fbe650d4b43b70dde26099324e1fc6833e7c5eac35fc1",
+      "byteLength": 5617,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/images/image-9x16-1024.png",
+      "sha256": "9a8f96a04ea03c43784401d5489c60310bffb9a7433150c294874c4b82a22504",
+      "byteLength": 4170,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/scene/scene-source.mp4",
+      "sha256": "1d57cd5cbc357bfd861503cc44d84de579f291eb331efb930e609cf1b08efaac",
+      "byteLength": 127677,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-16x9-1080p-audio.mp4",
+      "sha256": "c2ec53e92025ca5513f6dcef98d6592e2237ddd02dee1ae76c01d250ae34d0c0",
+      "byteLength": 124244,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-16x9-1080p-silent.mp4",
+      "sha256": "15872856820abfe7101da9ba88a5ac52171a14caa2de72ee42f5b38cbdb46249",
+      "byteLength": 79216,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-16x9-720p-audio.mp4",
+      "sha256": "3fc302fe33be1e874cd83ef94b9cfceef3c2dce227749f988d7a3dc4e0306a6a",
+      "byteLength": 83627,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-16x9-720p-silent.mp4",
+      "sha256": "8521c809009e2966ca42c86194015976e63c33c67686ede8e914c17a021995b6",
+      "byteLength": 38599,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-1x1-1080p-audio.mp4",
+      "sha256": "4925d3e0f3efef086e5d72534f922c6441c0b11080d0fd007183882fd1a14299",
+      "byteLength": 99827,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-1x1-1080p-silent.mp4",
+      "sha256": "669219485135e0fad7a68f57cb03d862118e924a4dc95b42ea2805209c98397e",
+      "byteLength": 54799,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-1x1-720p-audio.mp4",
+      "sha256": "287bd0cd8b2a05ca7c71eb21874c5fd84f7ad85a04df77ad3ca5aa2694a71cf8",
+      "byteLength": 73046,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-1x1-720p-silent.mp4",
+      "sha256": "28516ca44799dc08355e2ac6b206dcd9af4f41b787c9144107a480e686dcd85a",
+      "byteLength": 28018,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-9x16-1080p-audio.mp4",
+      "sha256": "3258e722d6b257530b26fbcb112fbfcd9ca0588d1e78fd10de87c080feec4b12",
+      "byteLength": 126873,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-9x16-1080p-silent.mp4",
+      "sha256": "53de6ea6e87953cffd46dd4289a07a6c734ac3b302c645d37f784cfe1ff02d15",
+      "byteLength": 81845,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-9x16-720p-audio.mp4",
+      "sha256": "175840d97dca0d245a8dd2fbcf4c670582a6d7812edf8709f6fa28b9a5fd8aa1",
+      "byteLength": 87186,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-10-9x16-720p-silent.mp4",
+      "sha256": "8562ccdc2ec194965b1d0047f3ef02bcf94637878dea1f1e85f4bffa80f51fde",
+      "byteLength": 42158,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-16x9-1080p-audio.mp4",
+      "sha256": "9d2ec4c3d36461294ae1a4c35bebe7a53f69faba69877ed828967ea32d63c136",
+      "byteLength": 136146,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-16x9-1080p-silent.mp4",
+      "sha256": "2ebb94b8d342873f53c7687af097b2e55e6360bf4c05e41fddef0d4770cf07d3",
+      "byteLength": 86597,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-16x9-720p-audio.mp4",
+      "sha256": "25a11573939d7690078b02803109e2e7bf1df32842fcff2e6f94a48c831b5b6b",
+      "byteLength": 91640,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-16x9-720p-silent.mp4",
+      "sha256": "7b931795e8c68768fdd46d392065e058fba8a51675b08116b6fd525b250bdc61",
+      "byteLength": 42091,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-1x1-1080p-audio.mp4",
+      "sha256": "026f350258da839fa6787de1d75a62f76534565bd364134529b3ad02f7ca34bb",
+      "byteLength": 109515,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-1x1-1080p-silent.mp4",
+      "sha256": "cb48dc54ca2f32d8c21d3ef65038461cab0ca619f6fb5ce18f20bc3274ea8d7b",
+      "byteLength": 59966,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-1x1-720p-audio.mp4",
+      "sha256": "459de30327b9aec6d17137762d2fe716788456cdfb92bf11f09f6a0a3702f857",
+      "byteLength": 80106,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-1x1-720p-silent.mp4",
+      "sha256": "a88629c201ad9858fa6668a996b3cd2046c1770e1efe42323ec3452945f787eb",
+      "byteLength": 30557,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-9x16-1080p-audio.mp4",
+      "sha256": "b1afefe5b647640352d05321c504b99f181f4e1574124efc608c61984afc442a",
+      "byteLength": 139002,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-9x16-1080p-silent.mp4",
+      "sha256": "c4ecae8771096276ae1e9a2cb91f55ac422638b2e5db51f8eacb6307a4806905",
+      "byteLength": 89453,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-9x16-720p-audio.mp4",
+      "sha256": "b6590eb6c6c94cb234e825565481b2643a8204e647d3b4c37608e7cc8748f90c",
+      "byteLength": 95605,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-11-9x16-720p-silent.mp4",
+      "sha256": "70b8050b6722405cde0cf71f3e5084e3757f6faa7613639943d8f1f9a2004a4c",
+      "byteLength": 46056,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-16x9-1080p-audio.mp4",
+      "sha256": "8727aea719a65b5dc8a0ec414d5d9d9ca7f851c65977e66730fb41f664f9bb5a",
+      "byteLength": 148038,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-16x9-1080p-silent.mp4",
+      "sha256": "3be19340ee6250ca7da576eaa70514051ec1be6decdf1b7f46dc87dcdfb5b7f5",
+      "byteLength": 93978,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-16x9-720p-audio.mp4",
+      "sha256": "7e1a618418c60af6ef4f61d63b07863242b893e53954bcc54c66e9454415b8d6",
+      "byteLength": 99643,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-16x9-720p-silent.mp4",
+      "sha256": "6c40bcc99167013bf0d2df5dee09614f28cfdbd0cec2115438f798b897f9f23e",
+      "byteLength": 45583,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-1x1-1080p-audio.mp4",
+      "sha256": "0e90af1af6294fdc310cfdcdcaece88336c6570e0a459b70d96e67e0e4a91010",
+      "byteLength": 119193,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-1x1-1080p-silent.mp4",
+      "sha256": "781099a99da4c41e55fe7f16bc8f3200d120ad0772f95d1d33f996127ffbf937",
+      "byteLength": 65133,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-1x1-720p-audio.mp4",
+      "sha256": "387ab42290cf590df192e50d3e61cdafd580abebbd5c8b1d042b0fdf61133684",
+      "byteLength": 87157,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-1x1-720p-silent.mp4",
+      "sha256": "dc0b88231ec0656e1068501b2e377f56ef2ed65f488981cb005c6a251fd619d7",
+      "byteLength": 33097,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-9x16-1080p-audio.mp4",
+      "sha256": "4f8c4fc2f77d6251948e4dbb21210e55fedb305d813cb718d01893e70336f4a5",
+      "byteLength": 151122,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-9x16-1080p-silent.mp4",
+      "sha256": "772a7b9eb164b98f5525094d6c7e6f7b7c186cb1e02ea0577ee151cfa3595dc8",
+      "byteLength": 97062,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-9x16-720p-audio.mp4",
+      "sha256": "181455b1c63838807ce46c5386c77627e131a0f035e8a11485c29d93257cde4a",
+      "byteLength": 104014,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-12-9x16-720p-silent.mp4",
+      "sha256": "5d84a5eebe7b0d475172a0db278ad61b3d1a8188a8a899c2fd767ac3f6beb57d",
+      "byteLength": 49954,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-16x9-1080p-audio.mp4",
+      "sha256": "25a744b188284e1e5c0f51a2b151763a2cf87e3a8ad41fbeaec70195afb6249e",
+      "byteLength": 159843,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-16x9-1080p-silent.mp4",
+      "sha256": "063d9c0f977b05304ad35f91d1a66cdddcb29a056e92a8d4a230ecd5e3de8951",
+      "byteLength": 101359,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-16x9-720p-audio.mp4",
+      "sha256": "43cd7b6d79c2e1c9a02c6692f50f07603b14bfb690d092e475c9a82cea9550f8",
+      "byteLength": 107559,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-16x9-720p-silent.mp4",
+      "sha256": "e0084fd26abca360c13ba88c7d159c9334db6a0e8962168b65b83489ecd44b19",
+      "byteLength": 49075,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-1x1-1080p-audio.mp4",
+      "sha256": "4c3b26f3ecff021b9f43ee6cc38d5c773ebcf3ec62d0af360dc1e99ba4031fca",
+      "byteLength": 128784,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-1x1-1080p-silent.mp4",
+      "sha256": "c1f1d18561539059299ce75167962b932a235c57acb8bcd9b3a2733881b73af8",
+      "byteLength": 70300,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-1x1-720p-audio.mp4",
+      "sha256": "4a922016db031f675d6ad731d7170e76a3126c4036eab85eb93dcf8e43704e85",
+      "byteLength": 94120,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-1x1-720p-silent.mp4",
+      "sha256": "8289a78f6c740dc91f4782094e08c8d7180e11b2457dac09d88ca1a06fd607d4",
+      "byteLength": 35636,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-9x16-1080p-audio.mp4",
+      "sha256": "a34ecd2a9a7a1025fd8de450a6d96e65ee820391688ebcbc8a37132bc43cc1d6",
+      "byteLength": 163154,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-9x16-1080p-silent.mp4",
+      "sha256": "fd6544237f9e02beac4ec06dc03588071eb425f4e43339196585b99b8906bab1",
+      "byteLength": 104670,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-9x16-720p-audio.mp4",
+      "sha256": "9cf0cfcacd46e66663561a60478808966e63e22446926c0fd22970aeea78868e",
+      "byteLength": 112336,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-13-9x16-720p-silent.mp4",
+      "sha256": "ed292e85ae33b27e03b75bab08350cf457d29d8a4e43ac530a541e0f8a6ef494",
+      "byteLength": 53852,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-16x9-1080p-audio.mp4",
+      "sha256": "58fc2897f7afdedccf17f9091a4fae38bd3950e5b9667ec0a363a75bfc6d3572",
+      "byteLength": 171654,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-16x9-1080p-silent.mp4",
+      "sha256": "1452cef17cd3e659fd901d723e87ee07b4e9f6f161605f57e584ee0d7468363a",
+      "byteLength": 108740,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-16x9-720p-audio.mp4",
+      "sha256": "28c9f4d70891bf48fdeb5c4c1caf98ad34e8689c0e6e5fadd7b9bc97afd10220",
+      "byteLength": 115481,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-16x9-720p-silent.mp4",
+      "sha256": "0a99b59c4babfe6362f44f6432c63eecfcb249634bcbb089b05595db82cb3e0b",
+      "byteLength": 52567,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-1x1-1080p-audio.mp4",
+      "sha256": "a5609a7d913ea5d03056de00bc666ac20f6c9ca3bdf9175fcbbb534bf8ec5942",
+      "byteLength": 138381,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-1x1-1080p-silent.mp4",
+      "sha256": "2d23f485e8bdcac160f5229a206ee59a7a706ee172391d54497359ab188280d3",
+      "byteLength": 75467,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-1x1-720p-audio.mp4",
+      "sha256": "1c9eaa10606767b814e271322fd6618d911731d47fc67d60114c33266222a708",
+      "byteLength": 101090,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-1x1-720p-silent.mp4",
+      "sha256": "b4d09ff2ddd73fc69408ceed0bd627f20fdf7a36b6db3735f2ddbab8258a74f5",
+      "byteLength": 38176,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-9x16-1080p-audio.mp4",
+      "sha256": "6e84021de0c6b3ee8be2b87ea539981e252b47104ea53e8ec1db2c008e9a5bf8",
+      "byteLength": 175193,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-9x16-1080p-silent.mp4",
+      "sha256": "a924b7b8f7b77363bed6e7a12ffa4b0efa257e4e8dcfe03cabdf0d3c9fd505cb",
+      "byteLength": 112279,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-9x16-720p-audio.mp4",
+      "sha256": "9273b8b72cc63bc374a0070cc675decb0b87e8d297a6d4d61394737260f11c69",
+      "byteLength": 120664,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-14-9x16-720p-silent.mp4",
+      "sha256": "498bb1c00dc6723b1aac3a0effd326e00f6b4d3d0255a23f2f192a2f324399a8",
+      "byteLength": 57750,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-16x9-1080p-audio.mp4",
+      "sha256": "14a8a8f5ec6e156b5f353337654fef793df176e50bccbbb5792c8dcda97af8e5",
+      "byteLength": 183476,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-16x9-1080p-silent.mp4",
+      "sha256": "a3f0978611f8d90cd515bb1a2f96ebf166ba589b022bfd2ceb2c695b668a5af1",
+      "byteLength": 116121,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-16x9-720p-audio.mp4",
+      "sha256": "acb6c163b3e036c81531fc867060fabc8e50f72f284a0ccea34dead276f90c5a",
+      "byteLength": 123414,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-16x9-720p-silent.mp4",
+      "sha256": "056e94e9d3c8e981f76abf336cdb99efaed2d648634eb73ded795c3754f1086b",
+      "byteLength": 56059,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-1x1-1080p-audio.mp4",
+      "sha256": "f7cb15dae6871e0af7ec9d89e13954e72b1d5229fc023353861e8c0c24399a69",
+      "byteLength": 147989,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-1x1-1080p-silent.mp4",
+      "sha256": "2434dc3850d1581faddcc5391c7a8da5f6f1adfe58cf9f046c874977ff8678bc",
+      "byteLength": 80634,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-1x1-720p-audio.mp4",
+      "sha256": "f45fa39d602e43d46f1aa9e91d3ae7554ac28ba23c9155d5f0a6a342930dc2ac",
+      "byteLength": 108070,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-1x1-720p-silent.mp4",
+      "sha256": "5d211eb30347264bc2e0d5e8b690a130136f29df4fff1a8d1c812e4b7e712ac9",
+      "byteLength": 40715,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-9x16-1080p-audio.mp4",
+      "sha256": "0eb236d237b17ca6be2e4a4af60ea4b4ebf19fdb3459466eb6853e9e0926c17a",
+      "byteLength": 187242,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-9x16-1080p-silent.mp4",
+      "sha256": "30135ccb3fa836baa8a7927c6b101bd6b206f497a935d5c47b158e141a43d6f0",
+      "byteLength": 119887,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-9x16-720p-audio.mp4",
+      "sha256": "670d853d8fc1887bc62269b5580a52f853330433f0cebdde76bc6bba0c2d848c",
+      "byteLength": 129003,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-15-9x16-720p-silent.mp4",
+      "sha256": "72d645138fbcc2638a378b300ce9f73c9ed410b304c11947b87fd5e0feee0ad9",
+      "byteLength": 61648,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-16x9-1080p-audio.mp4",
+      "sha256": "d18b017d6c36ed098db8bf0fd5ecb27f7c067d090aade90e16ba78d7a1e4786c",
+      "byteLength": 65214,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-16x9-1080p-silent.mp4",
+      "sha256": "1a9a50909cad33f23886f2343db85615fa6daa6fcb38cb90c6029e4e88aad319",
+      "byteLength": 42311,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-16x9-720p-audio.mp4",
+      "sha256": "7cc8c392dec91a0b3af15dca700eb256c95a3cea3fb1bd021c857a2b5138afd4",
+      "byteLength": 44042,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-16x9-720p-silent.mp4",
+      "sha256": "3c4adf003fe2f3aba8a5eabce071bd3afc58932b9ebd1176ba375729fd579945",
+      "byteLength": 21139,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-1x1-1080p-audio.mp4",
+      "sha256": "d45dc704fc063db252d6dd37136afbc042ff668ccb6006ec44ecd59bb526b375",
+      "byteLength": 51867,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-1x1-1080p-silent.mp4",
+      "sha256": "74ec6926fb0f5f86b6626b6d7601f06628f29e45be6187a5ddbb6e2d25ee90be",
+      "byteLength": 28964,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-1x1-720p-audio.mp4",
+      "sha256": "c0d633d8c27fc21c0ac73b9273e2e69193c5efe6bf4bae2769de924ac0f45b17",
+      "byteLength": 38223,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-1x1-720p-silent.mp4",
+      "sha256": "6fcd7c0e29e985570f251ba0451660cb07212ce07c0a2d87b5fcd05bbfd54191",
+      "byteLength": 15320,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-9x16-1080p-audio.mp4",
+      "sha256": "76803ebda20b4c0d28e72b5ddbae43ae24d66bd6563f1aa4c73badd1bcfbf724",
+      "byteLength": 66705,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-9x16-1080p-silent.mp4",
+      "sha256": "fb75ce7dd4e2c41f92848cbe591fea6588f27b5dc98edf6d17c3cc534145b072",
+      "byteLength": 43802,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-9x16-720p-audio.mp4",
+      "sha256": "dc5f98150b00b945093f422ed05755fc86d01aab1d02fcea293af7863e877c33",
+      "byteLength": 45571,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-5-9x16-720p-silent.mp4",
+      "sha256": "f532c824dcb8a1c106e4676df23eb7751a3495d79dd67589d590ee456775a6c6",
+      "byteLength": 22668,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-16x9-1080p-audio.mp4",
+      "sha256": "33d4d94d24b7647a2444caecef0f9ecbd1685eba5f85f7ebe3829103076c75f5",
+      "byteLength": 76957,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-16x9-1080p-silent.mp4",
+      "sha256": "4969448211fcb358fc823529a19bda95932244ab76ec4e26f196e2885ca3eacb",
+      "byteLength": 49692,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-16x9-720p-audio.mp4",
+      "sha256": "7ce36c3771d4e4f6b2c50abdddd282fcd3d1dd460e3ac30ead19b846cd71ca58",
+      "byteLength": 51896,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-16x9-720p-silent.mp4",
+      "sha256": "0ee2be2a81523fb7d14ec078703b1393e6f2329fc3f1dcdbe78397c5ed6bbefe",
+      "byteLength": 24631,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-1x1-1080p-audio.mp4",
+      "sha256": "285d926915c120de1b0bb152f92f7b23956fccc6f4e7c69087c775a00f2d5f0f",
+      "byteLength": 61396,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-1x1-1080p-silent.mp4",
+      "sha256": "df91a2396dd75b3f57327bf9253f199e5c84488a72305603cd0a3f9c198d1cce",
+      "byteLength": 34131,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-1x1-720p-audio.mp4",
+      "sha256": "a3447d487ea85103097be850f62ee6b47c3fdac99c9025ea6b73aee7abc2526a",
+      "byteLength": 45125,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-1x1-720p-silent.mp4",
+      "sha256": "f8cd484dac966467cf426a01090ed073e6c5e5df64d72c4e6247dd7fa20eaa29",
+      "byteLength": 17860,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-9x16-1080p-audio.mp4",
+      "sha256": "fdaf01014a106690998e6241e5777edd8a201b9123e874912f46b52340570ca5",
+      "byteLength": 78676,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-9x16-1080p-silent.mp4",
+      "sha256": "bb913f2524f528deb98851cbf77da68a4d3b04ac0c60198f33d556860bd8ee52",
+      "byteLength": 51411,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-9x16-720p-audio.mp4",
+      "sha256": "8d5055668e2743b90b86e3ea6d3220388077c5c33d1e62487356e6924a49fdfd",
+      "byteLength": 53831,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-6-9x16-720p-silent.mp4",
+      "sha256": "f8cad9826342604ff68e2bce2fb5db4d8bca351443ff8dd2fcf287425bfdbdf7",
+      "byteLength": 26566,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-16x9-1080p-audio.mp4",
+      "sha256": "6b15dec1369a25d4d04a3c7a00f424b6452c73d7277b574ff00fe4830156d1cc",
+      "byteLength": 88804,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-16x9-1080p-silent.mp4",
+      "sha256": "1f81da4738814e8928d9fd93e45f23d3f526ed80983c1fe318dc05f9b53bc2cf",
+      "byteLength": 57073,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-16x9-720p-audio.mp4",
+      "sha256": "4c929b9e0ece92cb30932b366c84c932ae14a3b87f78b8cfeb1a4ff26620faa7",
+      "byteLength": 59854,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-16x9-720p-silent.mp4",
+      "sha256": "bf35f30c10309d26d0e5bfc1a3a51841a7aacf28d762f1b5377d608b0cc14ffd",
+      "byteLength": 28123,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-1x1-1080p-audio.mp4",
+      "sha256": "98a91665fb11a4e4b6ecda3e2a6f6be404390006c80cd8140cd5dad0e969803f",
+      "byteLength": 71029,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-1x1-1080p-silent.mp4",
+      "sha256": "f3bddb9b4259d0270257993c3d49edf5c5fa396d6e33585653deabeded81f8ce",
+      "byteLength": 39298,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-1x1-720p-audio.mp4",
+      "sha256": "0052bc2227b5846d2356fb7718c05f93ddd77ee5981fdeeacf58ad4312a13154",
+      "byteLength": 52130,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-1x1-720p-silent.mp4",
+      "sha256": "fa974082244933168910cc42c883fc598c2974b6a12ad45a73171f82e440e2fa",
+      "byteLength": 20399,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-9x16-1080p-audio.mp4",
+      "sha256": "46fa46145a40657e86cda751c051106f6e571c315bb9da67edc024ca1acbf016",
+      "byteLength": 90750,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-9x16-1080p-silent.mp4",
+      "sha256": "ab78e42e5a8d33966a8384dac54e9e4eef1ecfb267011679d61b4750adad00cb",
+      "byteLength": 59019,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-9x16-720p-audio.mp4",
+      "sha256": "7d05d337cdfc1df782d5124d1aa4bd13cedf6c28baae1c0e07f986638956afb6",
+      "byteLength": 62195,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-7-9x16-720p-silent.mp4",
+      "sha256": "5c2d0fcf157e0127a2a69be3d5de3640c41ad0383d1ce51e9a56a2ba990c3853",
+      "byteLength": 30464,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-16x9-1080p-audio.mp4",
+      "sha256": "2366f9e77cfa165b90c1190a0e103576768ec9a6086d10abaed0169d6c82835d",
+      "byteLength": 100563,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-16x9-1080p-silent.mp4",
+      "sha256": "aae910f2083f995be74f21bcffee4d84f45b1d2e96c07c59975955ee7117fac1",
+      "byteLength": 64454,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-16x9-720p-audio.mp4",
+      "sha256": "591201ff8e5cb3e169d1f78cedfc182726e04544ca7b33cd840a6ced2454bedb",
+      "byteLength": 67724,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-16x9-720p-silent.mp4",
+      "sha256": "b21a2750fbbb3acb5e674152943bed2f7bf90b6d4fae89abdd644059576ae0cf",
+      "byteLength": 31615,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-1x1-1080p-audio.mp4",
+      "sha256": "65393a1241cb837b7e2c4e1969349f338db58ef04c5c55f516977ca8bb1b19ed",
+      "byteLength": 80574,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-1x1-1080p-silent.mp4",
+      "sha256": "341dd8cac272df3e45127329709d6994b761afbfd53bce5b04aa625aa4b18579",
+      "byteLength": 44465,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-1x1-720p-audio.mp4",
+      "sha256": "f762f80d8f5a39eccc431cfa5c4f3d793384cf244a8ecd976cd924f848462ef9",
+      "byteLength": 59048,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-1x1-720p-silent.mp4",
+      "sha256": "210655e37473a2c2fe76a39dacf8b5466d9959e1bc968b21fd9c08caa43d726c",
+      "byteLength": 22939,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-9x16-1080p-audio.mp4",
+      "sha256": "abc462939ead8b8efab97edc475ae40f8fb13bd07d2fd15d7c0b67e17fe067ff",
+      "byteLength": 102737,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-9x16-1080p-silent.mp4",
+      "sha256": "70776eb1d0ae135412effd6b7808c1992197e20f8d661550b0fd42a5919b0f5b",
+      "byteLength": 66628,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-9x16-720p-audio.mp4",
+      "sha256": "9fcf6cffff662c11383392d0ddb62ced606914a69e9ca3aedf3d66cb6079c79c",
+      "byteLength": 70471,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-8-9x16-720p-silent.mp4",
+      "sha256": "f4c0d501657f51720d174db89897a96b112f08728af07d340438c351db6f18a2",
+      "byteLength": 34362,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-16x9-1080p-audio.mp4",
+      "sha256": "ee4a3071906731a0f0a2adecdf2457501a81260e83dce7460456b579acbf0488",
+      "byteLength": 112453,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-16x9-1080p-silent.mp4",
+      "sha256": "71fbf928e8a33d6370257e6cc4090d8aed6637ac5d3659ab29b3c8b52ba08da2",
+      "byteLength": 71835,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-16x9-720p-audio.mp4",
+      "sha256": "acae7e77f56cc1fdfcd3b69aa47a6f24e9c6c77ed16d7b9b6fb8cf045e2a7ac6",
+      "byteLength": 75725,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-16x9-720p-silent.mp4",
+      "sha256": "6a9fe358a600a5bacc6545ddc33202e1b824515ab58622e1f601c6898298b80b",
+      "byteLength": 35107,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-1x1-1080p-audio.mp4",
+      "sha256": "435b2f62d334f5b2914139f9341e18b5536b5e83cb9339166bfbe09379cfc7ef",
+      "byteLength": 90250,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-1x1-1080p-silent.mp4",
+      "sha256": "1ae8a4ba65d83de07051ed75961b5b4081511f5f349d6c57ba0db241e2f0ec41",
+      "byteLength": 49632,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-1x1-720p-audio.mp4",
+      "sha256": "30ccf8f1b0a070e7314023f8796476a449df7f7ec8921a8ccd92e0fb355d5ade",
+      "byteLength": 66096,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-1x1-720p-silent.mp4",
+      "sha256": "841a973f22061f8d099d081f473eb8702edef465ed86109f45a2515ad6729281",
+      "byteLength": 25478,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-9x16-1080p-audio.mp4",
+      "sha256": "d12c1a432ae2266d6522de01fe69a3743b9fd1f900aa9e963a8998ee8430a02b",
+      "byteLength": 114854,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-9x16-1080p-silent.mp4",
+      "sha256": "f46b30aeb81221af21070c0a065d152b86b60af6e51cff2d2ac3b9f6e2964601",
+      "byteLength": 74236,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-9x16-720p-audio.mp4",
+      "sha256": "26d528bfd2409214f40af053d91dc87aa442528a38642ef083b3d6b9017a2436",
+      "byteLength": 78878,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/demo/videos/video-9-9x16-720p-silent.mp4",
+      "sha256": "02ab0f686670931ecad03bcfce5d68933cad316a50726d03808ed35837960e52",
+      "byteLength": 38260,
+      "binary": true
+    },
+    {
+      "path": "apps/web/public/design-panel.html",
+      "sha256": "475ee604869544679de8df909d2698b4dbbee41850f40cacbc498670dd758742",
+      "byteLength": 96262,
+      "binary": false
+    },
+    {
+      "path": "apps/web/scripts/generate-demo-media.mjs",
+      "sha256": "1fa01f98cfaab51440816facccdc3baa87b962ff4cbe0ee74d7c2ed82f722a8a",
+      "byteLength": 10298,
+      "binary": false
+    },
+    {
+      "path": "apps/web/scripts/verify-demo-media.mjs",
+      "sha256": "0e1d9f0a306a240729cb2fb6419e153c07e7c402f2828f74d43f3fda99eeda67",
+      "byteLength": 9009,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/App.vue",
+      "sha256": "21348b77aaed4e0ae59150df6fb9095a12164733169d1fdd2eae2fea057682db",
+      "byteLength": 7276,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/AnchoredPanel.vue",
+      "sha256": "d3d2c10d68016d27f663c2ec57177d5504a97666f45cb7f6456fe252abf3abed",
+      "byteLength": 3538,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/DownloadLink.vue",
+      "sha256": "1bc71fcb8493c769f5a01482d3a13ea3b854d4d827d297d59fb808197480f8fa",
+      "byteLength": 1313,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/Icon.vue",
+      "sha256": "74622265d4e516d838ce1a5152f91785c7c0421d4b2eee98d90c5690473994fd",
+      "byteLength": 1435,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/MediaPreview.vue",
+      "sha256": "7b4eea05246a6560fc5a9b35787f7b5f8d6f1fe951a06f52011510e9fb02681d",
+      "byteLength": 1820,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/Modal.vue",
+      "sha256": "2fb581b5f41f70d944d6d47e884a0185fdf93712321fd44552f0f1a38f6cfafb",
+      "byteLength": 1670,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/OptionSegments.vue",
+      "sha256": "fd8da9fa66501f6035dad369fc0ceb2a6374b0eee0e09937be9f2a1022c535bb",
+      "byteLength": 2432,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/SelectMenu.vue",
+      "sha256": "a71e3773c899bbafff2448314acf5ceb15a8981559db2c4235025a571ac8a7f2",
+      "byteLength": 8017,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/UploadDropzone.vue",
+      "sha256": "18542b6c9bd8ed36428cb88273af5ee2fe6e3babfc30d7550808469eea860e44",
+      "byteLength": 7448,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/components/popoverPosition.ts",
+      "sha256": "c7e90d2ed4fcce689a6e132e130fab036f63fdaf839bd6d31e4ff2ed86dda757",
+      "byteLength": 1794,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/assets/AssetsPage.vue",
+      "sha256": "074aeb1c6047f7cdd4e62c8d24b94d6e20c6992a7d54f25fa6173f248c63d7d0",
+      "byteLength": 13628,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/create/CreatePage.vue",
+      "sha256": "f53b8f38e8aaa357cd76c5e5e39b3a77e5f4d3770c29cadc97e206d8fc87f150",
+      "byteLength": 29560,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/decompose/ClipCarousel.vue",
+      "sha256": "9773d8770d41dad87444b452a23530a151e764155203ffaf6dba7766e58440b5",
+      "byteLength": 13497,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/decompose/DecomposePage.vue",
+      "sha256": "44392aba5c8b4816c85e5d98928c734c1c703b236451d0c7ad21133b213aaf81",
+      "byteLength": 13504,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/decompose/videoFrames.ts",
+      "sha256": "ac4eb97839dc8885820711e5133958cc3693af20fcf309fc8321db0e533ad5f3",
+      "byteLength": 6942,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/history/HistoryPage.vue",
+      "sha256": "87c1135f377278a897021475d1e3ecf0e8a4251a46794c1768e08b8cf0a3ca2b",
+      "byteLength": 25146,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/recognize/RecognizePage.vue",
+      "sha256": "0f81a686ebbdcc611ab154a6cde890c68fcd8ad6bf0f1ce1f61d642b4cfb019e",
+      "byteLength": 7508,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/features/review/ReviewDialog.vue",
+      "sha256": "8caab577fe4d9405dc3be062f827d4ef352555ce81937560a24f24d2a99a6517",
+      "byteLength": 8462,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/main.ts",
+      "sha256": "e5cf10a87664bb915cb61364c34d2b1b7420c5f5841c3f5ad7dd644f25cc4dc7",
+      "byteLength": 218,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/router/index.ts",
+      "sha256": "046910d4f0dd8c1b39a31f120673dd5d6cd5034ea6cb3cf95f7836679631b6ae",
+      "byteLength": 680,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/services/labels.ts",
+      "sha256": "285c72c217a98c50ec54ceff23c6a1784cd25ec5918c3207c35a0b06dcae76d6",
+      "byteLength": 2370,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/services/platform.ts",
+      "sha256": "6482ee704d8e45b659655e6d29230d0947be35148fd197c00191ccb3b6c05e1b",
+      "byteLength": 298,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/services/studio.ts",
+      "sha256": "6457fc446a6fe6f4b31210d4c81a8e6885ee15bc03d9e74b57b81a6e32ecbac2",
+      "byteLength": 4590,
+      "binary": false
+    },
+    {
+      "path": "apps/web/src/styles.css",
+      "sha256": "54264e700acf78c03dbadc741e48d47b317e162ee464e9e8b9eca263f8f945fa",
+      "byteLength": 17694,
+      "binary": false
+    },
+    {
+      "path": "apps/web/tsconfig.json",
+      "sha256": "0ea5fe28d7f77fffcb1b09aae77946e7eb42cdec7975e386eb0c49c778e516d7",
+      "byteLength": 219,
+      "binary": false
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "sha256": "e122f86d3b781fbdea00e09da6a35e2ea8747a255a737417067d208a64a1bc7f",
+      "byteLength": 365,
+      "binary": false
+    },
+    {
+      "path": "contracts/build-openapi.mjs",
+      "sha256": "edb856786d321c238af6f48585e3bf5bbf89e03e9d0ed8c4435f8d69a045b2df",
+      "byteLength": 5872,
+      "binary": false
+    },
+    {
+      "path": "contracts/generation-request.schema.json",
+      "sha256": "24e339d017e79ffca0315e0fa969af42e621d48465a3a8779aeeff412002b31f",
+      "byteLength": 4355,
+      "binary": false
+    },
+    {
+      "path": "contracts/model-registry.json",
+      "sha256": "6a82e84d9a4ee8cdcc42f91484b7a7db5c83be21e3369d054c8d8b58ad680ebc",
+      "byteLength": 2369,
+      "binary": false
+    },
+    {
+      "path": "contracts/openapi.json",
+      "sha256": "a4edb15b319be4463b2c0558c737205f45040ca45577abd6dbd467309074f003",
+      "byteLength": 78526,
+      "binary": false
+    },
+    {
+      "path": "docs/03_DOMAIN_CONTRACT.md",
+      "sha256": "27c5776b1b0771a9579c04068a096acdd332bfb86f54ca3a31ebb54038c51c27",
+      "byteLength": 7256,
+      "binary": false
+    },
+    {
+      "path": "docs/04_ROUTING_CONTRACT.md",
+      "sha256": "1fe36e2387a6800d8e9196c084b4bdcf77dbd07c96da259c599e6c4d43183362",
+      "byteLength": 1214,
+      "binary": false
+    },
+    {
+      "path": "docs/05_VIDEO_SPLIT_CONTRACT.md",
+      "sha256": "99eae385d6a63aca636651ba6782686640c9741143279aaf069b66816f5d4b7d",
+      "byteLength": 4549,
+      "binary": false
+    },
+    {
+      "path": "docs/06_EVALUATION_CONTRACT.md",
+      "sha256": "8b8a7f9e2f6c1415312c0dbbc162438aa962c0fa3bbeee69f1314ca5af505cc7",
+      "byteLength": 4881,
+      "binary": false
+    },
+    {
+      "path": "docs/07_QUOTA_AND_RELIABILITY.md",
+      "sha256": "6956945044235821ef182417149a1d78778770851e26b08ba510f1514263f988",
+      "byteLength": 4100,
+      "binary": false
+    },
+    {
+      "path": "docs/08_ACCEPTANCE.md",
+      "sha256": "569579f1234b0641c5ff5fcdf8a3da71f4c88b62658469011fda1745323d14a1",
+      "byteLength": 4078,
+      "binary": false
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "f4d772640670aa7ec090e130f33f0acb32e3c88d45da383c702f1034b1053cb3",
+      "byteLength": 731,
+      "binary": false
+    },
+    {
+      "path": "fixtures/acceptance-cases.json",
+      "sha256": "a1f610a1f69ea441cc3dee12926607ee433fdf39f21d689d9cfc6a66ad4dc31e",
+      "byteLength": 2935,
+      "binary": false
+    },
+    {
+      "path": "fixtures/request-cases.json",
+      "sha256": "724963e977310bd8a0dba612ac22dc88359c3aaa89f68537d3eafcc9401cf43a",
+      "byteLength": 8155,
+      "binary": false
+    },
+    {
+      "path": "fixtures/review-cases.json",
+      "sha256": "93aac707d792ac4cadc41ec8f61c9f4e54b2c4cc54818492d76ebca64f5efb7f",
+      "byteLength": 1989,
+      "binary": false
+    },
+    {
+      "path": "fixtures/split-vectors.json",
+      "sha256": "06364531c90e91c79c2adc257567f70cb9750a2407a4cbdb461f4c1548057368",
+      "byteLength": 4510,
+      "binary": false
+    },
+    {
+      "path": "package.json",
+      "sha256": "48deeada780831308c7cec6256aff2b1256dd42f54bd94163ba8ead6b8291c3e",
+      "byteLength": 1402,
+      "binary": false
+    },
+    {
+      "path": "packages/contracts/package.json",
+      "sha256": "de9fc6358eb846cacffba8bc4a161fcdae0f374f30e27207937c0076569d8c0a",
+      "byteLength": 127,
+      "binary": false
+    },
+    {
+      "path": "packages/contracts/src/demo.ts",
+      "sha256": "bac0498437ef87aa07280c2ab3470b1695fa31c920a1e5d105c28a2a0f7a62b9",
+      "byteLength": 2417,
+      "binary": false
+    },
+    {
+      "path": "packages/contracts/src/generation.contract.test.ts",
+      "sha256": "6d61925aeff5269db52f085c4cf74d8b1e33724cbddeace5caa22ad86b260da2",
+      "byteLength": 1728,
+      "binary": false
+    },
+    {
+      "path": "packages/contracts/src/generation.ts",
+      "sha256": "409cd8791ad92e778c1537360c6c9b6c9a559fc59ba963d406bc04c771794d67",
+      "byteLength": 11701,
+      "binary": false
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "sha256": "bac1347e9af18dfbede071282ea3aeea2bd9bf247fe4cd8f39025e2fc51b57e4",
+      "byteLength": 87,
+      "binary": false
+    },
+    {
+      "path": "packages/contracts/tests/openapi.test.ts",
+      "sha256": "0caf4bedf1a2aab082eafc49bad184c2862798f6a67c93d2812dca2040e8bcb9",
+      "byteLength": 1734,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/package.json",
+      "sha256": "dba3c71efec7f26b322aae4175c86a449f7948a5b95d3c9426c5da0c26be6f5c",
+      "byteLength": 210,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/index.ts",
+      "sha256": "35e6e03f8049629253bab2f551b09a3b1c0f9c8251a468ad2620a2f6572395bd",
+      "byteLength": 176,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/quota.ts",
+      "sha256": "764ba23226626b3381f63c43e3db2b9e314858504369dc125db6e7d067c13157",
+      "byteLength": 4112,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/review.ts",
+      "sha256": "e07fb52ec2634499d245150c36d2878486cb92611e1e977d5246c61a8ac105d2",
+      "byteLength": 4023,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/routing.ts",
+      "sha256": "51fdb1bad5e940e01c10ee504ec5629660260c936f3d8b6dacfe89fef7c971a3",
+      "byteLength": 5607,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/split.ts",
+      "sha256": "7d622e6800e68f529ff2b30737499d1eb00d2411079411b70a11371aaec9e389",
+      "byteLength": 5032,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/state.ts",
+      "sha256": "6bf0028fb342522a1eab71879289d1cc6042d40eb856a6c12aa766241ad4790d",
+      "byteLength": 2631,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/src/validation.ts",
+      "sha256": "3a25c4e9778e9a51681b8694ae1f7984c4598ce562dc754f76f4df1d53b66ebf",
+      "byteLength": 3027,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/tests/review.test.ts",
+      "sha256": "f75fb71c07110cf181a09afeeab7c4a445c784b9b63b21df0421c6c82c632fc6",
+      "byteLength": 4769,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/tests/split.test.ts",
+      "sha256": "5a49578dee957cd431d9136d41a211218b5daebc213a73b39a8ce93d8a324ea6",
+      "byteLength": 4133,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/tests/state-quota.test.ts",
+      "sha256": "960eb64e70b19ace60beec2a64da9aba6b348bf3c4e1c496914772510c80396f",
+      "byteLength": 5500,
+      "binary": false
+    },
+    {
+      "path": "packages/domain/tests/validation-routing.test.ts",
+      "sha256": "f032e9cf2d7132743bb1bb92fd98762ae11934564fc4840b58666569db13a792",
+      "byteLength": 5661,
+      "binary": false
+    },
+    {
+      "path": "packages/media-store/package.json",
+      "sha256": "67d0a4231ff8808c572dc1c1bd5aeb6eebf2c9aaacf6074f46c8bcfd414c2bef",
+      "byteLength": 108,
+      "binary": false
+    },
+    {
+      "path": "packages/media-store/src/index.test.ts",
+      "sha256": "659577f349117f5628aeb5ec9c2a029e9fb41ddc597b1718026986187bb053fe",
+      "byteLength": 3632,
+      "binary": false
+    },
+    {
+      "path": "packages/media-store/src/index.ts",
+      "sha256": "5b4a83beb2cbfe4eb51cddedb6ef5c41ca94cfe558fb67e53f2beb50e911e76d",
+      "byteLength": 4782,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/package.json",
+      "sha256": "977f4f9b66e11200c18da9e1a5ab06ff9efcfa9d1252eacb327f6d23d5cfd977",
+      "byteLength": 109,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/helpers.ts",
+      "sha256": "ecfe24de0ef767813aef0a6af817afa3f75521118313c019809b797384df547d",
+      "byteLength": 1510,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/index.ts",
+      "sha256": "4cd045cfc7aa15aa341c2213a24ba49ae25ee126a94533911925d3a266ece7b9",
+      "byteLength": 34013,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/media.test.ts",
+      "sha256": "ec1e8e6188ac844fa3c10341d07cfdc0dccbfd5679d694d79c6d4fb690398343",
+      "byteLength": 3612,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/media.ts",
+      "sha256": "606d44933380766e620a13906b62954e49c1b6eb324b52543f7b4c655f175eda",
+      "byteLength": 4541,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/platform.test.ts",
+      "sha256": "22e5039b60ae62994578433057c0fc109209431bef982b0dfc327ac0681bc2a2",
+      "byteLength": 3660,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/preflight.test.ts",
+      "sha256": "28db9d599f199c96411efe2e7efd2c23a79164e505abdf2617575f893bf45e84",
+      "byteLength": 2583,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/races.test.ts",
+      "sha256": "0afc28b2607b010e312981852cf7c1425e4af9a779a6f9d4b3843113286a85d5",
+      "byteLength": 5490,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/resilience.test.ts",
+      "sha256": "993c2d9a1a613175e04f1d3173357108100e3fd0d36e42db43a606ecb826ebbe",
+      "byteLength": 6364,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/scenarios.test.ts",
+      "sha256": "b64bea65d80cce0de5e4244dc925acfa67bcbe99f6de5d7f8b843c1e061aa72e",
+      "byteLength": 5604,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/split.test.ts",
+      "sha256": "05743f8dcd10bb152e43e5c5f09aa71cee736a13d2a29ee1fc8522639a5d18f7",
+      "byteLength": 3493,
+      "binary": false
+    },
+    {
+      "path": "packages/mock-service/src/startup.test.ts",
+      "sha256": "06c276bb82c117872fa250ea45028bf48a2fc898dfb4612231bbd1e3ebea446e",
+      "byteLength": 1910,
+      "binary": false
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "c3db9f381ddf2232936264f49c6f8b9ab84bc6798bbfc9456abb09dcd91804d0",
+      "byteLength": 76770,
+      "binary": false
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "sha256": "92833b17961e928af41238bc4e1041d5f0618f062c615c88df68e88b03d8fdc1",
+      "byteLength": 92,
+      "binary": false
+    },
+    {
+      "path": "tsconfig.base.json",
+      "sha256": "55ad61bc15cb3b1443b19dcb19eade6f167c4af292851a855edceee8fb3d84ff",
+      "byteLength": 591,
+      "binary": false
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "3905701b216b1b11291a3870134ad54f0396e243af2fae38cfa83f75e6b2bf88",
+      "byteLength": 398,
+      "binary": false
+    }
+  ]
+}

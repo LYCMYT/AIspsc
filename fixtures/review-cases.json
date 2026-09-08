@@ -1,0 +1,93 @@
+[
+  {
+    "id": "REV-01",
+    "mode": "video",
+    "itemStatus": "succeeded",
+    "score": 7,
+    "hardFailures": [
+      "H02"
+    ],
+    "technicalErrors": [],
+    "expectedDecision": "rejected",
+    "canSave": false
+  },
+  {
+    "id": "REV-02",
+    "mode": "video",
+    "itemStatus": "succeeded",
+    "score": 8,
+    "hardFailures": [],
+    "technicalErrors": [],
+    "expectedDecision": "approved",
+    "automaticallySave": false
+  },
+  {
+    "id": "REV-03",
+    "mode": "video",
+    "itemStatus": "running",
+    "score": 9,
+    "hardFailures": [],
+    "technicalErrors": [],
+    "expectedError": "ITEM_NOT_READY"
+  },
+  {
+    "id": "REV-04",
+    "mode": "video",
+    "itemStatus": "succeeded",
+    "score": 9,
+    "hardFailures": [],
+    "technicalErrors": [
+      "TECH_AUDIO"
+    ],
+    "expectedDecision": "rejected",
+    "canSave": false
+  },
+  {
+    "id": "REV-05",
+    "mode": "video",
+    "itemStatus": "succeeded",
+    "score": 6,
+    "hardFailures": [],
+    "technicalErrors": [],
+    "expectedDecision": "rejected",
+    "canSave": false
+  },
+  {
+    "id": "REV-06",
+    "mode": "video",
+    "itemStatus": "succeeded",
+    "prompt": "生成纯色背景的光影运动素材，无商品无人像",
+    "score": 8,
+    "hardFailures": [],
+    "technicalErrors": [],
+    "applicability": {
+      "Q01": false,
+      "Q02": false,
+      "Q03": false,
+      "Q10": false
+    },
+    "expectedDecision": "approved",
+    "automaticallySave": false
+  },
+  {
+    "id": "REV-07",
+    "mode": "image",
+    "itemStatus": "succeeded",
+    "rubricVersion": "basic-media-review-v1",
+    "humanDecision": "approved",
+    "readable": true,
+    "expectedDecision": "approved",
+    "automaticallySave": false
+  },
+  {
+    "id": "REV-08",
+    "mode": "copy",
+    "itemStatus": "succeeded",
+    "rubricVersion": "basic-media-review-v1",
+    "humanDecision": "rejected",
+    "reason": "凭空添加商品疗效",
+    "readable": true,
+    "expectedDecision": "rejected",
+    "canSave": false
+  }
+]

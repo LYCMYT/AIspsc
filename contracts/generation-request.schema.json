@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-video-rebuild:generation-request:v2",
+  "title": "Generation Request — Rebuild v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mode",
+    "prompt",
+    "references",
+    "count"
+  ],
+  "properties": {
+    "mode": {
+      "enum": [
+        "video",
+        "image",
+        "copy"
+      ]
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5000,
+      "pattern": "\\S"
+    },
+    "references": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assetId",
+          "role"
+        ],
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "enum": [
+              "product",
+              "person",
+              "background",
+              "reference_video"
+            ]
+          }
+        }
+      }
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "video": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "durationSeconds",
+        "ratio",
+        "resolution",
+        "audio"
+      ],
+      "properties": {
+        "durationSeconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 15
+        },
+        "ratio": {
+          "enum": [
+            "9:16",
+            "16:9",
+            "1:1"
+          ]
+        },
+        "resolution": {
+          "enum": [
+            "720p",
+            "1080p"
+          ]
+        },
+        "audio": {
+          "type": "boolean"
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ratio",
+        "resolution"
+      ],
+      "properties": {
+        "ratio": {
+          "enum": [
+            "9:16",
+            "16:9",
+            "1:1"
+          ]
+        },
+        "resolution": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "copy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "maxCharacters"
+      ],
+      "properties": {
+        "language": {
+          "const": "zh-CN"
+        },
+        "maxCharacters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "video"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "video"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "image"
+              ]
+            },
+            {
+              "required": [
+                "copy"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "image"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "image"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "video"
+              ]
+            },
+            {
+              "required": [
+                "copy"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "references": {
+            "items": {
+              "properties": {
+                "role": {
+                  "enum": [
+                    "product",
+                    "person",
+                    "background"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "copy"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "copy"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "video"
+              ]
+            },
+            {
+              "required": [
+                "image"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "references": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}
