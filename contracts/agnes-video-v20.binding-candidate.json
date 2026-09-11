@@ -1,0 +1,58 @@
+{
+  "version": "agnes-video-v20-binding-candidate-v1",
+  "runtimeEligible": false,
+  "reason": "Adapter code is present, but a real smoke test and evaluation evidence are still required before routing can be enabled.",
+  "provider": "Agnes AI",
+  "officialDocsCheckedAt": "2026-09-11",
+  "modelKey": "agnes-video-v2",
+  "apiModelId": "agnes-video-v2.0",
+  "baseUrl": "https://apihub.agnes-ai.com",
+  "create": {
+    "method": "POST",
+    "path": "/v1/videos"
+  },
+  "query": {
+    "method": "GET",
+    "path": "/agnesapi",
+    "recommendedIdentifier": "video_id",
+    "modelNameParameter": "agnes-video-v2.0"
+  },
+  "providerStatuses": ["queued", "in_progress", "completed", "failed"],
+  "normalizedStatuses": {
+    "queued": "queued",
+    "in_progress": "running",
+    "completed": "succeeded",
+    "failed": "failed",
+    "unknown": "needs_reconciliation"
+  },
+  "capabilityCandidate": {
+    "taskTypes": ["TEXT_TO_VIDEO", "IMAGE_GUIDED_VIDEO"],
+    "maxReferences": 1,
+    "referenceRoleLimits": {
+      "product": 1,
+      "person": 1,
+      "background": 1,
+      "reference_video": 0
+    },
+    "video": {
+      "durationSeconds": [5, 10],
+      "ratios": ["9:16", "16:9", "1:1"],
+      "resolutions": ["720p", "1080p"],
+      "audio": [false]
+    }
+  },
+  "importantProviderSemantics": {
+    "duration": "The API controls duration with num_frames/frame_rate. This candidate exposes only the provider-documented approximately-5s and approximately-10s presets until real outputs are calibrated.",
+    "size": "Requested width/height may be normalized by Agnes. The response fields seconds, size and metadata.size_mapping are the source of truth.",
+    "imageInput": "Image-to-video requires a publicly accessible image URL. This candidate does not claim reference-video input or multi-reference semantic composition.",
+    "audio": "The model-specific video request documentation does not expose an audio-generation parameter, so audio=true is rejected by the adapter.",
+    "retry": "Create POST requests are never automatically retried because an ambiguous submission could create duplicate work."
+  },
+  "pricingEvidence": {
+    "source": "https://agnes-ai.com/doc/agnes-video-v20",
+    "checkedAt": "2026-09-11",
+    "standardPriceUsdPerSecond": 0.005,
+    "currentPriceUsdPerSecond": 0,
+    "note": "Current price is time-sensitive and must be checked again before production use."
+  }
+}
