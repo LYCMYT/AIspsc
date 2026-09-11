@@ -135,3 +135,9 @@ pnpm test:e2e
 演示媒体由仓库脚本生成，来源与逐文件SHA-256见 `apps/web/public/demo/MEDIA_MANIFEST.json`。
 
 当前不声称完成：生产HTTP服务、登录与Workspace隔离、真实Router上线、统一实际计费、充值支付、广告平台连接、任意上传视频的服务端FFmpeg切片、客户生产验收或广告转化提升。
+
+## 本机交付验收台（独立于公开 B1）
+
+新增真实MP4后处理与本机受控历史→11维人工审核→显式入库闭环。原始结果只读保留；两条Agnes结果的衍生版本通过1280×720、120帧、5秒、无音轨验收，不代表营销质量通过。
+
+运行 `pnpm delivery:serve` 启动本地验收台：不需要Agnes密钥、不调用模型、不切换在线B1。操作、API、文件哈希和边界见 [13_CONTROLLED_MEDIA_DELIVERY](docs/13_CONTROLLED_MEDIA_DELIVERY.md)。

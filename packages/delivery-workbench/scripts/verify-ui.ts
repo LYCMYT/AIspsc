@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { chromium } from '@playwright/test';
+import { startWorkbench } from '../src/server.ts';
+const temp=await mkdtemp(join(tmpdir(),'delivery-ui-'));
+const output=resolve('artifacts/delivery-ui');await mkdir(output,{recursive:true});
+const input=join(temp,'fixture.mp4');
+await promisify(execFile)('ffmpeg',['-v','error','-f','lavfi','-i','color=c=blue:s=1280x704:r=24','-frames:v','121','-c:v','libx264','-threads','1','-pix_fmt','yuv420p',input]);
+const token=randomBytes(32).toString('hex');
+const app=await startWorkbench({directory:join(temp,'data'),token,port:0});
+const browser=await chromium.launch({headless:true,...(process.env.AISPSC_CHROMIUM?{executablePath:process.env.AISPSC_CHROMIUM}:{}),args:['--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1400,height:1100}});
+const errors:string[]=[];page.on('pageerror',()=>errors.push('pageerror'));
+try {
+  await page.goto(app.url);await page.locator('#token').fill(token);await page.getByRole('button',{name:'连接并刷新'}).click();await page.getByText('已同步。',{exact:true}).waitFor();
+  assert.equal(await page.locator('#token').inputValue(),'');
+  await page.locator('#prompt').fill('UI verification — synthetic geometry, not customer quality evidence.');
+  await page.locator('#file').setInputFiles(input);await page.getByRole('button',{name:'导入到历史'}).click();
+  await page.getByRole('button',{name:'后处理为5秒静音720p'}).click();await page.getByText('后处理中，可以刷新查看。',{exact:true}).waitFor();await app.store.waitForIdle();
+  await page.getByRole('button',{name:'连接并刷新'}).click();await page.getByText(/交付规格 1280×720/).waitFor();
+  await page.getByRole('button',{name:'观看并审核'}).click();await page.locator('#score').fill('8');await page.getByRole('button',{name:'提交人工审核，不自动入库'}).click();
+  await page.getByRole('button',{name:'手动保存到资产库'}).waitFor();assert.equal(app.store.snapshot().assets.length,0);
+  await page.getByRole('button',{name:'手动保存到资产库'}).click();await page.getByRole('button',{name:'下载资产',exact:true}).waitFor();
+  await page.getByRole('button',{name:'观看并审核'}).click();await page.locator('#score').fill('10');await page.locator('input[name=hard][value=H02]').check();await page.locator('#reason').fill('Synthetic test of hard-failure override.');
+  await page.getByRole('button',{name:'提交人工审核，不自动入库'}).click();await page.getByText(/审核已失效，禁止作为资产下载/).waitFor();
+  assert.equal(app.store.snapshot().assets[0]?.valid,false);assert.equal(errors.length,0);
+  assert.equal(await page.evaluate(()=>localStorage.length+sessionStorage.length),0);
+  await page.screenshot({path:join(output,'workbench-tested.png'),fullPage:true});
+  await writeFile(join(output,'report.json'),JSON.stringify({outcome:'passed',fixture:'synthetic-only',providerCalls:0,checks:['native-node','connect-refresh-token-in-memory','MP4-import','async-FFmpeg','review-not-auto-save','manual-save','high-score-hard-failure-invalidation','no-page-errors']},null,2));
+  console.log('Local workbench browser verification: PASS (synthetic fixture, zero Provider calls).');
+} finally {await browser.close();await app.close();await rm(temp,{recursive:true,force:true});}
