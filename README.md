@@ -3,7 +3,9 @@
 > **Public reconstruction / B1 local interactive simulation**  
 > 面向电商投流素材生产，把多模型生成从“单次调用工具”重构成可校验、可路由、可恢复、可审核、可入库的 AI 内容生产工作流。
 
-本仓库基于真实商业项目中已确认的核心产品逻辑进行公开重构。它**不是原生产源码**，当前也**不会调用外部付费模型**。B1 的目标是把关键产品规则变成可以真实操作、自动测试和公开复验的证据。
+**Live Demo:** https://lycmyt.github.io/AIspsc/
+
+本仓库基于真实商业项目中已确认的核心产品逻辑进行公开重构。它**不是原生产源码**，当前在线 B1 Demo 也**不会调用外部付费模型**。B1 的目标是把关键产品规则变成可以真实操作、自动测试和公开复验的证据。
 
 ## 这个项目解决什么问题
 
@@ -146,7 +148,7 @@ UI → ServiceFacade ┤
 
 `contracts/model-registry.json` 中的真实模型绑定继续保持 disabled / unverified。
 
-B1.5 新增独立的 [`contracts/provider-capability-evidence.json`](contracts/provider-capability-evidence.json)，使用五级证据状态：
+B1.5 通过 [`contracts/provider-capability-evidence.json`](contracts/provider-capability-evidence.json) 使用五级证据状态：
 
 ```text
 unverified
@@ -156,9 +158,11 @@ unverified
 → integrated
 ```
 
-只有 `integrated` 才能进入未来真实 Router。当前 Seedance 2.0 与 Kling 3.0 仅记录官方文档证据，不代表本仓库已验证 API Binding。
+只有 `integrated` 才能进入未来真实 Router。
 
-详见 [`docs/09_MODEL_CAPABILITY_MATRIX.md`](docs/09_MODEL_CAPABILITY_MATRIX.md)。
+当前已新增 **Agnes Video V2.0** 的第一个真实 Provider Adapter 实验：代码、确定性单测、候选能力合同和手动 Smoke workflow 已准备，但在真实 Secret Smoke 通过前仍只标记为 `documented`，不会进入在线 B1 Demo 或真实 Router。详见 [`docs/11_AGNES_PROVIDER_INTEGRATION.md`](docs/11_AGNES_PROVIDER_INTEGRATION.md)。
+
+Seedance 2.0 / Kling 3.0 等候选的证据状态和 Agnes 的保守能力边界见 [`docs/09_MODEL_CAPABILITY_MATRIX.md`](docs/09_MODEL_CAPABILITY_MATRIX.md)。
 
 ## 工程证据
 
@@ -174,12 +178,14 @@ B1 基线提交 `626fcb3ade8a850b9a852f8d083c916a0d5c1d08` 的 `IMPLEMENTATION_R
 | End-to-end tests | 74 PASS |
 | Capture checks | 6 PASS |
 
-这些是**已记录的 B1 基线结果**，不是对任意后续提交的自动保证。B1.5 开始通过 GitHub Actions 在 push / PR 上重新执行：
+B1.5 已通过 GitHub Actions 在 push / PR 上持续复验：
 
 ```sh
 pnpm verify
 pnpm test:e2e
 ```
+
+随着真实评测 Schema 和 Agnes Adapter 的加入，当前确定性测试数量已高于 B1 基线；README 不把旧基线数字冒充后续所有提交的固定测试数，最终以 CI 输出为准。
 
 ## 路线图
 
@@ -193,6 +199,8 @@ pnpm test:e2e
 - 架构与边界；
 - 模型能力证据矩阵；
 - CI 独立复验；
+- GitHub Pages 在线 Demo；
+- Agnes 真实 Provider Adapter / Secret-safe Smoke 基础；
 - 小样本真实视频模型评测；
 - Bad Case 复盘；
 - 可公开展示的证据链。
@@ -213,8 +221,8 @@ pnpm test:e2e
 
 - 生产 HTTP 服务；
 - 登录、权限与 Workspace 隔离；
-- 外部 AI Provider 实际执行；
-- 真实模型计费；
+- Agnes / Seedance / Kling 已进入真实生产 Router；
+- 真实模型统一计费；
 - 支付充值；
 - 广告平台连接；
 - 任意上传视频的服务端 FFmpeg 切片；
@@ -233,6 +241,8 @@ pnpm test:e2e
 - [`07_QUOTA_AND_RELIABILITY.md`](docs/07_QUOTA_AND_RELIABILITY.md)：额度、幂等、取消与未知结果。
 - [`08_ACCEPTANCE.md`](docs/08_ACCEPTANCE.md)：阻塞验收与证据格式。
 - [`09_MODEL_CAPABILITY_MATRIX.md`](docs/09_MODEL_CAPABILITY_MATRIX.md)：模型证据成熟度与真实接入门槛。
+- [`10_REAL_EVALUATION_PLAN.md`](docs/10_REAL_EVALUATION_PLAN.md)：4×2 探索性真实模型评测合同。
+- [`11_AGNES_PROVIDER_INTEGRATION.md`](docs/11_AGNES_PROVIDER_INTEGRATION.md)：Agnes Adapter、Secret、安全与 Smoke 门槛。
 
 ## 环境
 
@@ -258,32 +268,29 @@ npm exec --yes --package pnpm@12.3.4 -- pnpm verify
 
 首次运行浏览器测试：
 
-```powershell
-$env:PLAYWRIGHT_BROWSERS_PATH = (Join-Path (Get-Location) '.cache/ms-playwright')
-npm exec --yes --package pnpm@12.3.4 -- pnpm exec playwright install chromium
-npm exec --yes --package pnpm@12.3.4 -- pnpm test:e2e
-```
-
 ```sh
 PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright" npm exec --yes --package pnpm@12.3.4 -- pnpm exec playwright install chromium
 npm exec --yes --package pnpm@12.3.4 -- pnpm test:e2e
 ```
 
-演示媒体可另行校验：
+演示媒体可单独校验：
 
 ```sh
 node apps/web/scripts/verify-demo-media.mjs
 ```
 
+源代码与 B1 冻结快照的历史验证结果见 `IMPLEMENTATION_REPORT.md`。
+
 ## 目录
 
-- `apps/web`：Vue 应用、设计预览、E2E 和自生成演示媒体。
-- `packages/contracts`：共享 TypeScript 合同。
-- `packages/domain`：验证、路由、拆解、审核、额度与状态规则。
+- `apps/web`：Vue 应用、设计预览、端到端测试和自生成演示媒体。
+- `packages/contracts`：共享类型和合同测试。
+- `packages/domain`：校验、路由、拆解、审核、额度与状态规则。
 - `packages/media-store`：IndexedDB 媒体持久化。
-- `packages/mock-service`：B1 浏览器内模拟执行环境。
-- `contracts`：JSON Schema、OpenAPI、逻辑模型与 Provider evidence。
+- `packages/mock-service`：B1 浏览器内模拟服务。
+- `packages/provider-agnes`：Agnes Video V2.0 服务端 Adapter、确定性测试与手动 Smoke runner。
+- `contracts`：JSON Schema、OpenAPI、Provider evidence 与候选 Binding 合同。
 - `fixtures`：确定性合同测试向量。
-- `docs`：产品、领域、评测、可靠性和验收文档。
+- `docs`：项目决策、领域、评测、可靠性、模型证据与验收文档。
 
-演示媒体由仓库脚本自行生成，逐文件 SHA-256、尺寸、时长、音轨和 Clip 来源记录在 `apps/web/public/demo/MEDIA_MANIFEST.json`。
+演示媒体由仓库脚本生成，来源与逐文件 SHA-256 记录在 `apps/web/public/demo/MEDIA_MANIFEST.json`。
