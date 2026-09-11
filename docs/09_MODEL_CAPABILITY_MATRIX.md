@@ -66,6 +66,7 @@ Provider Adapter、密钥保护、真实状态机、对象存储、计费/额度
 | Seedance 2.0 | `documented` | BytePlus ModelArk 官方存在 Seedance 2.0 系列视频生成服务与视频任务 API 文档 | 已核对本项目所需 exact model ID、所有参数组合、真实价格、真实绑定已可用 |
 | Seedance 2.0 Mini | `unverified` | 逻辑候选名称仍保留 | Mini 的精确产品/API 身份已经确认 |
 | Kling 3.0 | `documented` | 官方 VIDEO 3.0 指南描述 T2V/I2V、Native Audio、Element Reference、Multi-shot、最长 15s 等产品能力 | 本仓库已经获得并验证 developer API binding |
+| Agnes Video V2.0 | `documented` | 已核对 `agnes-video-v2.0` 的 create/query/auth/status 基础 API 合同；服务端 Adapter、单测和手动 Smoke workflow 已准备 | 已完成真实 API Smoke、已进入真实 Router、支持 reference video / multi-reference / audio |
 | Kling 2.0 | `unverified` | 逻辑候选名称仍保留 | 当前 API contract 已核验 |
 | image2.0 | `unverified` | 历史逻辑名称保留 | Provider 身份已经确认 |
 | Seedream 5.0 | `unverified` | 图片模型逻辑候选保留 | 当前阶段已经完成 API 能力核验 |
@@ -99,6 +100,45 @@ Provider Adapter、密钥保护、真实状态机、对象存储、计费/额度
   - Kling VIDEO 3.0 官方产品指南描述：Text-to-Video、Image-to-Video、Start/End Frame、Native Audio、Multi-shot、Element Reference、多人物一致性、灵活时长与最长 15 秒等能力。
 
 这说明 Kling 3.0 是值得进入 B1.5 实验候选池的真实产品能力，但**产品使用指南不等于本仓库所需的 developer API contract**。在找到并核对精确 API 请求/响应/任务状态/价格规则之前，仍不能启用真实 Binding。
+
+### Agnes Video V2.0
+
+当前记录的 Agnes 官方证据：
+
+- `https://www.agnes-ai.com/zh-Hans/docs/overview`
+  - 官方 API 总览给出 Bearer Token 鉴权和 API Hub 服务入口，并明确要求 API Key 不能暴露在前端或公共代码中。
+- `https://agnes-ai.com/doc/agnes-video-v20`
+  - 模型专页给出 exact model ID `agnes-video-v2.0`、`POST /v1/videos` 创建、按 `video_id` 查询、任务状态、视频结果 URL、分辨率/比例和帧数规则。
+
+仓库新增：
+
+- `contracts/agnes-video-v20.binding-candidate.json`：机器可读的候选能力边界，`runtimeEligible=false`；
+- `packages/provider-agnes/src/index.ts`：服务端 Provider Adapter；
+- `packages/provider-agnes/src/index.test.ts`：不访问外网的确定性单元测试；
+- `.github/workflows/agnes-smoke.yml`：仅手动触发的真实 Smoke workflow；
+- `docs/11_AGNES_PROVIDER_INTEGRATION.md`：完整接入边界。
+
+当前仍维持 **documented**，原因是“Adapter 已实现”不等于“真实 API 已验证”。只有在 `AGNES_API_KEY` 通过 Secret 注入并完成真实 Smoke 后，才允许升级为 `smoke_tested`。
+
+当前保守能力子集：
+
+```text
+TEXT_TO_VIDEO
+IMAGE_GUIDED_VIDEO（单一公开图片 URL）
+5s / 10s documented presets
+9:16 / 16:9 / 1:1
+720p / 1080p
+no audio
+```
+
+当前不声明：
+
+```text
+REFERENCE_VIDEO_GEN
+MULTI_REFERENCE_VIDEO
+Native Audio
+完整 5–15 秒整数时长集合
+```
 
 ---
 
@@ -238,7 +278,7 @@ Kling 3.0
 - Bad Case；
 - 第一版 routing recommendation。
 
-在下一份独立计划中再定义具体预算、样本输入、停止条件和记录格式。
+Agnes 当前用于验证第一条真实 Provider Adapter / Secret / 异步轮询 / 下载证据链。因为它当前核验的能力子集与上述 EV003/EV004 不同，所以不为了凑候选数量强行加入这组 4×2 横评。若未来将 Agnes 加入正式比较，会另建所有候选共同支持的 Case。
 
 ---
 
