@@ -18,3 +18,7 @@ This repository currently implements the B1 local interactive simulation. Do not
 Keep shared request, state, review, split, and quota rules in the existing contract/domain packages. Preserve deterministic fixtures and meaningful tests. Before proposing a change, run the checks relevant to it; before release, run `pnpm verify` and `pnpm test:e2e`.
 
 Do not commit `.env*`, browser data, test output, caches, generated evidence, local absolute paths, or secrets. Public-facing documentation must state that this is a B1 simulation until production services are implemented and verified.
+
+## Local delivery extension
+
+`packages/media-processing` and `packages/delivery-workbench` implement offline MP4 normalization and a loopback-only single-operator acceptance console. This is not a production backend and does not enable paid Provider calls or replace B1. Preserve raw media, explicit human review, separate manual save, and hash-bound review invalidation. Run `pnpm test:delivery` and `pnpm test:delivery:ui` for changes here; their fixtures must remain synthetic and Provider-free.

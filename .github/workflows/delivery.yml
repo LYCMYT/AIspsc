@@ -1,0 +1,41 @@
+name: delivery
+on:
+  pull_request:
+  push:
+    branches: [main, 'feat/**']
+permissions:
+  contents: read
+concurrency:
+  group: delivery-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-delivery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install real media validators
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - run: pnpm test:delivery
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:delivery:ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: delivery-ui-verification
+          path: artifacts/delivery-ui
+          retention-days: 7
+          if-no-files-found: ignore

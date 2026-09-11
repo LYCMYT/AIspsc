@@ -3,8 +3,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: [
+      { test: { name: 'delivery', include: ['packages/media-processing/**/*.integration.test.ts', 'packages/delivery-workbench/**/*.integration.test.ts'], environment: 'node', testTimeout: 30000, hookTimeout: 30000, maxWorkers: 1 } },
       { test: { name: 'contracts', include: ['packages/contracts/**/*.test.ts'], environment: 'node' } },
-      { test: { name: 'unit', include: ['packages/domain/**/*.test.ts', 'packages/media-store/**/*.test.ts', 'packages/mock-service/**/*.test.ts', 'packages/provider-agnes/**/*.test.ts'], environment: 'node' } },
+      { test: { name: 'unit', exclude: ['**/*.integration.test.ts'], include: ['packages/domain/**/*.test.ts', 'packages/media-store/**/*.test.ts', 'packages/mock-service/**/*.test.ts', 'packages/provider-agnes/**/*.test.ts', 'packages/media-processing/**/*.test.ts', 'packages/delivery-workbench/**/*.test.ts'], environment: 'node' } },
     ],
   },
 });
