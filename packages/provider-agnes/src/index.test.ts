@@ -94,6 +94,30 @@ describe('Agnes provider adapter contract', () => {
     expect(new Headers(calls[0]?.init?.headers).get('authorization')).toBe('Bearer test-secret');
   });
 
+  it('redacts the configured API key if a provider error unexpectedly echoes it', async () => {
+    const fakeFetch: typeof fetch = async () => jsonResponse({
+      error: { message: 'authorization failed for test-secret' },
+    }, 401);
+    const client = new AgnesVideoClient({ apiKey: 'test-secret', fetchImpl: fakeFetch });
+
+    let caught: unknown;
+    try {
+      await client.createVideo({
+        prompt: 'A blue cube rotates slowly.',
+        durationSeconds: 5,
+        ratio: '16:9',
+        resolution: '720p',
+        audio: false,
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(AgnesProviderError);
+    expect((caught as AgnesProviderError).message).toBe('authorization failed for [REDACTED]');
+    expect((caught as AgnesProviderError).message).not.toContain('test-secret');
+  });
+
   it('polls by video_id and returns only normalized safe result fields', async () => {
     const calls: string[] = [];
     const fakeFetch: typeof fetch = async (input) => {
