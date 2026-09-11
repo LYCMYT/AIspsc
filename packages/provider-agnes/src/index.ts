@@ -151,6 +151,10 @@ function providerErrorMessage(payload: unknown): string | undefined {
   return undefined;
 }
 
+function redactLiteral(message: string, secret: string): string {
+  return secret ? message.split(secret).join('[REDACTED]') : message;
+}
+
 function errorKindForStatus(status: number): AgnesProviderErrorKind {
   if (status === 400) return 'invalid_request';
   if (status === 401 || status === 403) return 'unauthorized';
@@ -221,7 +225,7 @@ export class AgnesVideoClient {
       },
       body: JSON.stringify(body),
     });
-    return normalizeTask(payload);
+    return this.sanitizeTask(normalizeTask(payload));
   }
 
   async getVideo(videoId: string): Promise<AgnesVideoTask> {
@@ -231,7 +235,13 @@ export class AgnesVideoClient {
       method: 'GET',
       headers: { authorization: `Bearer ${this.apiKey}` },
     });
-    return normalizeTask(payload);
+    return this.sanitizeTask(normalizeTask(payload));
+  }
+
+  private sanitizeTask(task: AgnesVideoTask): AgnesVideoTask {
+    return task.errorMessage
+      ? { ...task, errorMessage: redactLiteral(task.errorMessage, this.apiKey) }
+      : task;
   }
 
   private async requestJson(url: string, init: RequestInit): Promise<unknown> {
@@ -253,8 +263,8 @@ export class AgnesVideoClient {
     }
     if (!response.ok) {
       const kind = errorKindForStatus(response.status);
-      const message = providerErrorMessage(payload) ?? `Agnes request failed with HTTP ${response.status}.`;
-      throw new AgnesProviderError(kind, message, response.status);
+      const rawMessage = providerErrorMessage(payload) ?? `Agnes request failed with HTTP ${response.status}.`;
+      throw new AgnesProviderError(kind, redactLiteral(rawMessage, this.apiKey), response.status);
     }
     return payload;
   }
