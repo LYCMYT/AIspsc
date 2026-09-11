@@ -7,12 +7,14 @@ import type { DownloadedVideo } from './smoke-runner.ts';
 
 const execFileAsync = promisify(execFile);
 const MAX_RESULT_BYTES = 128 * 1024 * 1024;
+// Documented host plus the exact host observed in authenticated diagnostic run 34622707888.
+const OUTPUT_HOSTS = new Set(['platform-outputs.agnes-ai.space', 'cos-platform-outputs.agnes-ai.cn']);
 
 /** Keep the credential-free output download separate from the authenticated API. */
 export function checkedMediaUrl(value: string): URL {
   let url: URL;
   try { url = new URL(value); } catch { throw new Error('UNTRUSTED_MEDIA_URL'); }
-  if (url.protocol !== 'https:' || url.hostname !== 'platform-outputs.agnes-ai.space' || url.username || url.password || (url.port && url.port !== '443')) {
+  if (url.protocol !== 'https:' || !OUTPUT_HOSTS.has(url.hostname) || url.username || url.password || (url.port && url.port !== '443')) {
     throw new Error('UNTRUSTED_MEDIA_URL');
   }
   return url;

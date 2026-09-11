@@ -5,7 +5,8 @@ import { checkedMediaUrl, readBoundedMedia, parseMediaProbe } from './download.t
 describe('Agnes result download validation', () => {
   it('allows only the documented HTTPS output host without credentials', () => {
     assert.equal(checkedMediaUrl('https://platform-outputs.agnes-ai.space/videos/a.mp4?signature=private').hostname, 'platform-outputs.agnes-ai.space');
-    for (const value of ['http://platform-outputs.agnes-ai.space/a.mp4', 'https://localhost/a.mp4', 'https://127.0.0.1/a.mp4', 'https://platform-outputs.agnes-ai.space.evil.test/a.mp4', 'https://user:pass@platform-outputs.agnes-ai.space/a.mp4']) {
+    assert.equal(checkedMediaUrl('https://cos-platform-outputs.agnes-ai.cn/videos/a.mp4').hostname, 'cos-platform-outputs.agnes-ai.cn');
+    for (const value of ['http://platform-outputs.agnes-ai.space/a.mp4', 'https://cos-platform-outputs.agnes-ai.cn.evil.test/a.mp4', 'https://localhost/a.mp4', 'https://127.0.0.1/a.mp4', 'https://platform-outputs.agnes-ai.space.evil.test/a.mp4', 'https://user:pass@platform-outputs.agnes-ai.space/a.mp4']) {
       assert.throws(() => checkedMediaUrl(value), /UNTRUSTED_MEDIA_URL/);
     }
   });
