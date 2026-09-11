@@ -1,0 +1,244 @@
+{
+  "version": "provider-evidence-v1",
+  "purpose": "Research evidence for B1.5. This file does not enable runtime bindings and must not be treated as production routing truth.",
+  "statusOrder": [
+    "unverified",
+    "documented",
+    "smoke_tested",
+    "evaluated",
+    "integrated"
+  ],
+  "statusDefinitions": {
+    "unverified": "No sufficient authoritative evidence has been recorded for this logical model entry.",
+    "documented": "At least one official vendor source supports recorded capability claims; API access and project compatibility are not yet proven.",
+    "smoke_tested": "A real API call completed under an explicitly authorized budget and the request/result/error path was captured.",
+    "evaluated": "The model participated in the repository's recorded evaluation cases with preserved outputs, review records, cost and latency evidence.",
+    "integrated": "A real ProviderAdapter/binding is implemented, tested, secured and eligible for production-like routing under its verified capability limits."
+  },
+  "routingEligibilityRule": {
+    "minimumStatus": "integrated",
+    "requiredEvidence": [
+      "official model identity and provider",
+      "verified API endpoint/model identifier",
+      "request and async-job schema",
+      "capability constraints",
+      "status and error normalization",
+      "result persistence path",
+      "cost evidence",
+      "smoke test",
+      "evaluation evidence",
+      "secret-handling review"
+    ]
+  },
+  "models": [
+    {
+      "logicalKey": "seedance-2",
+      "displayName": "Seedance 2.0",
+      "status": "documented",
+      "provider": "BytePlus ModelArk",
+      "officialEvidence": [
+        {
+          "title": "Video generation API",
+          "url": "https://docs.byteplus.com/en/docs/ModelArk/Video_Generation_API",
+          "supports": [
+            "create video generation task",
+            "retrieve video generation task",
+            "list video generation tasks",
+            "cancel or delete video generation task"
+          ]
+        },
+        {
+          "title": "Dreamina Seedance 2.0 series prompt guide",
+          "url": "https://docs.byteplus.com/en/docs/ModelArk/2222480",
+          "supports": [
+            "Seedance 2.0 series is documented by the provider"
+          ]
+        },
+        {
+          "title": "Dreamina Seedance 2.0 series tutorial",
+          "url": "https://docs.byteplus.com/en/docs/ModelArk/2291680",
+          "supports": [
+            "provider tutorial exists for the Seedance 2.0 series"
+          ]
+        }
+      ],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Official BytePlus documentation establishes that Seedance 2.0 is a current ModelArk video-generation service family, but this repository has not yet verified the exact model ID, parameter combinations, price, or binding behavior required by its own routing contract."
+    },
+    {
+      "logicalKey": "seedance-2-mini",
+      "displayName": "Seedance 2.0 Mini",
+      "status": "unverified",
+      "provider": null,
+      "officialEvidence": [],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Keep separate from the documented Seedance 2.0 family until the exact Mini product/model identity and API contract are verified."
+    },
+    {
+      "logicalKey": "kling-3",
+      "displayName": "Kling 3.0",
+      "status": "documented",
+      "provider": "Kling AI",
+      "officialEvidence": [
+        {
+          "title": "Kling VIDEO 3.0 Model User Guide",
+          "url": "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide",
+          "supports": [
+            "text-to-video",
+            "image-to-video",
+            "start and end frames",
+            "native audio",
+            "multi-shot",
+            "element reference",
+            "multi-character coreference",
+            "flexible duration up to 15 seconds",
+            "720p and 1080p product modes described in the guide"
+          ]
+        }
+      ],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "The public product guide documents capabilities relevant to this project's evaluation candidates, but a product UI guide is not sufficient evidence for this repository's API binding. The exact developer API contract must still be verified before routing is enabled."
+    },
+    {
+      "logicalKey": "kling-2",
+      "displayName": "Kling 2.0",
+      "status": "unverified",
+      "provider": null,
+      "officialEvidence": [],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Logical registry entry retained; no B1.5 integration claim."
+    },
+    {
+      "logicalKey": "image-2-unverified",
+      "displayName": "image2.0（供应商待核对）",
+      "status": "unverified",
+      "provider": null,
+      "officialEvidence": [],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Name/provider identity is intentionally unresolved."
+    },
+    {
+      "logicalKey": "seedream-5",
+      "displayName": "Seedream 5.0",
+      "status": "unverified",
+      "provider": null,
+      "officialEvidence": [],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Logical image-model entry retained; detailed capability evidence is outside the first video-model evaluation milestone."
+    },
+    {
+      "logicalKey": "qwen-image-2",
+      "displayName": "Qwen-Image 2.0",
+      "status": "unverified",
+      "provider": null,
+      "officialEvidence": [],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Logical image-model entry retained; detailed capability evidence is outside the first video-model evaluation milestone."
+    },
+    {
+      "logicalKey": "deepseek-v4",
+      "displayName": "DeepSeek V4",
+      "status": "unverified",
+      "provider": null,
+      "officialEvidence": [],
+      "verifiedForThisRepository": {
+        "apiModelId": false,
+        "requestSchema": false,
+        "referenceRoles": false,
+        "duration": false,
+        "ratios": false,
+        "resolutions": false,
+        "audio": false,
+        "pricing": false,
+        "smokeTest": false,
+        "evaluation": false,
+        "adapter": false
+      },
+      "notes": "Logical copy-model entry retained; model/provider identity must be re-verified before any real integration work."
+    }
+  ]
+}
