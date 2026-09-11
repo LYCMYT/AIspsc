@@ -1,0 +1,66 @@
+name: agnes-result-diagnostic
+
+# Temporary, read-only investigation of smoke run 34620475819.
+# No POST to Agnes, no new task, no raw URLs, IDs, payloads or credentials in logs.
+on:
+  push:
+    branches: ['diagnostic/agnes-completed-result']
+    paths: ['.github/workflows/agnes-result-diagnostic.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    if: github.ref == 'refs/heads/diagnostic/agnes-completed-result'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Inspect existing task response types only
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+        run: |
+          node --input-type=module <<'NODE'
+          const key = process.env.AGNES_API_KEY?.trim();
+          if (!key) { console.error('Missing AGNES_API_KEY'); process.exit(1); }
+          const id = 'video_bGl0ZWxsbTpjdXN0b21fbGxtX3Byb3ZpZGVyOm9wZW5haTttb2RlbF9pZDphZ25lcy12aWRlby12Mi4wO3ZpZGVvX2lkOnZpZGVvX2I1YThmNDk3ZjFiZDQ1Mjk4ZmQ1OWI0NzhjYWI1NTgx';
+          const root = 'https://apihub.agnes-ai.com';
+          const statuses = new Set(['queued', 'in_progress', 'completed', 'failed']);
+          function shape(value, depth = 0) {
+            if (value === null) return 'null';
+            if (depth > 5) return typeof value;
+            if (Array.isArray(value)) return { type: 'array', length: value.length, item: value.length ? shape(value[0], depth + 1) : null };
+            if (typeof value === 'object') {
+              return Object.fromEntries(Object.entries(value).slice(0, 50).map(([k, v]) => [k.replaceAll(key, '[REDACTED]').replace(/[^a-zA-Z0-9_.$-]/g, '?').slice(0, 80), shape(v, depth + 1)]));
+            }
+            return typeof value;
+          }
+          function urlPaths(value, path = '$', depth = 0, output = []) {
+            if (depth > 5 || output.length >= 20) return output;
+            if (typeof value === 'string' && /^https?:\/\//.test(value)) {
+              output.push(path); // path only, never URL or host
+            } else if (value && typeof value === 'object') {
+              for (const [k, v] of Object.entries(value).slice(0, 50)) {
+                const safeKey = k.replaceAll(key, '[REDACTED]').replace(/[^a-zA-Z0-9_$-]/g, '?').slice(0, 80);
+                urlPaths(v, `${path}.${safeKey}`, depth + 1, output);
+              }
+            }
+            return output;
+          }
+          async function inspect(label, url) {
+            const res = await fetch(url, { method: 'GET', headers: { authorization: `Bearer ${key}` }, redirect: 'error', signal: AbortSignal.timeout(30000) });
+            let data;
+            try { data = await res.json(); } catch { console.log(JSON.stringify({ label, httpStatus: res.status, json: false })); return null; }
+            console.log(JSON.stringify({ label, httpStatus: res.status, status: statuses.has(data?.status) ? data.status : 'other', shape: shape(data), urlPaths: urlPaths(data) }));
+            return res.ok ? data : null;
+          }
+          try {
+            const params = new URLSearchParams({ video_id: id, model_name: 'agnes-video-v2.0' });
+            const data = await inspect('recommended_query', `${root}/agnesapi?${params}`);
+            const taskId = data?.task_id || data?.id;
+            if (typeof taskId === 'string' && /^[a-zA-Z0-9_=-]{1,1024}$/.test(taskId)) {
+              await inspect('documented_legacy_query', `${root}/v1/videos/${encodeURIComponent(taskId)}`);
+            }
+          } catch { console.error('Read-only diagnostic failed; raw error suppressed.'); process.exitCode = 1; }
+          NODE
