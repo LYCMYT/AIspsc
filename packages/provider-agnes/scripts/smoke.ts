@@ -1,98 +1,69 @@
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { AgnesProviderError, AgnesVideoClient, AGNES_VIDEO_MODEL } from '../src/index.ts';
+import { AgnesVideoClient } from '../src/index.ts';
+import { runAgnesSmoke } from '../src/smoke-runner.ts';
+import { downloadAgnesVideo } from '../src/download.ts';
 
-const apiKey = process.env.AGNES_API_KEY?.trim();
-if (!apiKey) throw new Error('AGNES_API_KEY is required. Configure it as a GitHub Actions secret or local environment variable.');
-
-function positiveInteger(name: string, fallback: number) {
-  const raw = process.env[name];
-  if (!raw) return fallback;
-  const value = Number(raw);
-  if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer.`);
-  return value;
-}
-
-const pollMs = positiveInteger('AGNES_SMOKE_POLL_MS', 5_000);
-const timeoutMs = positiveInteger('AGNES_SMOKE_TIMEOUT_MS', 600_000);
-const outputDir = resolve('artifacts/agnes-smoke');
-await mkdir(outputDir, { recursive: true });
-
-const startedAt = new Date().toISOString();
-const timeline: Array<{ at: string; providerStatus: string; normalizedStatus: string; progress?: number }> = [];
-const client = new AgnesVideoClient({ apiKey });
-
-const request = {
-  prompt: 'A simple blue geometric cube slowly rotates in a clean neutral studio, stable shape, gentle camera movement, soft light, no text.',
-  durationSeconds: 5,
-  ratio: '16:9' as const,
-  resolution: '720p' as const,
-  audio: false,
-  seed: 42,
-};
-
-async function saveRecord(record: unknown) {
-  await writeFile(resolve(outputDir, 'smoke.json'), `${JSON.stringify(record, null, 2)}\n`, 'utf8');
-}
-
-try {
-  console.log(`Starting Agnes smoke test with ${AGNES_VIDEO_MODEL}.`);
-  let task = await client.createVideo(request);
-  const videoId = task.videoId;
-  if (!videoId) throw new Error('Agnes create response did not include video_id.');
-  timeline.push({ at: new Date().toISOString(), providerStatus: task.providerStatus, normalizedStatus: task.status, progress: task.progress });
-  console.log(`Created video task ${videoId}; status=${task.providerStatus}.`);
-
-  const deadline = Date.now() + timeoutMs;
-  while (task.status === 'queued' || task.status === 'running' || task.status === 'needs_reconciliation') {
-    if (Date.now() >= deadline) throw new Error(`Agnes smoke test exceeded ${timeoutMs}ms polling timeout.`);
-    await new Promise((resolveSleep) => setTimeout(resolveSleep, pollMs));
-    task = await client.getVideo(videoId);
-    timeline.push({ at: new Date().toISOString(), providerStatus: task.providerStatus, normalizedStatus: task.status, progress: task.progress });
-    console.log(`Poll status=${task.providerStatus}; progress=${task.progress ?? 'n/a'}.`);
+async function main() {
+  const apiKey = process.env.AGNES_API_KEY?.trim();
+  if (!apiKey) throw new Error('AGNES_API_KEY_REQUIRED');
+  const mode = process.env.AGNES_SMOKE_MODE ?? 'recover';
+  if (!['recover', 'text', 'image'].includes(mode)) throw new Error('INVALID_SMOKE_MODE');
+  const videoId = process.env.AGNES_EXISTING_VIDEO_ID?.trim();
+  if (mode === 'recover' && !videoId) throw new Error('RECOVERY_VIDEO_ID_REQUIRED');
+  if (mode !== 'recover' && videoId) throw new Error('AMBIGUOUS_CREATE_AND_RECOVER');
+  if (mode !== 'recover' && process.env.AGNES_ALLOW_CREATE !== '1') throw new Error('CREATE_NOT_AUTHORIZED');
+  function boundedInteger(name: string, fallback: number, minimum: number, maximum: number) {
+    const value = Number(process.env[name] || fallback);
+    if (!Number.isSafeInteger(value) || value < minimum || value > maximum) throw new Error('INVALID_POLLING_LIMITS');
+    return value;
   }
-
-  if (task.status !== 'succeeded' || !task.resultUrl) {
-    throw new Error(`Agnes smoke task ended as ${task.providerStatus}: ${task.errorMessage ?? 'no provider error message'}`);
+  const outputDir = resolve('artifacts/agnes-smoke');
+  await mkdir(outputDir, { recursive: true });
+  // Every create uses the fixed benign fixture, never customer inputs or a signed image URL.
+  const imagePath = 'apps/web/public/demo/images/image-16x9-1024.png';
+  const fixtureCommit = 'c130a35cc49214343f7685411c628d89356798e8';
+  const imageUrl = `https://raw.githubusercontent.com/LYCMYT/AIspsc/${fixtureCommit}/${imagePath}`;
+  let inputEvidence: { filename: string; sha256: string; sourceCommit: string } | undefined;
+  if (mode === 'image') {
+    const input = await readFile(imagePath);
+    const hash = createHash('sha256').update(input).digest('hex');
+    if (hash !== 'd01dbd1055c516ec511d8f682afcc755e2ce2ea884694c84159a4e7782700667') throw new Error('INPUT_FIXTURE_HASH_MISMATCH');
+    // Verify the exact public reference before consuming a generation request.
+    const response = await fetch(imageUrl, { redirect: 'error', signal: AbortSignal.timeout(20_000) });
+    if (!response.ok || !response.headers.get('content-type')?.startsWith('image/')) throw new Error('INPUT_FIXTURE_UNAVAILABLE');
+    const remote = Buffer.from(await response.arrayBuffer());
+    if (createHash('sha256').update(remote).digest('hex') !== hash) throw new Error('PUBLIC_FIXTURE_HASH_MISMATCH');
+    await writeFile(resolve(outputDir, 'input.png'), input);
+    inputEvidence = { filename: 'input.png', sha256: hash, sourceCommit: fixtureCommit };
   }
-
-  const resultResponse = await fetch(task.resultUrl, { signal: AbortSignal.timeout(60_000) });
-  if (!resultResponse.ok) throw new Error(`Generated video download failed with HTTP ${resultResponse.status}.`);
-  const bytes = Buffer.from(await resultResponse.arrayBuffer());
-  if (!bytes.length) throw new Error('Generated video download returned an empty file.');
-  const sha256 = createHash('sha256').update(bytes).digest('hex');
-  await writeFile(resolve(outputDir, 'result.mp4'), bytes);
-
-  const completedAt = new Date().toISOString();
-  await saveRecord({
-    version: 1,
-    provider: 'Agnes AI',
-    model: AGNES_VIDEO_MODEL,
-    startedAt,
-    completedAt,
-    request,
-    externalIds: { taskId: task.taskId, videoId },
-    statusTimeline: timeline,
-    providerReported: { seconds: task.seconds, size: task.size },
-    result: { filename: 'result.mp4', sha256, byteSize: bytes.length },
-    secretHandling: 'AGNES_API_KEY was read only from the environment and is not written to artifacts.',
+  const request = {
+    prompt: mode === 'image'
+      ? 'Animate the supplied geometric test image with a slow gentle camera push-in. Preserve the original shapes, colors and composition. No new objects, no text, no cuts.'
+      : 'A simple blue geometric cube slowly rotates in a clean neutral studio, stable shape, gentle camera movement, soft light, no text.',
+    ...(mode === 'image' ? { imageUrl } : {}),
+    durationSeconds: 5, ratio: '16:9' as const, resolution: '720p' as const, audio: false, seed: 42,
+  };
+  const record = await runAgnesSmoke({
+    client: new AgnesVideoClient({ apiKey }),
+    existingVideoId: mode === 'recover' ? videoId : undefined,
+    request: mode === 'recover' ? undefined : request,
+    allowCreate: mode !== 'recover' && process.env.AGNES_ALLOW_CREATE === '1',
+    pollMs: boundedInteger('AGNES_SMOKE_POLL_MS', 5000, 1000, 30000),
+    timeoutMs: boundedInteger('AGNES_SMOKE_TIMEOUT_MS', 600000, 1000, 600000),
+    persist: async (evidence) => {
+      const json = JSON.stringify({ ...evidence, inputEvidence, sourceRunId: process.env.AGNES_SOURCE_RUN_ID || null }, null, 2).split(apiKey).join('[REDACTED]');
+      const pending = resolve(outputDir, 'smoke.pending.json');
+      await writeFile(pending, `${json}\n`, { mode: 0o600 });
+      await rename(pending, resolve(outputDir, 'smoke.json'));
+    },
+    download: (url) => downloadAgnesVideo(url, outputDir),
   });
-  console.log(`Agnes smoke succeeded; saved ${bytes.length} bytes with sha256=${sha256}.`);
-} catch (error) {
-  const safeError = error instanceof AgnesProviderError
-    ? { name: error.name, kind: error.kind, status: error.status, message: error.message }
-    : { name: error instanceof Error ? error.name : 'Error', message: error instanceof Error ? error.message : String(error) };
-  await saveRecord({
-    version: 1,
-    provider: 'Agnes AI',
-    model: AGNES_VIDEO_MODEL,
-    startedAt,
-    failedAt: new Date().toISOString(),
-    request,
-    statusTimeline: timeline,
-    error: safeError,
-    secretHandling: 'AGNES_API_KEY was read only from the environment and is not written to artifacts.',
-  });
-  throw error;
+  console.log(JSON.stringify({ outcome: record.outcome, operation: record.operation, newTaskSubmissions: record.newTaskSubmissions, result: record.result }));
 }
+
+await main().catch(() => {
+  console.error('Agnes smoke did not complete. Inspect smoke.json for the safe error code and original video ID. Do not repeat create; recover the existing task.');
+  process.exitCode = 1;
+});

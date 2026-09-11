@@ -2,58 +2,65 @@ name: agnes-smoke
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'recover queries an existing task with no new generation'
+        type: choice
+        options: [recover, text, image]
+        default: recover
+      existing_video_id:
+        description: 'Original video ID from smoke.json; required for recover'
+        type: string
+      confirm_new_generation:
+        description: 'Allow exactly one new task for text/image. Check current provider pricing first.'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
+concurrency:
+  group: agnes-live-smoke
+  cancel-in-progress: false
+
 jobs:
   smoke:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 18
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 12.3.4
           run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24.19.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Verify deterministic code before provider call
-        run: pnpm verify
-
-      - name: Require AGNES_API_KEY secret
-        env:
-          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - name: Ensure media validators are available
         run: |
-          if [ -z "$AGNES_API_KEY" ]; then
-            echo "AGNES_API_KEY repository secret is not configured." >&2
-            exit 1
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
           fi
-
-      - name: Run one real Agnes video smoke test
+      - name: Run selected operation
         env:
           AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
-          AGNES_SMOKE_POLL_MS: '5000'
-          AGNES_SMOKE_TIMEOUT_MS: '600000'
+          AGNES_SMOKE_MODE: ${{ inputs.mode }}
+          AGNES_EXISTING_VIDEO_ID: ${{ inputs.existing_video_id }}
+          AGNES_ALLOW_CREATE: ${{ inputs.confirm_new_generation && '1' || '0' }}
         run: pnpm smoke:agnes
-
-      - name: Upload sanitized smoke evidence
+      - name: Upload safe evidence, including checkpoints on failure
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: agnes-smoke-evidence
-          path: artifacts/agnes-smoke
+          path: |
+            artifacts/agnes-smoke/smoke.json
+            artifacts/agnes-smoke/result.mp4
+            artifacts/agnes-smoke/input.png
           if-no-files-found: ignore
           retention-days: 7

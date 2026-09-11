@@ -1,296 +1,137 @@
 # 多模型 AI 营销视频生产平台
 
-> **Public reconstruction / B1 local interactive simulation**  
-> 面向电商投流素材生产，把多模型生成从“单次调用工具”重构成可校验、可路由、可恢复、可审核、可入库的 AI 内容生产工作流。
+> 基于真实商业项目核心产品逻辑公开重构的可复验 Demo。不是原生产源码，不把模拟能力包装成客户生产结果。
 
-**Live Demo:** https://lycmyt.github.io/AIspsc/
+**在线 B1 Demo：** https://lycmyt.github.io/AIspsc/
 
-本仓库基于真实商业项目中已确认的核心产品逻辑进行公开重构。它**不是原生产源码**，当前在线 B1 Demo 也**不会调用外部付费模型**。B1 的目标是把关键产品规则变成可以真实操作、自动测试和公开复验的证据。
+## 本轮进展：真实模型测试与上线问题修复
 
-## 这个项目解决什么问题
+Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试，包括认证、创建、轮询、下载、SHA-256、实际文件元数据和全片解码。
 
-AI 营销素材生产的难点不只是“能否生成一条视频”，而是如何管理整个生产过程：
+**技术链路通过不等于产品验收通过。** 两条结果都为1280×704、约5.04秒并含AAC音轨，而目标请求为1280×720 / 16:9 / audio=false。真实路由仍禁用，在线页面仍为不消耗模型额度的 B1 Mock Demo。
 
-```text
-参考素材 / Prompt
-        ↓
-严格请求校验
-        ↓
-任务分类与能力路由
-        ↓
-异步 Batch / Item
-        ↓
-成功 / 部分成功 / 失败 / 取消 / 结果未知
-        ↓
-逐条人工审核
-        ↓
-显式手动入库
-        ↓
-资产复用
-```
+首次测试还发现真实结果 URL 层级和输出域名与文档示例不同；修复后恢复了原视频，**没有重新生成原任务**。另新增1条固定自有图片测试，不使用客户素材。
 
-平台把几个高风险环节做成显式产品合同：
+- [真实测试、文件哈希与故障恢复](docs/12_AGNES_SMOKE_RECOVERY.md)
+- [Agnes 接入边界与运行方式](docs/11_AGNES_PROVIDER_INTEGRATION.md)
+- [候选能力与实际不符合项](contracts/agnes-video-v20.binding-candidate.json)
+- [Pages 线上媒体路径回归](docs/13_PAGES_LIVE_VALIDATION.md)
 
-- 用户表达任务意图，而不是自己研究底层模型；
-- Prompt trim 后必须非空，参考素材不能绕过；
-- 不兼容参数明确失败，不静默降级；
-- 批量任务按子结果独立管理状态、审核和额度；
-- Provider 结果未知不自动当失败，也不盲目重复付费生成；
-- 生成成功、人工审核、资产入库三步分离；
-- 上传 / 生成 / fixture 保留不同 provenance；
-- 没有执行 AI 识别就明确显示“未执行”，不伪造标签或语义结果。
+## 解决的业务问题
 
-## 当前 B1 可以真实操作什么
-
-### 1. 创作
-
-- 视频 / 图片 / 文案三种模态；
-- Prompt；
-- 参考视频 / 人物 / 商品 / 背景四类参考角色；
-- 视频时长 5–15 秒整数；
-- 9:16 / 16:9 / 1:1；
-- 720p / 1080p；
-- 数量 1–4；
-- 音频开关；
-- 严格 Schema + 语义校验；
-- 确定性 Mock 路由与结果。
-
-### 2. 历史与异步可靠性
-
-支持：
-
-- `queued → running → finalizing → succeeded`；
-- `partial_succeeded`；
-- failed / retry；
-- cancel / cancel race；
-- `needs_reconciliation`；
-- 下载失败恢复；
-- 刷新/重开后的确定性恢复；
-- 路由、价格、ProviderAttempt、额度流水只读诊断。
-
-### 3. Human-in-the-loop 审核
-
-视频使用 `rubric-v2-rebuild`：
-
-- 11 类质量维度；
-- applicable / N/A；
-- 1–10 人工综合分；
-- Hard Failure；
-- Technical Error；
-- 审核 revision；
-- 改判原因；
-- 审核通过后仍需手动入库。
-
-这套量表是公开重建的审核合同，**不是历史客户评测数据的逐字复原，也不宣称阈值已经过真实样本统计验证**。
-
-### 4. 视频拆解
-
-提供：
-
-- 顺序拆解；
-- 平均拆解；
-- 固定测试源的场景边界；
-- 手动区间；
-- 实际源 Blob 的浏览器播放与帧预览。
-
-普通上传视频在 B1 只规划合法区间；没有真实切片文件时不会伪造下载或复用入口。
-
-### 5. 素材与资产
-
-- IndexedDB 持久化真实本地 Blob；
-- 上传源与生成资产来源分离；
-- 已审核结果显式入库；
-- 审核改判后原资产进入 `review_invalidated`；
-- 固定识别样例明确标注“预设标签，非 AI 分析”；
-- 普通未知上传显示“内容识别未执行”。
-
-## 为什么前台没有模型选择器
-
-这是产品决策，不是漏做功能。
+难点不只是“能否生成一条视频”，而是把素材输入、模型能力、异步失败、人工审核、额度和资产复用组织成可追踪的生产流程。
 
 ```text
-用户意图
-  ↓
-Task Classification
-  ↓
-Capability Filter
-  ↓
-Provider Binding
+参考素材 / Prompt → 严格校验 → 任务分类与能力路由
+                                  ↓
+                         异步 Batch / Item
+                                  ↓
+                成功 / 部分成功 / 失败 / 取消 / 结果未知
+                                  ↓
+                         人工审核 → 显式入库 → 资产复用
 ```
 
-用户不应该为了完成“生成营销视频”而自己维护各厂商模型的版本、参数兼容和价格知识。B1 用 Mock Binding 验证路由语义；B3 才会在真实 Provider 证据、Smoke Test 和评测完成后启用真实 Binding。
+用户表达任务意图，不在前台研究模型版本或选择底层模型。不兼容请求明确失败，不静默降级。生成成功、审核通过和手动入库是三个独立步骤。
 
-详细决策见 [`docs/01_PRODUCT_DECISIONS.md`](docs/01_PRODUCT_DECISIONS.md)。
+## 当前 B1 可操作能力
 
-## 架构
+| 入口 | 能力 | 真实边界 |
+|---|---|---|
+| 创作 | 视频/图片/文案，Prompt，参考视频/人物/商品/背景，参数与数量 | 确定性 Mock 生成，不调用付费模型 |
+| 历史 | Batch/Item、部分成功、失败重试、取消竞态、未知状态对账、下载恢复 | 模拟 ProviderAttempt，不冒充真实运营数据 |
+| 人工审核 | rubric-v2-rebuild，11维问题标签、适用性、硬失败、技术失败、综合分、改判版本 | 公开重建审核合同，不是原客户历史评测数据 |
+| 资产库 | 上传/生成/fixture 来源区分，审核后显式入库，改判失效 | IndexedDB 保存真实浏览器 Blob |
+| 视频拆解 | 顺序/平均/固定场景样例/手动区间，源视频与帧预览 | 普通上传只规划区间；无真实切片就不伪造下载 |
+| 素材识别 | 固定样例标签与人工标签 | 未执行AI识别就明确显示“未执行” |
+
+前台视频合同：5–15秒整数，9:16/16:9/1:1，720p/1080p，数量1–4，音频开关。**这些是 B1 产品请求合同，不表示每个真实 Provider 都已支持全部组合。**
+
+可靠性覆盖 `queued → running → finalizing → succeeded`、partial_succeeded、cancel_requested、needs_reconciliation、刷新恢复、下载恢复、审核改判与额度预占/结算/释放。
+
+## 关键产品决策
+
+- 前台不暴露 `modelId` 或参考强度字段；系统根据意图与硬能力筛选候选。
+- 批次按子结果维护状态、错误、审核与额度，部分失败不抹掉成功结果。
+- 提交结果未知不等于未受理；保留原任务，不盲目重复生成。
+- 技术生成成功不代表素材可用；通过人工审核后仍需确认入库。
+- 保留来源与审核版本；已入库结果改判后标记失效。
+
+完整取舍见 [产品决策](docs/01_PRODUCT_DECISIONS.md)。
+
+## 架构与证据状态
 
 ```text
-Vue Web
-   ↓ ServiceFacade
-MockPlatform (B1)
-   ↓
-contracts + domain + IndexedDB media store
+Vue UI → ServiceFacade → MockPlatform → contracts / domain / IndexedDB
+                         （B1）
+
+未来：ServiceFacade → HttpPlatform → 受控API / 数据库 / Worker / 对象存储
+                                      ↓
+                                  ProviderAdapter
 ```
 
-已经预留真实后端演进缝隙：B2 新增 `HttpPlatform`，而不是重写 Vue 页面。
+Pages 子路径由 composition root 注入，不让领域包依赖 Vite。Agnes 服务端模块不被在线前端导入，不把密钥放到浏览器。
 
-```text
-                   ┌─ MockPlatform  ← B1 Demo
-UI → ServiceFacade ┤
-                   └─ HttpPlatform  ← B2+
-                           ↓
-                         API
-```
+模型证据：`unverified → documented → smoke_tested → evaluated → integrated`。
+Agnes 目前为 **smoke_tested（技术）**，未完成业务评测与产品参数验收。其他候选状态见 [能力证据矩阵](docs/09_MODEL_CAPABILITY_MATRIX.md)。研究证据文件不直接驱动真实路由。
 
-完整架构与 B2/B3 边界见 [`docs/02_SYSTEM_ARCHITECTURE.md`](docs/02_SYSTEM_ARCHITECTURE.md)。
+## 版本路线
 
-## 模型证据不是“有名称就算已接入”
+**B1：** 本地交互模拟，产品合同、状态、审核、资产、拆解、额度与浏览器持久化。
 
-`contracts/model-registry.json` 中的真实模型绑定继续保持 disabled / unverified。
+**B1.5（当前）：** 产品决策、架构、公开 Demo、CI、Provider 技术证据、真实小样本评测合同和故障复盘。
 
-B1.5 通过 [`contracts/provider-capability-evidence.json`](contracts/provider-capability-evidence.json) 使用五级证据状态：
+**B2：** HTTP API、Auth/Workspace、数据库、对象存储、真实 FFmpeg、服务端账本、Outbox/Worker。
 
-```text
-unverified
-→ documented
-→ smoke_tested
-→ evaluated
-→ integrated
-```
+**B3：** 受控 Provider 集成、输出参数符合性、实际费用、任务恢复与真实能力路由。
 
-只有 `integrated` 才能进入未来真实 Router。
+**B4：** 安全、可观测性、限流、故障切换与客户级验收。
 
-当前已新增 **Agnes Video V2.0** 的第一个真实 Provider Adapter 实验：代码、确定性单测、候选能力合同和手动 Smoke workflow 已准备，但在真实 Secret Smoke 通过前仍只标记为 `documented`，不会进入在线 B1 Demo 或真实 Router。详见 [`docs/11_AGNES_PROVIDER_INTEGRATION.md`](docs/11_AGNES_PROVIDER_INTEGRATION.md)。
+下一步优先解决已实测发现的输出尺寸/音轨规范化，再推进最小受控服务端闭环；不继续随机生成昂贵样本。
 
-Seedance 2.0 / Kling 3.0 等候选的证据状态和 Agnes 的保守能力边界见 [`docs/09_MODEL_CAPABILITY_MATRIX.md`](docs/09_MODEL_CAPABILITY_MATRIX.md)。
+## 安装与验证
 
-## 工程证据
-
-B1 基线提交 `626fcb3ade8a850b9a852f8d083c916a0d5c1d08` 的 `IMPLEMENTATION_REPORT.md` 记录：
-
-| Check | B1 baseline result |
-|---|---:|
-| Lint | PASS |
-| TypeScript | PASS |
-| Unit tests | 116 PASS |
-| Contract tests | 25 PASS |
-| Production build | PASS |
-| End-to-end tests | 74 PASS |
-| Capture checks | 6 PASS |
-
-B1.5 已通过 GitHub Actions 在 push / PR 上持续复验：
-
-```sh
-pnpm verify
-pnpm test:e2e
-```
-
-随着真实评测 Schema 和 Agnes Adapter 的加入，当前确定性测试数量已高于 B1 基线；README 不把旧基线数字冒充后续所有提交的固定测试数，最终以 CI 输出为准。
-
-## 路线图
-
-### B1｜Local Interactive Simulation ✅
-
-产品流程、状态合同、Mock Router、审核、资产、额度、拆解和浏览器持久化。
-
-### B1.5｜Portfolio Evidence Release ← 当前阶段
-
-- 产品背景与决策；
-- 架构与边界；
-- 模型能力证据矩阵；
-- CI 独立复验；
-- GitHub Pages 在线 Demo；
-- Agnes 真实 Provider Adapter / Secret-safe Smoke 基础；
-- 小样本真实视频模型评测；
-- Bad Case 复盘；
-- 可公开展示的证据链。
-
-### B2｜Real Platform Foundation
-
-计划：HTTP API、Auth/Workspace、PostgreSQL、对象存储、真实 FFmpeg、服务端账本、Outbox/Worker。
-
-### B3｜Real AI Provider
-
-计划：ProviderAdapter、真实异步调用、成本/时延证据、真实 Capability Routing。
-
-### B4｜Production-like Acceptance
-
-计划：安全、可观测性、限流、Provider 健康度/故障切换和客户级验收。
-
-## 当前明确不声称完成
-
-- 生产 HTTP 服务；
-- 登录、权限与 Workspace 隔离；
-- Agnes / Seedance / Kling 已进入真实生产 Router；
-- 真实模型统一计费；
-- 支付充值；
-- 广告平台连接；
-- 任意上传视频的服务端 FFmpeg 切片；
-- 客户生产验收；
-- 广告转化率或真实运营指标。
-
-## 文档导航
-
-- [`00_PROJECT_OVERVIEW.md`](docs/00_PROJECT_OVERVIEW.md)：项目背景、范围与版本路线。
-- [`01_PRODUCT_DECISIONS.md`](docs/01_PRODUCT_DECISIONS.md)：关键 AI 产品决策与取舍。
-- [`02_SYSTEM_ARCHITECTURE.md`](docs/02_SYSTEM_ARCHITECTURE.md)：B1 架构与 B2/B3 演进边界。
-- [`03_DOMAIN_CONTRACT.md`](docs/03_DOMAIN_CONTRACT.md)：领域数据、状态与统一接口。
-- [`04_ROUTING_CONTRACT.md`](docs/04_ROUTING_CONTRACT.md)：任务分类与能力路由。
-- [`05_VIDEO_SPLIT_CONTRACT.md`](docs/05_VIDEO_SPLIT_CONTRACT.md)：拆解规则、数学边界和真实 FFmpeg 验收。
-- [`06_EVALUATION_CONTRACT.md`](docs/06_EVALUATION_CONTRACT.md)：11 类人工质量审核。
-- [`07_QUOTA_AND_RELIABILITY.md`](docs/07_QUOTA_AND_RELIABILITY.md)：额度、幂等、取消与未知结果。
-- [`08_ACCEPTANCE.md`](docs/08_ACCEPTANCE.md)：阻塞验收与证据格式。
-- [`09_MODEL_CAPABILITY_MATRIX.md`](docs/09_MODEL_CAPABILITY_MATRIX.md)：模型证据成熟度与真实接入门槛。
-- [`10_REAL_EVALUATION_PLAN.md`](docs/10_REAL_EVALUATION_PLAN.md)：4×2 探索性真实模型评测合同。
-- [`11_AGNES_PROVIDER_INTEGRATION.md`](docs/11_AGNES_PROVIDER_INTEGRATION.md)：Agnes Adapter、Secret、安全与 Smoke 门槛。
-
-## 环境
-
-- Node.js 24.19.x
-- pnpm 12.3.4
-- Chromium（Playwright E2E）
-- FFmpeg / ffprobe（只在重新生成或完整校验演示媒体时需要）
-
-## 本地安装与运行
+环境：Node.js 24.19.x、pnpm 12.3.4；浏览器测试使用 Playwright Chromium。真实 Provider smoke 的文件校验还需要 FFmpeg/ffprobe。
 
 ```sh
 npm exec --yes --package pnpm@12.3.4 -- pnpm install --frozen-lockfile
 npm exec --yes --package pnpm@12.3.4 -- pnpm dev
 ```
 
-开发服务默认监听 `http://127.0.0.1:5173`。可编辑设计预览位于 `/design-panel.html`。
-
-## 验证
+本地默认地址 `http://127.0.0.1:5173`，设计预览 `/design-panel.html`。
 
 ```sh
-npm exec --yes --package pnpm@12.3.4 -- pnpm verify
+pnpm verify
+pnpm exec playwright install chromium
+pnpm test:e2e
 ```
 
-首次运行浏览器测试：
+`verify` 包含 lint、TypeScript、单元测试、合同测试和生产构建。最终以对应提交的 Actions 日志为准；旧 B1 基线的116/25/74等历史结果保留在 `IMPLEMENTATION_REPORT.md`，不能冒充后续提交的固定测试数。
 
-```sh
-PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright" npm exec --yes --package pnpm@12.3.4 -- pnpm exec playwright install chromium
-npm exec --yes --package pnpm@12.3.4 -- pnpm test:e2e
-```
+真实 Agnes 测试只通过手动受控入口，默认恢复，不自动生成。密钥只在服务器进程环境/GitHub Secret 中，操作方式见 [Provider README](packages/provider-agnes/README.md)。
 
-演示媒体可单独校验：
+## 文档导航
 
-```sh
-node apps/web/scripts/verify-demo-media.mjs
-```
+| 文档 | 内容 |
+|---|---|
+| [00 项目概览](docs/00_PROJECT_OVERVIEW.md) | 业务背景、范围和版本路线 |
+| [01 产品决策](docs/01_PRODUCT_DECISIONS.md) | 用户意图、路由、审核与取舍 |
+| [02 系统架构](docs/02_SYSTEM_ARCHITECTURE.md) | B1结构与B2/B3边界 |
+| [03 领域合同](docs/03_DOMAIN_CONTRACT.md) | 实体、状态和接口 |
+| [04 路由合同](docs/04_ROUTING_CONTRACT.md) | 任务分类、能力筛选 |
+| [05 拆解合同](docs/05_VIDEO_SPLIT_CONTRACT.md) | 区间规则与真实媒体验收 |
+| [06 审核合同](docs/06_EVALUATION_CONTRACT.md) | 11类质量审核与入库规则 |
+| [07 额度与可靠性](docs/07_QUOTA_AND_RELIABILITY.md) | 幂等、取消、未知结果 |
+| [08 验收](docs/08_ACCEPTANCE.md) | 阻塞用例与证据格式 |
+| [09 模型证据](docs/09_MODEL_CAPABILITY_MATRIX.md) | 文档、技术测试与正式接入分层 |
+| [10 真实评测计划](docs/10_REAL_EVALUATION_PLAN.md) | 原4×2探索性业务实验与预算门槛 |
+| [11 Agnes 接入](docs/11_AGNES_PROVIDER_INTEGRATION.md) | 安全运行与真实路由阻塞项 |
+| [12 Agnes 实测复盘](docs/12_AGNES_SMOKE_RECOVERY.md) | 真实结果、哈希、时延与参数差异 |
+| [13 Pages 线上回归](docs/13_PAGES_LIVE_VALIDATION.md) | 子路径媒体加载问题 |
 
-源代码与 B1 冻结快照的历史验证结果见 `IMPLEMENTATION_REPORT.md`。
+## 目录与明确未完成项
 
-## 目录
+`apps/web` 为前端与E2E；`packages/contracts` 为共享合同；`packages/domain` 为纯业务规则；`packages/media-store` 为浏览器持久化；`packages/mock-service` 为演示执行环境；`packages/provider-agnes` 为独立服务端测试接入；`contracts`、`fixtures`、`docs` 保存规格、确定性向量与证据说明。
 
-- `apps/web`：Vue 应用、设计预览、端到端测试和自生成演示媒体。
-- `packages/contracts`：共享类型和合同测试。
-- `packages/domain`：校验、路由、拆解、审核、额度与状态规则。
-- `packages/media-store`：IndexedDB 媒体持久化。
-- `packages/mock-service`：B1 浏览器内模拟服务。
-- `packages/provider-agnes`：Agnes Video V2.0 服务端 Adapter、确定性测试与手动 Smoke runner。
-- `contracts`：JSON Schema、OpenAPI、Provider evidence 与候选 Binding 合同。
-- `fixtures`：确定性合同测试向量。
-- `docs`：项目决策、领域、评测、可靠性、模型证据与验收文档。
+演示媒体由仓库脚本生成，来源与逐文件SHA-256见 `apps/web/public/demo/MEDIA_MANIFEST.json`。
 
-演示媒体由仓库脚本生成，来源与逐文件 SHA-256 记录在 `apps/web/public/demo/MEDIA_MANIFEST.json`。
+当前不声称完成：生产HTTP服务、登录与Workspace隔离、真实Router上线、统一实际计费、充值支付、广告平台连接、任意上传视频的服务端FFmpeg切片、客户生产验收或广告转化提升。
