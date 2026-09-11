@@ -53,10 +53,21 @@
         }
       }
     },
-    "normalizedRequest": { "type": "object" },
+    "normalizedRequest": {
+      "type": "object",
+      "description": "Normalized platform request. Must not include credentials."
+    },
     "providerRequestSummary": {
       "type": "object",
-      "description": "Non-secret provider-specific parameters needed to reproduce the call. Authorization headers, API keys and signed URLs are forbidden."
+      "description": "Non-secret provider-specific parameters needed to reproduce the call. Authorization headers, API keys, tokens, secrets and signed URLs are forbidden.",
+      "propertyNames": {
+        "not": {
+          "pattern": "(^|[_-])(api[_-]?key|authorization|access[_-]?token|refresh[_-]?token|token|secret|signed[_-]?url|signature)($|[_-])"
+        }
+      },
+      "additionalProperties": {
+        "type": ["string", "number", "integer", "boolean", "null", "array", "object"]
+      }
     },
     "externalJobId": { "type": ["string", "null"] },
     "providerStatusTimeline": {
