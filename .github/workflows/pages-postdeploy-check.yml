@@ -1,0 +1,74 @@
+name: pages-postdeploy-check
+on:
+  push:
+    branches: ['diagnostic/agnes-completed-result']
+    paths: ['.github/workflows/pages-postdeploy-check.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    if: github.ref == 'refs/heads/diagnostic/agnes-completed-result'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 'e71811c1fa82245a7479435b1cfa751a9dedf49c'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Validate deployed home and assets in a clean browser
+        run: |
+          mkdir -p artifacts/pages-postdeploy
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from '@playwright/test';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+          const failedResources = [];
+          const mediaRequests = [];
+          const errors = [];
+          page.on('response', response => {
+            const path = new URL(response.url()).pathname;
+            if (response.status() >= 400 && !path.endsWith('/favicon.ico')) failedResources.push({ path, status: response.status() });
+            if (path.includes('/demo/')) mediaRequests.push({ path, status: response.status() });
+          });
+          page.on('pageerror', error => errors.push(error.message.slice(0, 300)));
+          const report = { expectedDeployment: 'e71811c1fa82245a7479435b1cfa751a9dedf49c', checkedAt: new Date().toISOString(), failedResources, mediaRequests, errors };
+          try {
+            const response = await page.goto('https://lycmyt.github.io/AIspsc/', { waitUntil: 'networkidle', timeout: 60000 });
+            report.httpStatus = response?.status();
+            await page.waitForFunction(() => /1,?286/.test(document.body.innerText), { timeout: 15000 });
+            report.homeText = (await page.locator('body').innerText()).slice(0, 12000);
+            await page.screenshot({ path: 'artifacts/pages-postdeploy/home.png', fullPage: true });
+            await page.getByRole('link', { name: '资产库', exact: true }).click();
+            await page.waitForFunction(() => document.body.innerText.includes('几何图形'), { timeout: 15000 });
+            report.assetText = (await page.locator('body').innerText()).slice(0, 12000);
+            await page.screenshot({ path: 'artifacts/pages-postdeploy/assets.png', fullPage: true });
+            assert.equal(report.httpStatus, 200);
+            assert.equal(failedResources.length, 0);
+            assert.equal(errors.length, 0);
+            assert.ok(mediaRequests.some(r => r.path === '/AIspsc/demo/MEDIA_MANIFEST.json' && r.status === 200));
+            assert.ok(!mediaRequests.some(r => r.path.startsWith('/demo/')));
+            assert.ok(!report.homeText.includes('演示媒体清单不可用'));
+            report.outcome = 'passed';
+            console.log(JSON.stringify({ outcome: report.outcome, httpStatus: report.httpStatus, mediaRequestCount: mediaRequests.length, failedResourceCount: failedResources.length, pageErrorCount: errors.length }));
+          } finally {
+            await writeFile('artifacts/pages-postdeploy/report.json', JSON.stringify(report, null, 2));
+            await browser.close();
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pages-postdeploy-evidence
+          path: artifacts/pages-postdeploy
+          retention-days: 7
