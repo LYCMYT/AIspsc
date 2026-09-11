@@ -1,58 +1,64 @@
 {
-  "version": "agnes-video-v20-binding-candidate-v1",
+  "version": "agnes-video-v20-binding-candidate-v2",
   "runtimeEligible": false,
-  "reason": "Adapter code is present, but a real smoke test and evaluation evidence are still required before routing can be enabled.",
+  "evidenceStatus": "smoke_tested",
+  "evidenceScope": "Technical API execution and validated media persistence only; not business evaluation or product-parameter acceptance.",
+  "reason": "Text and single-image API smoke tests produced decodable files, but both outputs contained audio and used 1280x704 instead of the requested 1280x720. Product conformance, billing evidence, server persistence, authorization and evaluation remain blocking gates.",
   "provider": "Agnes AI",
   "officialDocsCheckedAt": "2026-09-11",
   "modelKey": "agnes-video-v2",
   "apiModelId": "agnes-video-v2.0",
   "baseUrl": "https://apihub.agnes-ai.com",
-  "create": {
-    "method": "POST",
-    "path": "/v1/videos"
-  },
-  "query": {
-    "method": "GET",
-    "path": "/agnesapi",
-    "recommendedIdentifier": "video_id",
-    "modelNameParameter": "agnes-video-v2.0"
-  },
+  "create": { "method": "POST", "path": "/v1/videos" },
+  "query": { "method": "GET", "path": "/agnesapi", "recommendedIdentifier": "video_id", "modelNameParameter": "agnes-video-v2.0" },
   "providerStatuses": ["queued", "in_progress", "completed", "failed"],
-  "normalizedStatuses": {
-    "queued": "queued",
-    "in_progress": "running",
-    "completed": "succeeded",
-    "failed": "failed",
-    "unknown": "needs_reconciliation"
-  },
+  "normalizedStatuses": { "queued": "queued", "in_progress": "running", "completed": "succeeded", "failed": "failed", "unknown": "needs_reconciliation" },
   "capabilityCandidate": {
+    "meaning": "Documented request presets; not an assertion that every output meets the requested constraints.",
     "taskTypes": ["TEXT_TO_VIDEO", "IMAGE_GUIDED_VIDEO"],
     "maxReferences": 1,
-    "referenceRoleLimits": {
-      "product": 1,
-      "person": 1,
-      "background": 1,
-      "reference_video": 0
-    },
-    "video": {
-      "durationSeconds": [5, 10],
-      "ratios": ["9:16", "16:9", "1:1"],
-      "resolutions": ["720p", "1080p"],
-      "audio": [false]
-    }
+    "referenceRoleLimits": { "product": 1, "person": 1, "background": 1, "reference_video": 0 },
+    "video": { "durationSeconds": [5, 10], "ratios": ["9:16", "16:9", "1:1"], "resolutions": ["720p", "1080p"], "audio": [false] }
+  },
+  "verifiedSubset": {
+    "taskTypes": ["TEXT_TO_VIDEO", "IMAGE_GUIDED_VIDEO"],
+    "requested": { "durationSeconds": 5, "ratio": "16:9", "resolution": "720p", "width": 1280, "height": 720, "audio": false },
+    "observedOnBothSamples": { "durationMs": 5042, "width": 1280, "height": 704, "hasAudio": true, "videoCodec": "h264", "audioCodec": "aac", "frames": 121, "fps": 24 },
+    "productConformance": "blocked",
+    "issues": ["OUTPUT_DIMENSIONS_DIFFER", "OUTPUT_ASPECT_RATIO_DIFFERS", "UNEXPECTED_AUDIO_TRACK"],
+    "untested": ["10s", "9:16", "1:1", "1080p", "multi-reference", "reference-video", "native-audio-control"]
+  },
+  "smokeEvidence": {
+    "firstCreateRunId": 34620475819,
+    "shapeDiagnosticRunId": 34620909648,
+    "hostDiagnosticRunId": 34622707888,
+    "recoveryRunId": 34622911598,
+    "recoveryArtifactId": 10272908111,
+    "textResultSha256": "9f4507fdc3c313621c0a2e7b238cd4d80d3e9656094ce8640dbded3bafa680f9",
+    "recoveryNewTaskSubmissions": 0,
+    "imageRunId": 34623208051,
+    "imageArtifactId": 10273118889,
+    "imageResultSha256": "fba567db1a978c5e32611b3a2d585daf7b25507547cbd92c2cea7890cb874653",
+    "imageNewTaskSubmissions": 1,
+    "imageOperationLatencyMs": 94575,
+    "report": "docs/12_AGNES_SMOKE_RECOVERY.md"
   },
   "importantProviderSemantics": {
-    "duration": "The API controls duration with num_frames/frame_rate. This candidate exposes only the provider-documented approximately-5s and approximately-10s presets until real outputs are calibrated.",
-    "size": "Requested width/height may be normalized by Agnes. The response fields seconds, size and metadata.size_mapping are the source of truth.",
-    "imageInput": "Image-to-video requires a publicly accessible image URL. This candidate does not claim reference-video input or multi-reference semantic composition.",
-    "audio": "The model-specific video request documentation does not expose an audio-generation parameter, so audio=true is rejected by the adapter.",
-    "retry": "Create POST requests are never automatically retried because an ambiguous submission could create duplicate work."
+    "duration": "121 frames at 24 fps yielded 5.041667s in ffprobe, while the API reported seconds=5. Actual file metadata is authoritative for media validation.",
+    "size": "Requested 1280x720 was mapped to 1280x704 in both samples. Do not silently crop/stretch or advertise exact 16:9 compliance.",
+    "imageInput": "One pinned, SHA-256-verified repository-owned image was used. No customer or portrait material was uploaded.",
+    "audio": "audio=true is not exposed by this adapter. audio=false is not sent to Agnes because no documented control exists; actual files still had AAC tracks. A no-audio guarantee requires explicit post-processing and re-validation.",
+    "resultUrl": "Support documented metadata.url and observed top-level url only. Keep the original opaque query ID.",
+    "downloadHosts": ["platform-outputs.agnes-ai.space", "cos-platform-outputs.agnes-ai.cn"],
+    "retry": "Never retry POST automatically. Persist the original ID and recover with GET if finalization fails."
   },
   "pricingEvidence": {
     "source": "https://agnes-ai.com/doc/agnes-video-v20",
     "checkedAt": "2026-09-11",
     "standardPriceUsdPerSecond": 0.005,
     "currentPriceUsdPerSecond": 0,
-    "note": "Current price is time-sensitive and must be checked again before production use."
+    "actualCostUsd": null,
+    "actualCostStatus": "not_reported_by_provider",
+    "note": "Page pricing is not proof of an account-level zero bill; do not infer actual charges from it."
   }
 }
