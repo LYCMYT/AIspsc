@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-export const router = createRouter({ history: createWebHistory(), routes: [
+export const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes: [
   { path: '/', redirect: '/create' },
   { path: '/create', component: () => import('../features/create/CreatePage.vue') },
   { path: '/assets', component: () => import('../features/assets/AssetsPage.vue') },
