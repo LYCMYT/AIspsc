@@ -1,0 +1,31 @@
+name: agnes-media-diagnostic
+on:
+  push:
+    branches: ['diagnostic/agnes-completed-result']
+    paths: ['.github/workflows/agnes-media-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    if: github.ref == 'refs/heads/diagnostic/agnes-completed-result'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Read existing result host (no download and no create)
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+        run: |
+          node --input-type=module <<'NODE'
+          const key = process.env.AGNES_API_KEY?.trim();
+          if (!key) process.exit(1);
+          try {
+            const videoId = 'video_bGl0ZWxsbTpjdXN0b21fbGxtX3Byb3ZpZGVyOm9wZW5haTttb2RlbF9pZDphZ25lcy12aWRlby12Mi4wO3ZpZGVvX2lkOnZpZGVvX2I1YThmNDk3ZjFiZDQ1Mjk4ZmQ1OWI0NzhjYWI1NTgx';
+            const params = new URLSearchParams({ video_id: videoId, model_name: 'agnes-video-v2.0' });
+            const response = await fetch(`https://apihub.agnes-ai.com/agnesapi?${params}`, { headers: { authorization: `Bearer ${key}` }, redirect: 'error', signal: AbortSignal.timeout(30000) });
+            if (!response.ok) throw new Error('query rejected');
+            const payload = await response.json();
+            const url = new URL(payload?.metadata?.url || payload.url);
+            const host = url.hostname.replaceAll(key.toLowerCase(), '[redacted]');
+            console.log(JSON.stringify({ protocol: url.protocol, hostname: host, port: url.port, credentialsPresent: Boolean(url.username || url.password), hasQuery: Boolean(url.search) }));
+          } catch { console.error('Diagnostic failed; no raw response or exception logged.'); process.exitCode = 1; }
+          NODE
