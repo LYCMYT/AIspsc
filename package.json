@@ -14,6 +14,7 @@
     "build": "vite build --config apps/web/vite.config.ts",
     "test:e2e": "playwright test --config apps/web/playwright.config.ts",
     "capture": "playwright test --config apps/web/playwright.config.ts --grep @capture",
+    "smoke:agnes": "node --experimental-strip-types packages/provider-agnes/scripts/smoke.ts",
     "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:contracts && pnpm build"
   },
   "dependencies": {

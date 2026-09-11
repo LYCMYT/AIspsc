@@ -1,0 +1,59 @@
+name: agnes-smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify deterministic code before provider call
+        run: pnpm verify
+
+      - name: Require AGNES_API_KEY secret
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+        run: |
+          if [ -z "$AGNES_API_KEY" ]; then
+            echo "AGNES_API_KEY repository secret is not configured." >&2
+            exit 1
+          fi
+
+      - name: Run one real Agnes video smoke test
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+          AGNES_SMOKE_POLL_MS: '5000'
+          AGNES_SMOKE_TIMEOUT_MS: '600000'
+        run: pnpm smoke:agnes
+
+      - name: Upload sanitized smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agnes-smoke-evidence
+          path: artifacts/agnes-smoke
+          if-no-files-found: ignore
+          retention-days: 7
