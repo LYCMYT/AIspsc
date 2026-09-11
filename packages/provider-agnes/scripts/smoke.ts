@@ -39,15 +39,16 @@ async function saveRecord(record: unknown) {
 try {
   console.log(`Starting Agnes smoke test with ${AGNES_VIDEO_MODEL}.`);
   let task = await client.createVideo(request);
-  if (!task.videoId) throw new Error('Agnes create response did not include video_id.');
+  const videoId = task.videoId;
+  if (!videoId) throw new Error('Agnes create response did not include video_id.');
   timeline.push({ at: new Date().toISOString(), providerStatus: task.providerStatus, normalizedStatus: task.status, progress: task.progress });
-  console.log(`Created video task ${task.videoId}; status=${task.providerStatus}.`);
+  console.log(`Created video task ${videoId}; status=${task.providerStatus}.`);
 
   const deadline = Date.now() + timeoutMs;
   while (task.status === 'queued' || task.status === 'running' || task.status === 'needs_reconciliation') {
     if (Date.now() >= deadline) throw new Error(`Agnes smoke test exceeded ${timeoutMs}ms polling timeout.`);
     await new Promise((resolveSleep) => setTimeout(resolveSleep, pollMs));
-    task = await client.getVideo(task.videoId);
+    task = await client.getVideo(videoId);
     timeline.push({ at: new Date().toISOString(), providerStatus: task.providerStatus, normalizedStatus: task.status, progress: task.progress });
     console.log(`Poll status=${task.providerStatus}; progress=${task.progress ?? 'n/a'}.`);
   }
@@ -71,7 +72,7 @@ try {
     startedAt,
     completedAt,
     request,
-    externalIds: { taskId: task.taskId, videoId: task.videoId },
+    externalIds: { taskId: task.taskId, videoId },
     statusTimeline: timeline,
     providerReported: { seconds: task.seconds, size: task.size },
     result: { filename: 'result.mp4', sha256, byteSize: bytes.length },
