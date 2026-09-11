@@ -1,1 +1,0 @@
-Final branch review scope: Agnes Video V2.0 server-side adapter, deterministic tests, secret-safe manual smoke workflow, documented binding candidate, capability evidence, and live-demo README link. No real provider key or runtime routing enablement is included.
