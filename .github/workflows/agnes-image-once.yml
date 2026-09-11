@@ -1,0 +1,55 @@
+name: agnes-image-once
+# One authorized image-to-video validation, isolated from normal CI and main.
+# A rerun is deliberately blocked: use recovery with the saved ID, not another create.
+on:
+  push:
+    branches: ['validation/agnes-image-smoke-once']
+    paths: ['.github/workflows/agnes-image-once.yml']
+permissions:
+  contents: read
+concurrency:
+  group: agnes-live-smoke
+  cancel-in-progress: false
+jobs:
+  smoke:
+    if: github.ref == 'refs/heads/validation/agnes-image-smoke-once' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '978129736fe57cde9c0e0e6f7453e1cc792ea056'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - name: Ensure validators
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Execute exactly one self-owned geometric image test
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+          AGNES_SMOKE_MODE: image
+          AGNES_ALLOW_CREATE: '1'
+          AGNES_SOURCE_RUN_ID: '34622911598'
+        run: pnpm smoke:agnes
+      - name: Preserve only the sanitized record, input and validated result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agnes-image-smoke-evidence
+          path: |
+            artifacts/agnes-smoke/smoke.json
+            artifacts/agnes-smoke/input.png
+            artifacts/agnes-smoke/result.mp4
+          if-no-files-found: ignore
+          retention-days: 7
