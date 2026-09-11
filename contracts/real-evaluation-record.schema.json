@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LYCMYT/AIspsc/contracts/real-evaluation-record.schema.json",
+  "title": "Real Model Evaluation Record",
+  "description": "B1.5 evidence record for one real model output. This schema stores normalized experimental evidence and intentionally excludes secrets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "experimentId",
+    "caseId",
+    "candidateModel",
+    "provider",
+    "apiModelId",
+    "providerDocsCheckedAt",
+    "startedAt",
+    "completedAt",
+    "prompt",
+    "references",
+    "normalizedRequest",
+    "providerRequestSummary",
+    "providerStatusTimeline",
+    "platformOutcome",
+    "latencyMs",
+    "estimatedCost",
+    "actualCost",
+    "currency",
+    "pricingEvidence",
+    "review",
+    "badCases",
+    "notes"
+  ],
+  "properties": {
+    "experimentId": { "type": "string", "minLength": 1 },
+    "caseId": { "enum": ["EV001", "EV002", "EV003", "EV004"] },
+    "candidateModel": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "apiModelId": { "type": "string", "minLength": 1 },
+    "providerDocsCheckedAt": { "type": "string", "format": "date-time" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "prompt": { "type": "string", "minLength": 1 },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "assetId", "sha256", "source"],
+        "properties": {
+          "role": { "enum": ["product", "person", "background", "reference_video"] },
+          "assetId": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+          "source": { "enum": ["owned-test", "public-authorized", "generated-test"] }
+        }
+      }
+    },
+    "normalizedRequest": { "type": "object" },
+    "providerRequestSummary": {
+      "type": "object",
+      "description": "Non-secret provider-specific parameters needed to reproduce the call. Authorization headers, API keys and signed URLs are forbidden."
+    },
+    "externalJobId": { "type": ["string", "null"] },
+    "providerStatusTimeline": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at", "providerStatus", "normalizedStatus"],
+        "properties": {
+          "at": { "type": "string", "format": "date-time" },
+          "providerStatus": { "type": "string", "minLength": 1 },
+          "normalizedStatus": {
+            "enum": [
+              "queued",
+              "running",
+              "finalizing",
+              "cancel_requested",
+              "needs_reconciliation",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ]
+          }
+        }
+      }
+    },
+    "platformOutcome": {
+      "enum": ["succeeded", "failed", "cancelled", "needs_reconciliation", "not_supported"]
+    },
+    "resultMedia": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path", "sha256", "mime", "actualDurationMs", "width", "height", "hasAudio"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+        "mime": { "type": "string", "minLength": 1 },
+        "actualDurationMs": { "type": "integer", "minimum": 1 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "hasAudio": { "type": "boolean" }
+      }
+    },
+    "latencyMs": { "type": "integer", "minimum": 0 },
+    "estimatedCost": { "type": "number", "minimum": 0 },
+    "actualCost": { "type": "number", "minimum": 0 },
+    "currency": { "type": "string", "minLength": 1, "maxLength": 16 },
+    "pricingEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "checkedAt", "pricingVersionOrNote"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "checkedAt": { "type": "string", "format": "date-time" },
+        "pricingVersionOrNote": { "type": "string", "minLength": 1 }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rubricVersion",
+        "score",
+        "applicability",
+        "issueTags",
+        "hardFailures",
+        "technicalErrors",
+        "decision",
+        "reason",
+        "reviewedAt"
+      ],
+      "properties": {
+        "rubricVersion": { "const": "rubric-v2-rebuild" },
+        "score": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "applicability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11"],
+          "properties": {
+            "Q01": { "$ref": "#/$defs/applicability" },
+            "Q02": { "$ref": "#/$defs/applicability" },
+            "Q03": { "$ref": "#/$defs/applicability" },
+            "Q04": { "$ref": "#/$defs/applicability" },
+            "Q05": { "$ref": "#/$defs/applicability" },
+            "Q06": { "$ref": "#/$defs/applicability" },
+            "Q07": { "$ref": "#/$defs/applicability" },
+            "Q08": { "$ref": "#/$defs/applicability" },
+            "Q09": { "$ref": "#/$defs/applicability" },
+            "Q10": { "$ref": "#/$defs/applicability" },
+            "Q11": { "$ref": "#/$defs/applicability" }
+          }
+        },
+        "issueTags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11"] }
+        },
+        "hardFailures": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["H01", "H02", "H03"] }
+        },
+        "technicalErrors": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["TECH_CORRUPT", "TECH_DURATION", "TECH_RESOLUTION", "TECH_AUDIO"] }
+        },
+        "decision": { "enum": ["approved", "rejected"] },
+        "reason": { "type": "string" },
+        "reviewedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "badCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "evidence", "businessImpact", "relatedTags", "hypotheses", "nextActions"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "businessImpact": { "type": "string", "minLength": 1 },
+          "relatedTags": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "hypotheses": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "nextActions": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicable"],
+      "properties": {
+        "applicable": { "type": "boolean" },
+        "reason": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "applicable": { "const": false } },
+            "required": ["applicable"]
+          },
+          "then": {
+            "required": ["reason"],
+            "properties": { "reason": { "minLength": 1 } }
+          }
+        }
+      ]
+    }
+  }
+}
