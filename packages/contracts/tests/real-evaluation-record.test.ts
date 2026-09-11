@@ -98,8 +98,11 @@ describe('B1.5 real evaluation evidence contract', () => {
   });
 
   it('rejects provider request summaries that expose credential-like fields', () => {
-    const record = validRecord();
-    record.providerRequestSummary = { ...record.providerRequestSummary, api_key: 'must-not-be-recorded' };
+    const base = validRecord();
+    const record: unknown = {
+      ...base,
+      providerRequestSummary: { ...base.providerRequestSummary, api_key: 'must-not-be-recorded' },
+    };
     expect(validate(record)).toBe(false);
   });
 
