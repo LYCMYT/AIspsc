@@ -188,7 +188,8 @@ function normalizeTask(payload: unknown): AgnesVideoTask {
     progress: numberField(payload, 'progress'),
     seconds,
     size: stringField(payload, 'size'),
-    resultUrl: metadata ? stringField(metadata, 'url') : undefined,
+    // The live /agnesapi response can be flat, unlike the documented envelope.
+    resultUrl: (metadata ? stringField(metadata, 'url')?.trim() : undefined) || stringField(payload, 'url')?.trim() || undefined,
     errorMessage: providerErrorMessage(payload),
   };
 }
@@ -235,7 +236,8 @@ export class AgnesVideoClient {
       method: 'GET',
       headers: { authorization: `Bearer ${this.apiKey}` },
     });
-    return this.sanitizeTask(normalizeTask(payload));
+    // The opaque query ID is authoritative; upstream ids may be different.
+    return this.sanitizeTask({ ...normalizeTask(payload), videoId });
   }
 
   private sanitizeTask(task: AgnesVideoTask): AgnesVideoTask {
