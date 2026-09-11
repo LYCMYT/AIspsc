@@ -1,5 +1,6 @@
 name: agnes-recover-once
 # Temporary read-only recovery; removed before merge. No create is permitted.
+# Retry the GET-only recovery on the corrected secret-boundary lint implementation.
 on:
   push:
     branches: ['fix/agnes-result-recovery']

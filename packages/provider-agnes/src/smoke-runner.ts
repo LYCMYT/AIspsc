@@ -125,6 +125,7 @@ export async function runAgnesSmoke(options: SmokeOptions): Promise<SmokeEvidenc
       ? 'failed' : 'needs_reconciliation';
     evidence.operationLatencyMs = now() - started;
     await save();
+    // eslint-disable-next-line preserve-caught-error -- Raw provider causes may carry credentials or signed URLs; retain only the safe stage code.
     throw new Error(evidence.errorCode);
   }
 }
