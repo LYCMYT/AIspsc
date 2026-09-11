@@ -1,0 +1,51 @@
+name: pages-live-check
+on:
+  push:
+    branches: ['diagnostic/agnes-completed-result']
+    paths: ['.github/workflows/pages-live-check.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    if: github.ref == 'refs/heads/diagnostic/agnes-completed-result'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Inspect the deployed UI with a clean browser
+        run: |
+          mkdir -p artifacts/pages-live
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+          const failedResources = [];
+          const errors = [];
+          page.on('response', response => { if (response.status() >= 400) failedResources.push({ path: new URL(response.url()).pathname, status: response.status() }); });
+          page.on('pageerror', error => errors.push(error.message.slice(0, 300)));
+          try {
+            const response = await page.goto('https://lycmyt.github.io/AIspsc/', { waitUntil: 'networkidle', timeout: 60000 });
+            await page.screenshot({ path: 'artifacts/pages-live/home.png', fullPage: true });
+            const text = await page.locator('body').innerText();
+            const report = { httpStatus: response?.status(), title: await page.title(), text: text.slice(0, 12000), failedResources, errors };
+            await writeFile('artifacts/pages-live/report.json', JSON.stringify(report, null, 2));
+            console.log(JSON.stringify({ httpStatus: report.httpStatus, bodyLength: text.length, failedResources, errorCount: errors.length }));
+          } finally { await browser.close(); }
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pages-live-evidence
+          path: artifacts/pages-live
+          retention-days: 7
