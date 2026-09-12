@@ -8,6 +8,8 @@
     "node": ">=24.19.0 <25"
   },
   "scripts": {
+    "http:dev": "node packages/generation-api/scripts/start.ts",
+    "test:http:e2e": "playwright test --config apps/web/playwright.http.config.ts",
     "dev": "vite --config apps/web/vite.config.ts --host 127.0.0.1",
     "lint": "eslint .",
     "typecheck": "vue-tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p tsconfig.base.json",
