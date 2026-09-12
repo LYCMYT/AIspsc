@@ -39,7 +39,7 @@ it('maps all supported generation, review, asset and fixture commands with exact
     if (call.url.endsWith('/snapshot')) return ok(snapshot(5));
     if (call.url.endsWith('/reviews')) return ok(evaluation);
     if (call.url.endsWith('/assets') || call.url.endsWith('/fixtures')) return ok(asset);
-    if (call.url.endsWith('/scenario')) return ok();
+    if (call.url.endsWith('/scenario')) return ok(null);
     if (call.url.includes('generation-batches') || call.url.endsWith('/retry')) return ok(batch(), call.method === 'POST' ? 202 : 200);
     return ok(item(3), call.url.endsWith('/retry-download') ? 202 : 200);
   });
@@ -65,6 +65,11 @@ it('maps all supported generation, review, asset and fixture commands with exact
   expect(posts[0]?.key).toBe('caller-create');
   expect(posts[2]?.key).toBe('caller-retry');
   expect(posts.every(c => /^[A-Za-z0-9_-]{1,100}$/.test(c.key ?? ''))).toBe(true);
+});
+
+it.each([undefined, false, {}, 'null'])('rejects malformed scenario success value %j', async value => {
+  const { platform } = setup(() => ok(value));
+  expect(await platform.setScenario('failure')).toMatchObject(network);
 });
 
 it('forbids every unsupported operation without any network fallback', async () => {

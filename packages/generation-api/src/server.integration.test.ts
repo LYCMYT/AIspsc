@@ -5,6 +5,7 @@ import { request } from 'node:http';
 import { createHash } from 'node:crypto';
 import type { DemoSnapshot, GenerationBatchSnapshot, GenerationItem, Result } from '../../contracts/src/index.js';
 import { startGenerationApi } from './server.js';
+import { HttpPlatform } from '../../http-platform/src/index.js';
 
 const token = 'synthetic-http-test-token';
 const origin = 'http://127.0.0.1:5173';
@@ -42,6 +43,31 @@ async function waitStatus(id: string, status: string) {
   await vi.waitFor(async () => expect((await item(id)).status).toBe(status), { timeout: 3000, interval: 25 });
   return item(id);
 }
+
+it('acknowledges real scenario null responses as void and ends the adapter command', async () => {
+  const commands: Array<{ key: string | null; body: RequestInit['body'] }> = [];
+  const fetcher: typeof fetch = async (input, init) => {
+    const headers = new Headers(init?.headers);
+    headers.set('Authorization', `Bearer ${token}`);
+    if (init?.method === 'POST') commands.push({ key: headers.get('Idempotency-Key'), body: init.body });
+    return fetch(input, { ...init, headers });
+  };
+  const platform = new HttpPlatform({ baseUrl: app.url, fetcher });
+  await platform.ready();
+  const first = await platform.setScenario('failure');
+  const persisted = await platform.snapshot();
+  const second = await platform.setScenario('failure');
+  expect(persisted.scenario).toBe('failure');
+  expect((await snapshot()).scenario).toBe('failure');
+  expect(first).toEqual({ ok: true, value: undefined });
+  expect(second).toEqual({ ok: true, value: undefined });
+  expect(commands).toHaveLength(2);
+  expect(commands[0]?.body).toBe('{"name":"failure"}');
+  expect(commands[1]?.body).toBe(commands[0]?.body);
+  expect(commands[0]?.key).toEqual(expect.any(String));
+  expect(commands[1]?.key).toEqual(expect.any(String));
+  expect(commands[1]?.key).not.toBe(commands[0]?.key);
+});
 
 it('guards exact Host, bearer and configured Origin before bodies and exposes only public state', async () => {
   expect((await fetch(app.url + '/v1/snapshot')).status).toBe(401);

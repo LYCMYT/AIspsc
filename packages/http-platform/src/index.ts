@@ -79,7 +79,7 @@ const snapshotShape = object({
   reconciliations: array(object({ itemId: identifier, outcome: oneOf('success', 'failure', 'cancelled'), evidence: string, createdAt: string })),
   splits: array(object({ id: identifier, sourceMediaId: identifier, mode: oneOf('sequential', 'average', 'scene', 'manual'), sourceDurationMs: number, ruleVersion: oneOf('split-v2-rebuild'), status: itemStatus, sourceSha256: string, intervals: array(object({ startMs: number, endMs: number }, { actualDurationMs: number, mediaFileId: identifier })) }, { sceneRanges: array(interval), expandedIntervals: array(interval) })),
 });
-const voidShape: Check = value => value === undefined;
+const nullShape: Check = value => value === null;
 
 function networkFailure<T>(): Result<T> {
   return { ok: false, error: { code: 'NETWORK_ERROR', message: '本地演示服务响应无效或连接中断，请重试' } };
@@ -268,7 +268,10 @@ export class HttpPlatform implements DemoPlatform {
   readonly deleteAsset: DemoPlatform['deleteAsset'] = () => forbidden();
   readonly resetScenario: DemoPlatform['resetScenario'] = () => forbidden();
   readonly saveClipAsset: DemoPlatform['saveClipAsset'] = () => forbidden();
-  setScenario(name: ScenarioName): Promise<Result<void>> { return this.command('/scenario', { name }, voidShape); }
+  async setScenario(name: ScenarioName): Promise<Result<void>> {
+    const result = await this.command<null>('/scenario', { name }, nullShape);
+    return result.ok ? { ok: true, value: undefined } : result;
+  }
   loadFixture(key: string): Promise<Result<Asset>> { return this.command('/fixtures', { key }, assetShape); }
   resolveUnknown(id: string, outcome: 'success' | 'failure' | 'cancelled'): Promise<Result<GenerationItem>> {
     return this.itemCommand(id, 'reconcile', { outcome }, itemShape);
