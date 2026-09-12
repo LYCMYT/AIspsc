@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
+import path, { resolve, join, posix, win32 } from 'node:path';
 import { GenerationStore } from './store.js';
+
+function cleanupChild(root: string, directory: string, paths = path): boolean {
+    const relative = paths.relative(root, directory);
+    return relative !== '' && !paths.isAbsolute(relative) && relative !== '..' && !relative.startsWith('..' + paths.sep);
+}
 const roots: string[] = [];
 const stores: GenerationStore[] = [];
 async function directory() {
@@ -22,7 +27,7 @@ afterEach(async () => {
     for (const store of stores.splice(0))
         await store.close();
     for (const dir of roots.splice(0)) {
-        if (!dir.startsWith(resolve('.cache/generation-tests') + '\\'))
+        if (!cleanupChild(resolve('.cache/generation-tests'), dir))
             throw Error('cleanup containment');
         await rm(dir, {
             recursive: true, force: true
@@ -115,5 +120,25 @@ describe('atomic generation store', () => {
             ...state, hidden: true
         }));
         await expect(GenerationStore.open(dir)).rejects.toThrow('INVALID_STORE');
+    });
+});
+
+describe.each([
+    { name: 'POSIX', paths: posix, root: '/runner/work/AIspsc/.cache/generation-tests' },
+    { name: 'Windows', paths: win32, root: win32.join('D:/', 'workspace', '.cache', 'generation-tests') },
+])('$name cleanup containment', ({ paths, root }) => {
+    it.each([
+        { name: 'direct child', segments: ['store-123'], expected: true },
+        { name: 'nested child', segments: ['store-123', 'nested'], expected: true },
+        { name: 'root itself', segments: [], expected: false },
+        { name: 'parent escape', segments: ['..', 'outside'], expected: false },
+        { name: 'normalized traversal', segments: ['store-123', '..', '..', 'outside'], expected: false },
+        { name: 'sibling sharing prefix', segments: ['..', 'generation-tests-sibling'], expected: false },
+    ])('accepts or rejects $name', ({ segments, expected }) => {
+        expect(cleanupChild(root, paths.join(root, ...segments), paths)).toBe(expected);
+    });
+    it('rejects a different filesystem root', () => {
+        const other = paths === win32 ? win32.join('E:/', 'outside', 'store-123') : '/outside/store-123';
+        expect(cleanupChild(root, other, paths)).toBe(false);
     });
 });
