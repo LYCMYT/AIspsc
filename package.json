@@ -9,7 +9,7 @@
   },
   "scripts": {
     "http:dev": "node packages/generation-api/scripts/start.ts",
-    "test:http:e2e": "playwright test --config apps/web/playwright.http.config.ts",
+    "test:http:e2e": "node scripts/provider-ci-guard.mjs && playwright test --config apps/web/playwright.http.config.ts",
     "dev": "vite --config apps/web/vite.config.ts --host 127.0.0.1",
     "lint": "eslint .",
     "typecheck": "vue-tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p tsconfig.base.json",
@@ -17,14 +17,15 @@
     "test:contracts": "vitest run --project contracts",
     "test:http": "vitest run --project http",
     "build": "vite build --config apps/web/vite.config.ts",
-    "test:e2e": "playwright test --config apps/web/playwright.config.ts",
+    "test:e2e": "node scripts/provider-ci-guard.mjs && playwright test --config apps/web/playwright.config.ts",
     "capture": "playwright test --config apps/web/playwright.config.ts --grep @capture",
     "smoke:agnes": "node --experimental-strip-types packages/provider-agnes/scripts/smoke.ts",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:contracts && pnpm test:http && pnpm build",
-    "test:delivery": "vitest run --project delivery",
+    "verify": "node scripts/provider-ci-guard.mjs && pnpm lint && pnpm typecheck && pnpm test:unit && pnpm test:contracts && pnpm test:http && pnpm build",
+    "test:delivery": "node scripts/provider-ci-guard.mjs && vitest run --project delivery",
     "delivery:serve": "node packages/delivery-workbench/scripts/start.ts",
     "delivery:process": "node packages/media-processing/scripts/process.ts",
-    "test:delivery:ui": "node packages/delivery-workbench/scripts/verify-ui.ts"
+    "test:delivery:ui": "node scripts/provider-ci-guard.mjs && node packages/delivery-workbench/scripts/verify-ui.ts",
+    "test:provider:e2e": "node scripts/provider-ci-guard.mjs && vitest run --project provider"
   },
   "dependencies": {
     "vue": "3.5.42",
