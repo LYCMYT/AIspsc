@@ -3,6 +3,11 @@ const states = ['not_submitted', 'submitting', 'submitted', 'polling', 'result_r
 const bindings = ['fake-local', 'agnes-simulated', 'agnes-disabled'];
 const id = (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(v);
 const date = (v: unknown): v is string => typeof v === 'string' && Number.isFinite(Date.parse(v)) && new Date(v).toISOString() === v;
+const uuidPattern = '[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}';
+const rawKey = new RegExp(`^media/raw-${uuidPattern}\\.mp4$`);
+const derivativeKey = new RegExp(`^media/delivery-${uuidPattern}/result\\.mp4$`);
+const mediaId = new RegExp(`^provider-${uuidPattern}$`);
+const hash = (v: unknown) => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v);
 const bad = (): never => { throw Error('INVALID_PROVIDER_ATTEMPT'); };
 /** Strict private lifecycle validation, separate from untouched browser attempts. */
 export function validateProviderAttempt(value: unknown): asserts value is ProviderAttempt {
@@ -24,15 +29,22 @@ export function validateProviderAttempt(value: unknown): asserts value is Provid
  if (a.rawMedia !== undefined) validateRaw(a);
  if (a.derivativeEvidence !== undefined) {
   const d = a.derivativeEvidence;
-  if (!a.rawMedia || Object.keys(d).sort().join(',') !== 'completedAt,media,policy,sourceSha256' || d.policy !== 'delivery-v1' || d.sourceSha256 !== a.rawMedia.rawSha256 || !date(d.completedAt) || !/^media\/delivery-[a-f0-9-]{36}\/result\.mp4$/.test(d.media.objectKey ?? '') || !/^[a-f0-9]{64}$/.test(d.media.sha256)) bad();
+  if (!d || typeof d !== 'object' || !a.rawMedia || Object.keys(d).sort().join(',') !== 'completedAt,media,policy,reportSha256,sourceSha256' || d.policy !== 'delivery-v1' || d.sourceSha256 !== a.rawMedia.rawSha256 || !hash(d.reportSha256) || !date(d.completedAt) || d.completedAt < a.rawMedia.downloadedAt) bad();
+  const m = d.media;
+  const mediaFields = ['id','workspaceId','mediaType','mime','byteSize','width','height','durationMs','objectKey','sha256','availability','hasAudio','isDemo','fixtureKey'];
+  if (!m || typeof m !== 'object' || Object.keys(m).length !== mediaFields.length || mediaFields.some(k => !Object.hasOwn(m,k)) || !mediaId.test(m.id) || !derivativeKey.test(m.objectKey ?? '') || !hash(m.sha256) || m.workspaceId !== 'demo' || m.mediaType !== 'video' || m.mime !== 'video/mp4' || m.availability !== 'available' || m.hasAudio !== false || m.isDemo !== true || m.fixtureKey !== 'synthetic-provider-simulation') bad();
+  if (!Number.isSafeInteger(m.byteSize) || m.byteSize <= 0 || m.byteSize > 128 * 1024 * 1024 || !Number.isSafeInteger(m.durationMs) || m.durationMs! < 5000 || m.durationMs! > 15000) bad();
+  for (const n of [m.width,m.height]) if (!Number.isSafeInteger(n) || n! <= 0 || n! > 4096 || n! % 2) bad();
+  if (!['downloading','settled'].includes(a.submissionState)) bad();
  }
 }
 function validateRaw(a: ProviderAttempt) {
  const r = a.rawMedia!;
  const required = ['provider','externalJobId','providerResultReferenceKind','resultHost','retrievedAt','rawSha256','rawActualWidth','rawActualHeight','rawDuration','rawHasAudio','rawFps','rawFrames','rawDecodeVerified','rawObjectKey','rawByteSize','downloadedAt','provenance'];
  if (!r || typeof r !== 'object' || required.some(k => !Object.hasOwn(r,k)) || Object.keys(r).some(k => ![...required,'providerReportedSeconds','providerReportedSize'].includes(k))) bad();
- if (r.provider !== a.providerBindingId || r.externalJobId !== a.externalJobId || r.providerResultReferenceKind !== 'https' || !/^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/.test(r.resultHost) || !date(r.retrievedAt) || !date(r.downloadedAt) || !/^[a-f0-9]{64}$/.test(r.rawSha256) || !/^media\/raw-[a-f0-9-]{36}\.mp4$/.test(r.rawObjectKey) || r.rawDecodeVerified !== true || r.provenance !== 'synthetic_provider_simulation' || typeof r.rawHasAudio !== 'boolean') bad();
+ if (r.provider !== a.providerBindingId || r.externalJobId !== a.externalJobId || r.providerResultReferenceKind !== 'https' || !['platform-outputs.agnes-ai.space','cos-platform-outputs.agnes-ai.cn'].includes(r.resultHost) || !date(r.retrievedAt) || !date(r.downloadedAt) || !/^[a-f0-9]{64}$/.test(r.rawSha256) || !rawKey.test(r.rawObjectKey) || r.rawDecodeVerified !== true || r.provenance !== 'synthetic_provider_simulation' || typeof r.rawHasAudio !== 'boolean') bad();
  for (const n of [r.rawActualWidth,r.rawActualHeight,r.rawFrames,r.rawByteSize]) if (!Number.isSafeInteger(n) || n <= 0) bad();
+ if (r.rawActualWidth > 4096 || r.rawActualHeight > 4096 || r.rawByteSize > 128 * 1024 * 1024 || r.rawDuration > 60 || r.rawFps > 120 || r.rawFrames > 7200 || r.downloadedAt < r.retrievedAt || !['downloading','settled','needs_reconciliation','failed'].includes(a.submissionState)) bad();
  for (const n of [r.rawDuration,r.rawFps,r.providerReportedSeconds ?? 1]) if (!Number.isFinite(n) || n <= 0 || n > 100000) bad();
  if (r.providerReportedSize !== undefined && !/^\d{1,5}x\d{1,5}$/.test(r.providerReportedSize)) bad();
 }
@@ -54,7 +66,7 @@ export function transitionAttempt(attempt: ProviderAttempt, next: Exclude<Provid
  validateProviderAttempt(attempt);
  if (Object.keys(patch).some(k => !['externalJobId','providerStatus','submittedAt','lastPolledAt','nextPollAt','errorCategory','rawMedia','derivativeEvidence'].includes(k))) throw Error('INVALID_ATTEMPT_TRANSITION');
  if (!edges[attempt.submissionState]?.includes(next)) throw Error('INVALID_ATTEMPT_TRANSITION');
- if (attempt.externalJobId && patch.externalJobId !== undefined && attempt.externalJobId !== patch.externalJobId) throw Error('INVALID_ATTEMPT_TRANSITION');
+ if (attempt.externalJobId && Object.hasOwn(patch, 'externalJobId') && attempt.externalJobId !== patch.externalJobId) throw Error('INVALID_ATTEMPT_TRANSITION');
  const result = { ...structuredClone(attempt), ...structuredClone(patch), submissionState: next, updatedAt: new Date(now).toISOString() };
  validateProviderAttempt(result); return result;
 }

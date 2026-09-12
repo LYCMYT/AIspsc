@@ -151,6 +151,13 @@ function validateState(value: unknown): asserts value is GenerationState {
             if (!item) invalid();
             const compatible: Record<string, string[]> = { not_submitted: ['queued'], submitting: ['running','cancel_requested'], submitted: ['running','cancel_requested'], polling: ['running','cancel_requested'], result_ready: ['finalizing','cancel_requested'], downloading: ['finalizing','cancel_requested'], needs_reconciliation: ['needs_reconciliation'], settled: ['succeeded','failed','cancelled'], failed: ['failed','cancelled'] };
             if (!compatible[a.submissionState]?.includes(item.status)) invalid();
+            if ((a.rawMedia || a.derivativeEvidence) && item.mode !== 'video') invalid();
+            const derivative = a.derivativeEvidence;
+            if (derivative && item.status === 'succeeded') {
+                const media = s.mediaMetadata.find(m => m.id === item.resultMediaId);
+                if (!media || canonicalJson(media) !== canonicalJson(derivative.media)) invalid();
+            }
+            if (item.status === 'succeeded' && item.resultMediaId?.startsWith('provider-') && !derivative) invalid();
             continue;
         }
         fields(a, ['itemId', 'attemptNo', 'providerBindingId', 'externalIdempotencyKey', 'submissionState', 'createdAt', 'updatedAt'], ['externalJobId']);
@@ -181,6 +188,7 @@ function validateState(value: unknown): asserts value is GenerationState {
             invalid();
     }
     for (const m of s.mediaMetadata) {
+        if (m.id.startsWith('provider-') && !s.attempts.some(a => a.derivativeEvidence?.media.id === m.id && s.items.some(i => i.id === a.itemId && i.resultMediaId === m.id && i.status === 'succeeded'))) invalid();
         fields(m, ['id', 'workspaceId', 'mediaType', 'mime', 'byteSize', 'sha256', 'availability', 'objectKey', 'width', 'height', 'hasAudio', 'isDemo', 'fixtureKey'], ['durationMs']);
         if (m.workspaceId !== 'demo' || !['image', 'video'].includes(m.mediaType) || !hash(m.sha256) || !integer(m.byteSize) || !m.byteSize || !integer(m.width) || !m.width || !integer(m.height) || !m.height || typeof m.hasAudio !== 'boolean' || m.isDemo !== true || !text(m.fixtureKey) || !text(m.objectKey) || m.objectKey.includes('..') || /^[\\/]|:/.test(m.objectKey) || m.availability !== 'available' || (m.mediaType === 'image' ? m.mime !== 'image/png' : m.mime !== 'video/mp4') || (m.durationMs !== undefined && (!integer(m.durationMs) || !m.durationMs)))
             invalid();

@@ -196,3 +196,19 @@ describe('actual lifecycle persistence', () => {
   expect(store.read()).toEqual(original);
  });
 });
+
+describe('store evidence corruption boundary', () => {
+ it('rejects valid-looking video evidence on a copy attempt without touching the snapshot', async () => {
+  const store = await opened(await directory()); const now=Date.now(); const context={now,manifest:manifestSource as DemoManifest};
+  await store.transact(s => createBatch(s,{mode:'copy',prompt:'demo',count:1,references:[],copy:{language:'zh-CN',maxCharacters:100}},'evidence','a'.repeat(64),context));
+  const before=store.read(); const uuid='11111111-1111-4111-8111-111111111111'; const at=new Date(now).toISOString();
+  await expect(store.transact(s => {
+   const a=normalizeProviderAttempt(s.attempts[0]!,'agnes-simulated');
+   a.submissionState='downloading'; a.externalJobId='job-known'; a.submittedAt=at;
+   a.rawMedia={provider:'agnes-simulated',externalJobId:'job-known',providerResultReferenceKind:'https',resultHost:'platform-outputs.agnes-ai.space',retrievedAt:at,rawSha256:'a'.repeat(64),rawActualWidth:1280,rawActualHeight:704,rawDuration:5,rawHasAudio:true,rawFps:24,rawFrames:120,rawDecodeVerified:true,rawObjectKey:`media/raw-${uuid}.mp4`,rawByteSize:100,downloadedAt:at,provenance:'synthetic_provider_simulation'};
+   s.attempts[0]=a;s.items[0]!.status='finalizing';s.pending[0]!.phase='download';syncBatch(s,s.items[0]!);
+   return {ok:true,value:null};
+  })).rejects.toThrow('INVALID_STORE');
+  expect(store.read()).toEqual(before);
+ });
+});
