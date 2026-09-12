@@ -1,3 +1,4 @@
+import { validateProviderAttempt } from '../../domain/src/provider-attempt.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, open, readFile, realpath, rename, rm } from 'node:fs/promises';
 import type { FileHandle } from 'node:fs/promises';
@@ -32,7 +33,8 @@ const statuses = ['queued', 'running', 'finalizing', 'cancel_requested', 'needs_
 const terminal = new Set(['succeeded', 'failed', 'cancelled']);
 /** Fail closed on structural corruption and cross-aggregate/ledger inconsistencies. */
 function validateState(value: unknown): asserts value is GenerationState {
-    fields(value, ['version', 'epoch', 'scenario', 'sequence', 'batches', 'items', 'evaluations', 'assets', 'mediaMetadata', 'credits', 'ledger', 'attempts', 'reconciliations', 'splits', 'pending', 'memo', 'reviewForms']);
+    fields(value, ['version', 'epoch', 'scenario', 'sequence', 'batches', 'items', 'evaluations', 'assets', 'mediaMetadata', 'credits', 'ledger', 'attempts', 'reconciliations', 'splits', 'pending', 'memo', 'reviewForms'], ['schemaVersion']);
+    if (value.schemaVersion !== undefined && value.schemaVersion !== 2) throw Error('UNSUPPORTED_STORE_SCHEMA');
     if (value.version !== 1 || !text(value.epoch) || !integer(value.sequence) || !validateHttpBody('scenario', {
         name: value.scenario
     }).ok)
@@ -140,7 +142,17 @@ function validateState(value: unknown): asserts value is GenerationState {
         if ((i.libraryState === 'saved') !== (saved.length === 1) || saved.length > 1)
             invalid();
     }
+    unique(s.attempts.filter(a => a.lifecycleVersion === 1), a => a.attemptId!);
     for (const a of s.attempts) {
+        if (a.lifecycleVersion !== undefined) {
+            try { validateProviderAttempt(a); } catch { invalid(); }
+            if (s.schemaVersion !== 2) invalid();
+            const item = s.items.find(i => i.id === a.itemId);
+            if (!item) invalid();
+            const compatible: Record<string, string[]> = { not_submitted: ['queued'], submitting: ['running','cancel_requested'], submitted: ['running','cancel_requested'], polling: ['running','cancel_requested'], result_ready: ['finalizing','cancel_requested'], downloading: ['finalizing','cancel_requested'], needs_reconciliation: ['needs_reconciliation'], settled: ['succeeded','cancelled'], failed: ['failed','cancelled'] };
+            if (!compatible[a.submissionState]?.includes(item.status)) invalid();
+            continue;
+        }
         fields(a, ['itemId', 'attemptNo', 'providerBindingId', 'externalIdempotencyKey', 'submissionState', 'createdAt', 'updatedAt'], ['externalJobId']);
         date(a.createdAt);
         date(a.updatedAt);
@@ -332,11 +344,14 @@ export class GenerationStore {
                 const value: unknown = JSON.parse(await readFile(path, 'utf8'));
                 validateState(value);
                 state = value;
+                if (state.schemaVersion === undefined) { state.schemaVersion = 2; fresh = true; }
+                validateState(state);
             }
             catch (error) {
+                if (error instanceof Error && error.message === 'UNSUPPORTED_STORE_SCHEMA') throw error;
                 if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
                     invalid();
-                state = createGenerationState(randomUUID(), Date.now());
+                state = { ...createGenerationState(randomUUID(), Date.now()), schemaVersion: 2 };
                 fresh = true;
             }
             const store = new GenerationStore(root, lock, state, fs);

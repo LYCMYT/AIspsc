@@ -142,3 +142,57 @@ describe.each([
         expect(cleanupChild(root, other, paths)).toBe(false);
     });
 });
+
+describe('private lifecycle schema migration', () => {
+ it('atomically marks legacy snapshots while preserving the public version and history', async () => {
+  const dir = await directory(); const first = await opened(dir); const before = first.read(); await first.close();
+  delete before.schemaVersion;
+  await writeFile(join(dir, 'state.json'), JSON.stringify(before));
+  const migrated = (await opened(dir)).read();
+  expect(migrated).toEqual({ ...before, schemaVersion: 2 });
+  expect(JSON.parse(await readFile(join(dir, 'state.json'), 'utf8'))).toEqual(migrated);
+ });
+ it('rejects unknown schema without rewriting the file', async () => {
+  const dir = await directory(); const first = await opened(dir); const before = first.read(); await first.close();
+  const serialized = JSON.stringify({ ...before, schemaVersion: 999 }); await writeFile(join(dir, 'state.json'), serialized);
+  await expect(GenerationStore.open(dir)).rejects.toThrow('UNSUPPORTED_STORE_SCHEMA');
+  expect(await readFile(join(dir, 'state.json'), 'utf8')).toBe(serialized);
+ });
+});
+import manifestSource from '../../../apps/web/public/demo/MEDIA_MANIFEST.json';
+import { createBatch, syncBatch } from '../../domain/src/generation-state.js';
+import { applyWorkerEvent } from '../../domain/src/generation-commands.js';
+import { normalizeProviderAttempt } from '../../domain/src/provider-attempt.js';
+import type { DemoManifest } from '../../contracts/src/index.js';
+describe('actual lifecycle persistence', () => {
+ async function submitted() {
+  const dir = await directory(); const store = await opened(dir);
+  const now = Date.now();
+  await store.transact(s => createBatch(s, { mode: 'copy', prompt: 'demo', count: 1, references: [], copy: { language: 'zh-CN', maxCharacters: 100 } }, 'test', 'a'.repeat(64), { now, manifest: manifestSource as DemoManifest }));
+  const item = store.read().items[0]!;
+  await store.transact(s => applyWorkerEvent(s, { kind: 'submitting', itemId: item.id, expectedVersion: 0 }, { now, manifest: manifestSource as DemoManifest }));
+  return { dir, store, now };
+ }
+ it('preserves interrupted legacy claim and adopts it as paused unknown without releasing quota', async () => {
+  const { dir, store } = await submitted(); const original = store.read(); await store.close();
+  const reloaded = await opened(dir);
+  expect(reloaded.read()).toEqual(original);
+  await reloaded.transact(s => {
+   s.attempts[0] = normalizeProviderAttempt(s.attempts[0]!, 'fake-local');
+   s.items[0]!.status = 'needs_reconciliation';
+   s.pending[0]!.phase = 'complete'; s.pending[0]!.dueAt = Number.MAX_SAFE_INTEGER;
+   syncBatch(s, s.items[0]!); return { ok: true, value: null };
+  });
+  expect(reloaded.read().credits).toEqual(original.credits);
+  expect(reloaded.read().attempts[0]!.submissionState).toBe('needs_reconciliation');
+  await reloaded.close(); expect((await opened(dir)).read().attempts[0]!.submissionState).toBe('needs_reconciliation');
+ });
+ it('rejects lifecycle-item mismatch transactionally and retains its claim', async () => {
+  const { store } = await submitted(); const original = store.read();
+  await expect(store.transact(s => {
+   s.attempts[0] = normalizeProviderAttempt(s.attempts[0]!, 'agnes-simulated');
+   return { ok: true, value: null };
+  })).rejects.toThrow('INVALID_STORE');
+  expect(store.read()).toEqual(original);
+ });
+});
