@@ -1,7 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-import { writeFile, readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { writeFile, readFile, rm } from 'node:fs/promises';
+import { resolve, relative } from 'node:path';
 import { request as httpRequest } from 'node:http';
 import { createServer, preview } from 'vite';
 import { execFile } from 'node:child_process';
@@ -261,4 +261,31 @@ test('custom workspace data is private and graceful close releases the lock for 
     }).toBe('succeeded');
   } finally { await service.close(); }
   await expect(readFile(resolve(directory, '.lock'))).rejects.toMatchObject({ code: 'ENOENT' });
+});
+
+test('launcher rejects frontend-served data directories before creating state', async ({ request }, testInfo) => {
+  const publicRoot = resolve('apps/web/public');
+  const name = `http-private-${randomUUID()}`;
+  const directory = resolve(publicRoot, name);
+  // Validate the immutable absolute cleanup target before creating any test state.
+  if (relative(publicRoot, directory) !== name) throw Error('UNSAFE_TEST_CLEANUP');
+  let service: Awaited<ReturnType<typeof startLocalGeneration>> | undefined;
+  let failure: string | undefined;
+  try {
+    try { service = await startLocalGeneration({ port: 4177, apiPort: 0, directory }); }
+    catch (error) { failure = error instanceof Error ? error.message : 'UNKNOWN'; }
+    if (service) {
+      const response = await request.get(`${service.url}/${name}/state.json`);
+      const exposedState = response.status() === 200 && await response.text() === await readFile(resolve(directory, 'state.json'), 'utf8');
+      await testInfo.attach('public-state-probe', {
+        body: JSON.stringify({ status: response.status(), bodyMatchesPersistedState: exposedState }), contentType: 'application/json',
+      });
+    }
+    expect(failure).toBe('LOCAL_DATA_MUST_BE_PRIVATE');
+    await expect(readFile(resolve(directory, 'state.json'))).rejects.toMatchObject({ code: 'ENOENT' });
+  } finally {
+    await service?.close();
+    // Only this test's prevalidated unique directory is removed.
+    await rm(directory, { recursive: true, force: true });
+  }
 });

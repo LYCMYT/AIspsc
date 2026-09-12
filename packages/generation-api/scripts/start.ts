@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { resolve, relative, isAbsolute } from 'node:path';
+import { resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer, normalizePath, type ViteDevServer } from 'vite';
 import type { startGenerationApi } from '../src/server.js';
@@ -19,6 +19,11 @@ export async function startLocalGeneration(options: { port?: number; apiPort?: n
   const directory = resolve(root, options.directory ?? 'artifacts/local-generation');
   const within = relative(root, directory);
   if (!within || within.startsWith('..') || isAbsolute(within)) throw Error('LOCAL_DATA_MUST_BE_IN_WORKSPACE');
+  // Vite public files bypass fs.deny and are copied into builds; state must never live there.
+  const publicRelative = relative(resolve(root, 'apps/web/public'), directory);
+  if (!publicRelative || (!isAbsolute(publicRelative) && publicRelative !== '..' && !publicRelative.startsWith('..' + sep))) {
+    throw Error('LOCAL_DATA_MUST_BE_PRIVATE');
+  }
   const token = options.token ?? randomBytes(32).toString('hex');
   const origin = `http://127.0.0.1:${frontendPort}`;
   const loader = await createServer({

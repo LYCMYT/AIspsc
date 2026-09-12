@@ -10,7 +10,7 @@ process.env.GENERATION_DATA_DIR ??= resolve(root, 'artifacts', `http-e2e-${rando
 export default defineConfig({
   testDir: './e2e-http', fullyParallel: false, workers: 1, retries: 0,
   timeout: 45_000, expect: { timeout: 15_000 },
-  outputDir: '../../artifacts/test-results-http',
+  outputDir: '../../artifacts/http-e2e/test-results',
   reporter: [['list'], ['json', { outputFile: resolve(root, '.ai/evidence/B21A-T4A-http-results.json') }]],
   use: {
     baseURL: 'http://127.0.0.1:4174', viewport: { width: 1440, height: 900 },
