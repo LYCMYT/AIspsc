@@ -47,3 +47,6 @@ jobs:
 
       - name: Run end-to-end tests
         run: pnpm test:e2e
+
+      - name: Run local HTTP end-to-end tests
+        run: pnpm test:http:e2e
