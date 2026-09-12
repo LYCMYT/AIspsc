@@ -44,7 +44,8 @@ function validateRaw(a: ProviderAttempt) {
  if (!r || typeof r !== 'object' || required.some(k => !Object.hasOwn(r,k)) || Object.keys(r).some(k => ![...required,'providerReportedSeconds','providerReportedSize'].includes(k))) bad();
  if (r.provider !== a.providerBindingId || r.externalJobId !== a.externalJobId || r.providerResultReferenceKind !== 'https' || !['platform-outputs.agnes-ai.space','cos-platform-outputs.agnes-ai.cn'].includes(r.resultHost) || !date(r.retrievedAt) || !date(r.downloadedAt) || !/^[a-f0-9]{64}$/.test(r.rawSha256) || !rawKey.test(r.rawObjectKey) || r.rawDecodeVerified !== true || r.provenance !== 'synthetic_provider_simulation' || typeof r.rawHasAudio !== 'boolean') bad();
  for (const n of [r.rawActualWidth,r.rawActualHeight,r.rawFrames,r.rawByteSize]) if (!Number.isSafeInteger(n) || n <= 0) bad();
- if (r.rawActualWidth > 4096 || r.rawActualHeight > 4096 || r.rawByteSize > 128 * 1024 * 1024 || r.rawDuration > 60 || r.rawFps > 120 || r.rawFrames > 7200 || r.downloadedAt < r.retrievedAt || !['downloading','settled','needs_reconciliation','failed'].includes(a.submissionState)) bad();
+ // Retain original raw evidence while re-querying its same job after an unknown/corrupt-file recovery.
+ if (r.rawActualWidth > 4096 || r.rawActualHeight > 4096 || r.rawByteSize > 128 * 1024 * 1024 || r.rawDuration > 60 || r.rawFps > 120 || r.rawFrames > 7200 || r.downloadedAt < r.retrievedAt || !['polling','result_ready','downloading','settled','needs_reconciliation','failed'].includes(a.submissionState)) bad();
  for (const n of [r.rawDuration,r.rawFps,r.providerReportedSeconds ?? 1]) if (!Number.isFinite(n) || n <= 0 || n > 100000) bad();
  if (r.providerReportedSize !== undefined && !/^\d{1,5}x\d{1,5}$/.test(r.providerReportedSize)) bad();
 }

@@ -34,7 +34,7 @@ export class AgnesProvider implements GenerationProvider {
     if (task.providerStatus.includes(this.#secret)) return 'unknown';
     switch (task.status) { case 'succeeded': return 'result_ready'; case 'needs_reconciliation': return 'unknown'; default: return task.status; }
   }
-  #validId(value: unknown): value is string { return typeof value === 'string' && /^[A-Za-z0-9_-]{1,256}$/.test(value) && !value.includes(this.#secret); }
+  #validId(value: unknown): value is string { return typeof value === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(value) && !value.includes(this.#secret); }
   async create(input: ProviderCreateRequest, _context: ProviderContext): Promise<ProviderCreateResult> {
     void _context;
     const request = input.request;
@@ -62,8 +62,8 @@ export class AgnesProvider implements GenerationProvider {
       const seconds = task.seconds;
       const size = task.size;
       return { status, result: { kind: 'https', url: task.resultUrl,
-        ...(typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0 && seconds <= 3600 ? { providerReportedSeconds: seconds } : {}),
-        ...(size && /^\d{1,5}x\d{1,5}$/.test(size) && !size.includes(this.#secret) ? { providerReportedSize: size } : {}),
+        ...(typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0 && seconds <= 60 ? { providerReportedSeconds: seconds } : {}),
+        ...(size && /^\d{1,4}x\d{1,4}$/.test(size) && !size.includes(this.#secret) ? { providerReportedSize: size } : {}),
       } };
     } catch (error) { throw safeError(error); }
   }

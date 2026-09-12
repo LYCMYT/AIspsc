@@ -1,5 +1,6 @@
 import { AGNES_API_BASE_URL, AGNES_VIDEO_MODEL } from '../../../provider-agnes/src/index.js';
 import { checkedMediaUrl } from '../../../provider-agnes/src/download.js';
+import { isDeepStrictEqual } from 'node:util';
 
 export interface SimulatedAgnesReply {
   operation: 'create' | 'get';
@@ -8,7 +9,7 @@ export interface SimulatedAgnesReply {
   /** Rejection models an ambiguous transport failure without retaining a raw error. */
   timeout?: boolean;
 }
-export interface FakeAgnesTransportOptions { apiKey: string; replies: SimulatedAgnesReply[]; mediaUrl?: string; mediaBytes?: Uint8Array; downloadStatus?: number }
+export interface FakeAgnesTransportOptions { apiKey: string; replies: SimulatedAgnesReply[]; mediaUrl?: string; mediaBytes?: Uint8Array; downloadStatus?: number; expectedCreateBody?: unknown; expectedVideoId?: string }
 /** No global fetch or network escape hatch. Only declared requests have synthetic responses. */
 export class FakeAgnesTransport {
   readonly #secret: string;
@@ -16,6 +17,8 @@ export class FakeAgnesTransport {
   readonly #mediaUrl?: string;
   readonly #mediaBytes?: Uint8Array;
   readonly #downloadStatus: number;
+  readonly #expectedCreateBody: unknown;
+  readonly #expectedVideoId?: string;
   readonly calls: Array<'create' | 'get' | 'download'> = [];
   readonly realCalls = 0;
   constructor(options: FakeAgnesTransportOptions) {
@@ -25,6 +28,8 @@ export class FakeAgnesTransport {
     this.#mediaUrl = options.mediaUrl;
     this.#mediaBytes = options.mediaBytes?.slice();
     this.#downloadStatus = options.downloadStatus ?? 200;
+    this.#expectedCreateBody = structuredClone(options.expectedCreateBody);
+    this.#expectedVideoId = options.expectedVideoId;
     if (this.#mediaUrl) checkedMediaUrl(this.#mediaUrl);
   }
   fetchImpl: typeof fetch = async (input, init) => {
@@ -36,6 +41,12 @@ export class FakeAgnesTransport {
       const create = method === 'POST' && url.pathname === '/v1/videos' && !url.search;
       const get = method === 'GET' && url.pathname === '/agnesapi' && url.searchParams.get('model_name') === AGNES_VIDEO_MODEL && /^[A-Za-z0-9_-]{1,256}$/.test(url.searchParams.get('video_id') ?? '') && [...url.searchParams.keys()].sort().join(',') === 'model_name,video_id';
       if (!create && !get) throw Error('SIMULATION_REQUEST_FORBIDDEN');
+      if (create && this.#expectedCreateBody !== undefined) {
+        let body: unknown;
+        try { body = JSON.parse(typeof init?.body === 'string' ? init.body : ''); } catch { throw Error('SIMULATION_CREATE_BODY_MISMATCH'); }
+        if (!isDeepStrictEqual(body, this.#expectedCreateBody)) throw Error('SIMULATION_CREATE_BODY_MISMATCH');
+      }
+      if (get && this.#expectedVideoId !== undefined && url.searchParams.get('video_id') !== this.#expectedVideoId) throw Error('SIMULATION_VIDEO_ID_MISMATCH');
       const operation = create ? 'create' : 'get';
       const reply = this.#replies[0];
       if (!reply || reply.operation !== operation) throw Error('SIMULATION_REPLY_NOT_DECLARED');

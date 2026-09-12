@@ -26,6 +26,12 @@ afterAll(async () => {
   await rm(root, { recursive: true, force: true });
 });
 describe('private synthetic provider raw and derivative media', () => {
+  it('preserves the full accepted 200-character external job identifier', async () => {
+    const job = 'j'.repeat(200);
+    const raw = await repository.captureRaw({ bytes, sha256: sha(bytes) }, reference, 'agnes-simulated', job, 1000);
+    expect(raw.externalJobId).toBe(job);
+    await expect(repository.captureRaw({ bytes, sha256: sha(bytes) }, reference, 'agnes-simulated', job + 'j', 1000)).rejects.toThrow('MEDIA_UNAVAILABLE');
+  });
   it('rejects corrupted or oversized persisted delivery evidence and unbound reads', async () => {
     const raw = await repository.captureRaw({ bytes, sha256: sha(bytes) }, reference, 'agnes-simulated', 'manifest-job', 1000);
     const derived = await repository.finalize(raw, target);
@@ -74,6 +80,20 @@ describe('private synthetic provider raw and derivative media', () => {
     await expect(repository.captureRaw({ bytes, sha256: 'a'.repeat(64) }, reference, 'agnes-simulated', 'job-3', 1000)).rejects.toThrow('MEDIA_UNAVAILABLE');
     const malformed = Buffer.from('not-a-valid-mp4');
     await expect(repository.captureRaw({ bytes: malformed, sha256: sha(malformed) }, reference, 'agnes-simulated', 'job-3', 1000)).rejects.toThrow('MEDIA_UNAVAILABLE');
+    const corruptedEncoding = Buffer.from(bytes);
+    let corruptedPayload = false;
+    for (let offset = 0; offset + 8 <= corruptedEncoding.length;) {
+      const size = corruptedEncoding.readUInt32BE(offset);
+      if (size < 8 || offset + size > corruptedEncoding.length) throw Error('invalid synthetic box');
+      if (corruptedEncoding.toString('ascii', offset + 4, offset + 8) === 'mdat') {
+        corruptedEncoding.fill(0, offset + 8, offset + size);
+        corruptedPayload = true;
+      }
+      offset += size;
+    }
+    expect(corruptedPayload).toBe(true);
+    expect(corruptedEncoding.subarray(0, 32)).toEqual(bytes.subarray(0, 32));
+    await expect(repository.captureRaw({ bytes: corruptedEncoding, sha256: sha(corruptedEncoding) }, reference, 'agnes-simulated', 'job-3', 1000)).rejects.toThrow('MEDIA_UNAVAILABLE');
     await expect(repository.captureRaw({ bytes, sha256: sha(bytes) }, { ...reference, url: 'https://example.com/raw.mp4' }, 'agnes-simulated', 'job-3', 1000)).rejects.toThrow('MEDIA_UNAVAILABLE');
     const raw = await repository.captureRaw({ bytes, sha256: sha(bytes) }, reference, 'agnes-simulated', 'job-3', 1000);
     await writeFile(join(root, 'state', raw.rawObjectKey), 'tampered');

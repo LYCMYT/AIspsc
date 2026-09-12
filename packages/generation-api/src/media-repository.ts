@@ -13,7 +13,7 @@ const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest(
 const uuid = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
 const rawKey = new RegExp(`^media/raw-${uuid}\\.mp4$`);
 const outputKey = new RegExp(`^media/delivery-(${uuid})/result\\.mp4$`);
-const identifier = (value: string) => /^[A-Za-z0-9_-]{1,160}$/.test(value);
+const identifier = (value: string) => /^[A-Za-z0-9_-]{1,200}$/.test(value);
 function unavailable(): never { throw new Error('MEDIA_UNAVAILABLE'); }
 async function syncDirectory(path: string): Promise<void> {
   // Node cannot open Windows directories for fsync. Windows supports process-restart

@@ -38,6 +38,8 @@ jobs:
           name: provider-simulation-verification
           path: |
             artifacts/provider-simulation/report.json
+            artifacts/provider-simulation/secret-create-report.json
+            artifacts/provider-simulation/secret-poll-report.json
             artifacts/provider-simulation/provider-reviewed.png
             artifacts/provider-simulation/provider-invalidated.png
           if-no-files-found: error

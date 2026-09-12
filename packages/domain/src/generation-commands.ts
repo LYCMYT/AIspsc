@@ -65,7 +65,7 @@ export function retryItemDownload(state: GenerationState, id: string, input: Ite
   return publishItem(state, item, input.expectedVersion, now);
 }
 
-function validateOutput(state: GenerationState, item: GenerationItem, media: MediaFile | undefined, context: GenerationContext): Result<MediaFile> {
+export function validateOutput(state: GenerationState, item: GenerationItem, media: MediaFile | undefined, context: GenerationContext): Result<MediaFile> {
   const request = state.batches.find(batch => batch.id === item.batchId)!.requestSnapshot;
   const fixture = context.manifest.files.find(file => file.key === outputFixtureKey(request));
   if (!media || !fixture || media.workspaceId !== 'demo' || media.mediaType !== item.mode || media.availability !== 'available' || media.isDemo !== true ||

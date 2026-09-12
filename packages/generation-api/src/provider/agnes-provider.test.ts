@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { AgnesProvider } from './agnes-provider.js';
 import type { ProviderContext } from './port.js';
 import { FakeAgnesTransport } from '../../tests/helpers/fake-agnes-transport.js';
+import { AGNES_VIDEO_MODEL } from '../../../provider-agnes/src/index.js';
 
 const secret = randomUUID();
 const ctx: ProviderContext = { request: { mode: 'video', prompt: 'synthetic geometric product', count: 1, references: [], video: { durationSeconds: 5, ratio: '16:9', resolution: '720p', audio: false } }, itemId: 'item-1', itemIndex: 0, attemptId: 'attempt-1', externalIdempotencyKey: 'key-1', submittedAt: '2026-09-13T00:00:00.000Z', now: 1789257600000, scenario: 'success', cancelRequested: false, recovery: false };
@@ -19,6 +20,31 @@ function harness(payload: unknown, status = 200) {
   return { provider, calls };
 }
 describe('Agnes adapter with injected transport only', () => {
+  it.each(['create', 'get'] as const)('enforces an actual AbortSignal deadline for %s with exactly one transport request', async operation => {
+    let calls = 0;
+    let observedAbort = false;
+    const p = new AgnesProvider({ apiKey: secret, timeoutMs: 20, fetchImpl: async (_input, init) => {
+      calls++;
+      return new Promise<Response>((_resolve, reject) => {
+        init!.signal!.addEventListener('abort', () => { observedAbort = true; reject(Error('SIMULATION_TIMEOUT')); }, { once: true });
+      });
+    } });
+    await expect(operation === 'create' ? p.create(ctx, ctx) : p.get('job-1', ctx)).rejects.toMatchObject({ code: 'PROVIDER_UNAVAILABLE', category: 'transient', submissionCertainty: 'unknown' });
+    expect(observedAbort).toBe(true);
+    expect(calls).toBe(1);
+  }, 2000);
+  it('strict transport validates expected create payload and original query ID privately', async () => {
+    const options = { apiKey: secret, replies: [{ operation: 'create' as const, body: { video_id: 'job-1', status: 'queued' } }, { operation: 'get' as const, body: { status: 'queued' } }], expectedCreateBody: { model: AGNES_VIDEO_MODEL, prompt: ctx.request.prompt, width: 1280, height: 720, num_frames: 121, frame_rate: 24 }, expectedVideoId: 'job-1' };
+    const t = new FakeAgnesTransport(options);
+    const p = new AgnesProvider({ apiKey: secret, fetchImpl: t.fetchImpl });
+    await p.create(ctx, ctx);
+    await p.get('job-1', ctx);
+    expect(t.calls).toEqual(['create', 'get']);
+    const invalid = new FakeAgnesTransport(options);
+    await expect(invalid.fetchImpl('https://apihub.agnes-ai.com/v1/videos', { method: 'POST', headers: { authorization: `Bearer ${secret}` }, body: JSON.stringify({ prompt: 'incorrect' }) })).rejects.toThrow('SIMULATION_CREATE_BODY_MISMATCH');
+    await expect(t.fetchImpl(`https://apihub.agnes-ai.com/agnesapi?model_name=${AGNES_VIDEO_MODEL}&video_id=wrong`, { method: 'GET', headers: { authorization: `Bearer ${secret}` } })).rejects.toThrow('SIMULATION_VIDEO_ID_MISMATCH');
+    expect(JSON.stringify(t)).not.toContain(ctx.request.prompt);
+  });
   it('strict simulation transports authenticate internally and never delegate unknown requests', async () => {
     const t = new FakeAgnesTransport({ apiKey: secret, replies: [{ operation: 'create', body: { video_id: 'job-1', status: 'queued' } }, { operation: 'get', body: { status: 'completed', url } }], mediaUrl: url, mediaBytes: new Uint8Array([1, 2, 3]) });
     const p = new AgnesProvider({ apiKey: secret, fetchImpl: t.fetchImpl });
@@ -36,6 +62,24 @@ describe('Agnes adapter with injected transport only', () => {
     expect(await h.provider.create(ctx, ctx)).toEqual({ externalJobId: 'job-1', status: 'queued' });
     expect(await h.provider.get('job-1', ctx)).toEqual({ status: 'queued' });
     expect(h.calls).toEqual([{ method: 'POST', id: null }, { method: 'GET', id: 'job-1' }]);
+  });
+  it('accepts the durable 200-character ID boundary and polls it without another create', async () => {
+    const id = 'a'.repeat(200);
+    const h = harness({ video_id: id, status: 'queued' });
+    expect(await h.provider.create(ctx, ctx)).toEqual({ externalJobId: id, status: 'queued' });
+    await h.provider.get(id, ctx);
+    expect(h.calls).toEqual([{ method: 'POST', id: null }, { method: 'GET', id }]);
+  });
+  it('treats a 201-character create ID as ambiguous without retrying create', async () => {
+    const h = harness({ video_id: 'a'.repeat(201), status: 'queued' });
+    await expect(h.provider.create(ctx, ctx)).rejects.toMatchObject({ code: 'PROVIDER_OUTCOME_UNKNOWN', submissionCertainty: 'unknown' });
+    expect(h.calls).toEqual([{ method: 'POST', id: null }]);
+  });
+  it('retains reported metadata at durable boundaries', async () => {
+    expect(await harness({ status: 'completed', url, seconds: 60, size: '9999x9999' }).provider.get('job-1', ctx)).toEqual({ status: 'result_ready', result: { kind: 'https', url, providerReportedSeconds: 60, providerReportedSize: '9999x9999' } });
+  });
+  it('omits reported metadata beyond durable boundaries without blocking result download', async () => {
+    expect(await harness({ status: 'completed', url, seconds: 60.01, size: '10000x9999' }).provider.get('job-1', ctx)).toEqual({ status: 'result_ready', result: { kind: 'https', url } });
   });
   it.each([[400, 'invalid_request', 'rejected'], [401, 'unauthorized', 'rejected'], [429, 'rate_limited', 'rejected'], [503, 'transient', 'unknown']])('maps HTTP %i without raw errors or retry', async (status, category, certainty) => {
     const h = harness({ message: secret }, Number(status));

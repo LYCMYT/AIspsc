@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { CreateGenerationRequest, ScenarioName } from '../../../contracts/src/index.js';
 import { FixtureCatalog } from '../fixtures.js';
 import { DeterministicFakeProvider } from './fake-provider.js';
-import { ProviderOperationError, type ProviderContext } from './port.js';
+import { ProviderOperationError, readProviderOperationError, type ProviderContext } from './port.js';
 
 const video: CreateGenerationRequest = { mode: 'video', prompt: '几何商品演示', count: 1, references: [], video: { durationSeconds: 5, ratio: '16:9', resolution: '720p', audio: false } };
 const image: CreateGenerationRequest = { mode: 'image', prompt: '几何商品演示', count: 1, references: [], image: { ratio: '16:9', resolution: '1024' } };
@@ -19,6 +19,14 @@ async function cleanup(root: string, dir: string): Promise<void> {
 }
 
 describe('deterministic Provider port', () => {
+  it('decodes only branded fixed diagnostics without invoking error accessors', () => {
+    const error = new ProviderOperationError('PROVIDER_INVALID_REQUEST', 'invalid_request', 'not_submitted');
+    expect(readProviderOperationError(error)).toEqual({ code: 'PROVIDER_INVALID_REQUEST', category: 'invalid_request', submissionCertainty: 'not_submitted' });
+    expect(readProviderOperationError({ ...error })).toBeUndefined();
+    Object.defineProperty(error, 'code', { get: () => { throw Error('secret'); } });
+    expect(readProviderOperationError(error)).toBeUndefined();
+    expect(readProviderOperationError(Error('secret'))).toBeUndefined();
+  });
   it('returns queued then running and resumes ready using durable context in a fresh adapter', async () => {
     const provider = await open();
     const ctx = context();
