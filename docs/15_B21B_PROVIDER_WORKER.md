@@ -62,7 +62,7 @@ interface GenerationProvider {
 
 ### DeterministicFakeProvider
 
-`fake-local` 使用已有确定性场景和 `MEDIA_MANIFEST.json`，不使用随机数，不依赖页面、`pump()` 或 GET 请求。`success`、`partial_success`、`failure`、`unknown`、`download_failure`、`storage_failure` 和 `cancel_race` 保留 B2.1A 语义。合成结果标记为演示/合成 Provider 模拟，不能转写成真实运营指标。
+`fake-local` 使用已有确定性场景和 `MEDIA_MANIFEST.json`，不使用随机数，不依赖页面、`pump()` 或浏览器 GET 触发。`success`、`partial_success`、`failure`、`unknown`、`download_failure`、`storage_failure` 和 `cancel_race` 保留 B2.1A 语义。合成结果标记为演示/合成 Provider 模拟，不能转写成真实运营指标。
 
 ### AgnesProvider 的模拟边界
 
@@ -94,7 +94,7 @@ submitting
                                       └─ result_ready → downloading
 ```
 
-Create 响应若已明确 failed/cancelled，保存原 external ID 并立即结算；unknown 则直接暂停对账，不额外轮询覆盖已知终态。成功下载后先保存 raw evidence，再执行最终化；只有 derivative 通过校验并保存，Attempt 才到 `settled`，Item 才到 `succeeded`。公共 Item 在 `result_ready/downloading` 阶段保持 `finalizing`，Batch 聚合仍遵循 B2.1A 的公共状态合同。
+Create 响应若已明确 failed/cancelled，保存原 external ID 并立即结算；unknown 则直接暂停对账，不额外轮询覆盖已知终态。Agnes MP4 成功下载后先保存 raw evidence，再执行最终化；只有 derivative 通过校验并保存，Attempt 才到 `settled`，Item 才到 `succeeded`。Fake 的既有 fixture 和 copy 文本沿用各自的校验与成功路径。公共 Item 在 `result_ready/downloading` 阶段保持 `finalizing`，Batch 聚合仍遵循 B2.1A 的公共状态合同。
 
 schema 2 的 Attempt 字段包括：
 
