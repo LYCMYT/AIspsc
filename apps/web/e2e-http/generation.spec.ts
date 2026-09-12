@@ -111,6 +111,49 @@ test('loopback proxy validates Host, Origin and Fetch Metadata before supplying 
   }
 });
 
+test('acknowledged retry survives a failed refresh and a later click creates a new command', async ({ page, request }) => {
+  await scenario(request, 'failure');
+  const prompt = `acknowledged-refresh-${randomUUID()}`;
+  await generate(page, prompt, '文案生成');
+  const original = page.getByTestId('batch-card').filter({ has: page.getByRole('heading', { name: prompt, exact: true }) }).last();
+  await expect(original.getByRole('button', { name: '重新生成', exact: true })).toBeVisible();
+  const before = await snapshot(request);
+  await scenario(request, 'success');
+  let failNextSnapshot = false;
+  let failedSnapshots = 0;
+  const commands: { key: string | undefined; body: string | null; status: number }[] = [];
+  await page.route('**/api/v1/snapshot', async route => {
+    if (failNextSnapshot) {
+      failNextSnapshot = false; failedSnapshots++;
+      await route.abort('failed');
+    } else await route.continue();
+  });
+  await page.route('**/api/v1/generation-items/*/retry', async route => {
+    const response = await route.fetch();
+    commands.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData(), status: response.status() });
+    if (commands.length === 1) failNextSnapshot = true;
+    await route.fulfill({ response });
+  });
+  await original.getByRole('button', { name: '重新生成', exact: true }).click();
+  await expect.poll(() => failedSnapshots).toBe(1);
+  await expect(original.getByRole('button', { name: '重新生成', exact: true })).toBeEnabled();
+  expect(commands[0]?.status).toBe(202);
+  await expect(original.getByRole('alert'), 'successful retry must not be reported as a failed mutation').toHaveCount(0);
+  await expect(page.getByRole('alert'), 'refresh failure is still surfaced independently').toHaveCount(1);
+  await page.waitForResponse('**/api/v1/snapshot');
+  await expect.poll(async () => (await snapshot(request)).batches.length).toBe(before.batches.length + 1);
+  const nextResponse = page.waitForResponse('**/api/v1/generation-items/*/retry');
+  await original.getByRole('button', { name: '重新生成', exact: true }).click();
+  expect((await nextResponse).status()).toBe(202);
+  await page.unrouteAll({ behavior: 'wait' });
+  expect(commands).toHaveLength(2);
+  expect(commands[1]!.key).not.toBe(commands[0]!.key);
+  expect(commands[1]!.body).not.toBe(commands[0]!.body);
+  const after = await snapshot(request);
+  expect(after.batches).toHaveLength(before.batches.length + 2);
+  expect(Object.keys(after.credits.reservations)).toHaveLength(Object.keys(before.credits.reservations).length + 2);
+});
+
 async function approve(page: Page, mode: 'video' | 'image' | 'copy', revision = false) {
   await page.getByRole('button', { name: revision ? '改判' : '人工审核', exact: true }).first().click();
   if (mode === 'video') {
