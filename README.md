@@ -4,7 +4,7 @@
 
 **在线 B1 Demo：** https://lycmyt.github.io/AIspsc/
 
-## 本轮进展：B1.5 证据、B2.1A 本地 HTTP 与真实模型边界
+## 本轮进展：B1.5 证据、B2.1A 本地 HTTP、B2.1B Provider Worker 与真实模型边界
 
 Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试，包括认证、创建、轮询、下载、SHA-256、实际文件元数据和全片解码。
 
@@ -17,6 +17,9 @@ Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试
 - [候选能力与实际不符合项](contracts/agnes-video-v20.binding-candidate.json)
 - [Pages 线上媒体路径回归](docs/13_PAGES_LIVE_VALIDATION.md)
 - [B2.1A 本地 HTTP 演示平台](docs/14_B21A_HTTP_PLATFORM.md)
+- [B2.1B Provider Worker 集成](docs/15_B21B_PROVIDER_WORKER.md)
+
+B2.1B 已加入 Provider-neutral Worker、持久化 ProviderAttempt schema 2、Agnes 注入式模拟、raw/derivative 媒体证据和真实 FFmpeg 最终化。该阶段 **Real Agnes Create calls = 0**；Agnes 仍为 `smoke_tested` 且 `runtimeEligible=false`，普通开发、生产构建、Pages 和本地 HTTP 默认仍使用 Mock/Fake。本地门禁数量见 B2.1B 文档，最终 HEAD 的 Linux 与合并结果以关联 PR 验收记录为准。
 
 ## 解决的业务问题
 
@@ -69,6 +72,10 @@ B2.1A 本地：ServiceFacade → HttpPlatform → 回环 API / 文件快照 / Fa
                                                    ↓（固定演示夹具）
                                               生成历史 / 审核 / 手动入库
 
+B2.1B 本地：Generation API → 单一 Worker → ProviderPort → Fake / 注入式 Agnes 模拟
+                                                   ↓
+                                      raw evidence → FFmpeg derivative → 历史
+
 后续：ServiceFacade → 受控 API / PostgreSQL / 对象存储 / 独立 Worker
                                       ↓
                                   ProviderAdapter
@@ -86,6 +93,8 @@ Agnes 目前为 **smoke_tested（技术）**，未完成业务评测与产品参
 **B1.5（当前）：** 产品决策、架构、公开 Demo、CI、Provider 技术证据、真实小样本评测合同和故障复盘。
 
 **B2.1A（本地受控增量）：** 回环 HTTP API、服务端文件快照、同进程确定性 Fake Worker，以及生成→历史→人工审核→显式入库的浏览器闭环。它不代表生产后端、真实 Provider、真实账单或云部署。
+
+**B2.1B（本地 Provider Worker 增量）：** Provider-neutral Worker、持久化 Attempt、模拟 Agnes 的 Create/Poll/Download 分层、raw/derived 媒体校验和现有审核/入库闭环。没有真实 Agnes Create，不改变 `smoke_tested` / `runtimeEligible=false` 证据边界。
 
 **B2 后续：** NestJS 模块化单体、Auth/Workspace、PostgreSQL、对象存储、真实 FFmpeg、服务端账本、Outbox 和独立 Worker。
 
@@ -147,6 +156,7 @@ npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm http:dev
 | [12 Agnes 实测复盘](docs/12_AGNES_SMOKE_RECOVERY.md) | 真实结果、哈希、时延与参数差异 |
 | [13 Pages 线上回归](docs/13_PAGES_LIVE_VALIDATION.md) | 子路径媒体加载问题 |
 | [14 B2.1A 本地 HTTP](docs/14_B21A_HTTP_PLATFORM.md) | 本地 API、Fake Worker、代理安全与边界 |
+| [15 B2.1B Provider Worker](docs/15_B21B_PROVIDER_WORKER.md) | ProviderPort、Attempt、模拟 Agnes、raw/derivative 与安全门禁 |
 
 ## 目录与明确未完成项
 
@@ -154,7 +164,7 @@ npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm http:dev
 
 演示媒体由仓库脚本生成，来源与逐文件SHA-256见 `apps/web/public/demo/MEDIA_MANIFEST.json`。
 
-当前不声称完成：生产HTTP服务、登录与Workspace隔离、真实Router上线、统一实际计费、充值支付、广告平台连接、任意上传视频的服务端FFmpeg切片、客户生产验收或广告转化提升。B2.1A 的本地 HTTP 仅是受控演示增量，不能替代这些生产能力。
+当前不声称完成：生产HTTP服务、登录与Workspace隔离、真实Router上线、统一实际计费、充值支付、广告平台连接、任意上传视频的服务端FFmpeg切片、客户生产验收或广告转化提升。B2.1A/B2.1B 的本地服务仅是受控演示增量，不能替代这些生产能力。
 
 ## 本机交付验收台（独立于公开 B1）
 
