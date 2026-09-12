@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-import { writeFile, readFile, rm } from 'node:fs/promises';
+import { writeFile, readFile, rm, mkdir } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { request as httpRequest } from 'node:http';
 import { createServer, preview } from 'vite';
@@ -173,15 +173,22 @@ async function approve(page: Page, mode: 'video' | 'image' | 'copy', revision = 
 test('worker completes after page closes; playable video and all modalities require review then manual save', async ({ context, page, request }) => {
   const seenRequests: string[] = [];
   const errors: string[] = [];
+  let consoleErrorCount = 0;
+  const observePage = (observed: Page) => {
+    observed.on('pageerror', error => errors.push(error.name));
+    observed.on('console', message => { if (message.type() === 'error') consoleErrorCount++; });
+  };
+  observePage(page);
   context.on('request', request => {
     seenRequests.push(JSON.stringify([request.url(), request.headers(), request.postData()]));
   });
-  context.on('page', opened => opened.on('pageerror', error => errors.push(error.message)));
+  context.on('page', observePage);
   await scenario(request, 'processing');
   const prompt = `browser-closed-${randomUUID()}`;
   await generate(page, prompt);
   const active = (await snapshot(request)).batches.find(batch => batch.requestSnapshot.prompt === prompt)!;
   expect(['queued', 'running']).toContain(active.items[0]!.status);
+  const initialSession = await page.evaluate(() => JSON.stringify(sessionStorage));
   await page.close();
   // GET only: no page, pump endpoint, or client-side adapter exists during completion.
   await expect.poll(async () => (await snapshot(request)).items.find(item => item.id === active.items[0]!.id)?.status).toBe('succeeded');
@@ -192,17 +199,24 @@ test('worker completes after page closes; playable video and all modalities requ
   await expect(video).toBeVisible();
   await video.evaluate(async node => { const media = node as HTMLVideoElement; media.muted = true; await media.play(); });
   await expect.poll(() => video.evaluate(node => (node as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
-  expect(await video.evaluate(node => (node as HTMLVideoElement).duration)).toBeGreaterThan(0);
+  const readyState = await video.evaluate(node => (node as HTMLVideoElement).readyState);
+  const duration = await video.evaluate(node => (node as HTMLVideoElement).duration);
+  expect(readyState).toBeGreaterThanOrEqual(2);
+  expect(duration).toBeGreaterThan(0);
   const start = await video.evaluate(node => (node as HTMLVideoElement).currentTime);
   await expect.poll(() => video.evaluate(node => (node as HTMLVideoElement).currentTime)).toBeGreaterThan(start);
+  const advancedTime = await video.evaluate(node => (node as HTMLVideoElement).currentTime);
+  expect(advancedTime).toBeGreaterThan(start);
   await reopened.screenshot({ path: '.ai/evidence/B21A-T4A-playing-video.png', fullPage: true });
   const count = (await snapshot(request)).assets.length;
   await approve(reopened, 'video');
-  expect((await snapshot(request)).assets).toHaveLength(count);
+  const approvedAssetCount = (await snapshot(request)).assets.length;
+  expect(approvedAssetCount).toBe(count);
   await reopened.screenshot({ path: '.ai/evidence/B21A-T4A-approved-awaiting-save.png', fullPage: true });
   await batch.getByRole('button', { name: '入库', exact: true }).click();
   await expect(batch.getByText('已入库', { exact: true })).toBeVisible();
-  expect((await snapshot(request)).assets).toHaveLength(count + 1);
+  const savedAssetCount = (await snapshot(request)).assets.length;
+  expect(savedAssetCount).toBe(count + 1);
   await batch.getByRole('button', { name: '改判', exact: true }).click();
   await reopened.getByRole('checkbox', { name: '任务要求的商品完全缺失' }).check();
   await reopened.getByRole('textbox', { name: '审核备注' }).fill('人工复核发现商品缺失');
@@ -210,7 +224,8 @@ test('worker completes after page closes; playable video and all modalities requ
   await reopened.getByRole('button', { name: '保存审核', exact: true }).click();
   await expect(batch.getByText(/审核已改判，原资产审核已失效/)).toBeVisible();
   await reopened.screenshot({ path: '.ai/evidence/B21A-T4A-invalidated-asset.png', fullPage: true });
-  expect((await snapshot(request)).assets.find(asset => asset.originItemId === active.items[0]!.id)?.reviewValidity).toBe('review_invalidated');
+  const invalidatedState = (await snapshot(request)).assets.find(asset => asset.originItemId === active.items[0]!.id)?.reviewValidity;
+  expect(invalidatedState).toBe('review_invalidated');
   await approve(reopened, 'video', true);
   expect((await snapshot(request)).assets.find(asset => asset.originItemId === active.items[0]!.id)?.reviewValidity).toBe('review_invalidated');
   await batch.getByRole('button', { name: '入库', exact: true }).click();
@@ -227,10 +242,24 @@ test('worker completes after page closes; playable video and all modalities requ
   }
   const storage = await context.storageState({ indexedDB: true });
   const session = await reopened.evaluate(() => JSON.stringify(sessionStorage));
-  expect(JSON.stringify([seenRequests, storage, session]).includes(process.env.HTTP_TEST_TOKEN!), 'actual token absent from browser requests and storage').toBe(false);
-  expect(seenRequests.some(value => value.includes('"authorization"')), 'browser supplies no authorization').toBe(false);
+  const tokenPresent = JSON.stringify([seenRequests, storage, initialSession, session]).includes(process.env.HTTP_TEST_TOKEN!);
+  expect(tokenPresent, 'actual token absent from browser requests and storage').toBe(false);
+  const authorizationPresent = seenRequests.some(value => value.includes('"authorization"'));
+  expect(authorizationPresent, 'browser supplies no authorization').toBe(false);
   expect(errors).toEqual([]);
-  expect(seenRequests.every(value => !/https?:\/\/(?!127\.0\.0\.1|localhost)/.test(value)), 'all browser requests stay local').toBe(true);
+  expect(consoleErrorCount).toBe(0);
+  const allRequestsLocal = seenRequests.every(value => !/https?:\/\/(?!127\.0\.0\.1|localhost)/.test(value));
+  expect(allRequestsLocal, 'all browser requests stay local').toBe(true);
+  // Only observed scalar values leave the test: no tokens, snapshots, URLs, headers or raw errors.
+  await mkdir('artifacts/http-e2e', { recursive: true });
+  await writeFile('artifacts/http-e2e/acceptance-observations.json', JSON.stringify({
+    schemaVersion: 1,
+    commit: (await promisify(execFile)('git', ['rev-parse', 'HEAD'])).stdout.trim(),
+    video: { readyState, duration, startTime: start, advancedTime },
+    assets: { beforeApproval: count, afterApproval: approvedAssetCount, afterManualSave: savedAssetCount, invalidatedState },
+    browser: { requestCount: seenRequests.length, tokenPresent, authorizationPresent, allRequestsLocal,
+      pageErrorCount: errors.length, consoleErrorCount },
+  }, null, 2));
 });
 
 for (const variant of ['default development', 'production build', 'development-environment build'] as const) {
