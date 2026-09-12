@@ -149,7 +149,7 @@ function validateState(value: unknown): asserts value is GenerationState {
             if (s.schemaVersion !== 2) invalid();
             const item = s.items.find(i => i.id === a.itemId);
             if (!item) invalid();
-            const compatible: Record<string, string[]> = { not_submitted: ['queued'], submitting: ['running','cancel_requested'], submitted: ['running','cancel_requested'], polling: ['running','cancel_requested'], result_ready: ['finalizing','cancel_requested'], downloading: ['finalizing','cancel_requested'], needs_reconciliation: ['needs_reconciliation'], settled: ['succeeded','cancelled'], failed: ['failed','cancelled'] };
+            const compatible: Record<string, string[]> = { not_submitted: ['queued'], submitting: ['running','cancel_requested'], submitted: ['running','cancel_requested'], polling: ['running','cancel_requested'], result_ready: ['finalizing','cancel_requested'], downloading: ['finalizing','cancel_requested'], needs_reconciliation: ['needs_reconciliation'], settled: ['succeeded','failed','cancelled'], failed: ['failed','cancelled'] };
             if (!compatible[a.submissionState]?.includes(item.status)) invalid();
             continue;
         }
