@@ -24,6 +24,8 @@ const reconcileItem = ref<GenerationItem>();
 const busyItemId = ref('');
 const actionFailure = ref<Record<string, string>>({});
 const copiedItemId = ref('');
+// Ambiguous responses must replay the same command even after a refreshed snapshot.
+const retryKeys = new Map<string, string>();
 const stateOptions = [
   { value: 'all', label: '全部状态' },
   { value: 'queued', label: '队列中' },
@@ -150,7 +152,10 @@ async function retry(item: GenerationItem) {
   if (busyItemId.value) return;
   busyItemId.value = item.id;
   clearFailure(item);
-  const result = await studio.act(() => studio.platform.generation.retry(item.id, { idempotencyKey: crypto.randomUUID() }));
+  const idempotencyKey = retryKeys.get(item.id) ?? crypto.randomUUID();
+  retryKeys.set(item.id, idempotencyKey);
+  const result = await studio.act(() => studio.platform.generation.retry(item.id, { idempotencyKey }));
+  if (result.ok || result.error.code !== 'NETWORK_ERROR') retryKeys.delete(item.id);
   busyItemId.value = '';
   if (!result.ok) failure(item, failureMessage(result.error));
 }

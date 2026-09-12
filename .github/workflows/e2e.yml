@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -47,3 +49,23 @@ jobs:
 
       - name: Run end-to-end tests
         run: pnpm test:e2e
+
+      - name: Run local HTTP end-to-end tests
+        run: pnpm test:http:e2e
+
+      - name: Upload local HTTP browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: http-e2e-verification
+          # Explicit reviewed whitelist: never include the raw JSON reporter or API state.
+          path: |
+            .ai/evidence/B21A-T4A-playing-video.png
+            .ai/evidence/B21A-T4A-approved-awaiting-save.png
+            .ai/evidence/B21A-T4A-invalidated-asset.png
+            artifacts/http-e2e/acceptance-observations.json
+            artifacts/http-e2e/test-results/**/test-failed-*.png
+            artifacts/http-e2e/test-results/**/trace.zip
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

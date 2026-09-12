@@ -4,7 +4,7 @@
 
 **在线 B1 Demo：** https://lycmyt.github.io/AIspsc/
 
-## 本轮进展：真实模型测试与上线问题修复
+## 本轮进展：B1.5 证据、B2.1A 本地 HTTP 与真实模型边界
 
 Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试，包括认证、创建、轮询、下载、SHA-256、实际文件元数据和全片解码。
 
@@ -16,6 +16,7 @@ Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试
 - [Agnes 接入边界与运行方式](docs/11_AGNES_PROVIDER_INTEGRATION.md)
 - [候选能力与实际不符合项](contracts/agnes-video-v20.binding-candidate.json)
 - [Pages 线上媒体路径回归](docs/13_PAGES_LIVE_VALIDATION.md)
+- [B2.1A 本地 HTTP 演示平台](docs/14_B21A_HTTP_PLATFORM.md)
 
 ## 解决的业务问题
 
@@ -62,14 +63,18 @@ Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试
 
 ```text
 Vue UI → ServiceFacade → MockPlatform → contracts / domain / IndexedDB
-                         （B1）
+                          （B1）
 
-未来：ServiceFacade → HttpPlatform → 受控API / 数据库 / Worker / 对象存储
+B2.1A 本地：ServiceFacade → HttpPlatform → 回环 API / 文件快照 / Fake Worker
+                                                   ↓（固定演示夹具）
+                                              生成历史 / 审核 / 手动入库
+
+后续：ServiceFacade → 受控 API / PostgreSQL / 对象存储 / 独立 Worker
                                       ↓
                                   ProviderAdapter
 ```
 
-Pages 子路径由 composition root 注入，不让领域包依赖 Vite。Agnes 服务端模块不被在线前端导入，不把密钥放到浏览器。
+Pages 子路径由 composition root 注入，不让领域包依赖 Vite。B2.1A 的本地启动器只在 `import.meta.env.DEV && import.meta.env.MODE === 'local-http' && import.meta.env.LOCAL_HTTP_SERVE === true` 下选择 `HttpPlatform`（`LOCAL_HTTP_SERVE` 由 Vite 配置的 serve-only `define` 注入）；默认开发、生产构建和在线 Pages 仍选择 `MockPlatform`。Agnes 服务端模块不被在线前端导入，不把密钥放到浏览器。
 
 模型证据：`unverified → documented → smoke_tested → evaluated → integrated`。
 Agnes 目前为 **smoke_tested（技术）**，未完成业务评测与产品参数验收。其他候选状态见 [能力证据矩阵](docs/09_MODEL_CAPABILITY_MATRIX.md)。研究证据文件不直接驱动真实路由。
@@ -80,7 +85,9 @@ Agnes 目前为 **smoke_tested（技术）**，未完成业务评测与产品参
 
 **B1.5（当前）：** 产品决策、架构、公开 Demo、CI、Provider 技术证据、真实小样本评测合同和故障复盘。
 
-**B2：** HTTP API、Auth/Workspace、数据库、对象存储、真实 FFmpeg、服务端账本、Outbox/Worker。
+**B2.1A（本地受控增量）：** 回环 HTTP API、服务端文件快照、同进程确定性 Fake Worker，以及生成→历史→人工审核→显式入库的浏览器闭环。它不代表生产后端、真实 Provider、真实账单或云部署。
+
+**B2 后续：** NestJS 模块化单体、Auth/Workspace、PostgreSQL、对象存储、真实 FFmpeg、服务端账本、Outbox 和独立 Worker。
 
 **B3：** 受控 Provider 集成、输出参数符合性、实际费用、任务恢复与真实能力路由。
 
@@ -93,21 +100,33 @@ Agnes 目前为 **smoke_tested（技术）**，未完成业务评测与产品参
 环境：Node.js 24.19.x、pnpm 12.3.4；浏览器测试使用 Playwright Chromium。真实 Provider smoke 的文件校验还需要 FFmpeg/ffprobe。
 
 ```sh
-npm exec --yes --package pnpm@12.3.4 -- pnpm install --frozen-lockfile
-npm exec --yes --package pnpm@12.3.4 -- pnpm dev
+npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm install --frozen-lockfile
+npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm dev
 ```
 
 本地默认地址 `http://127.0.0.1:5173`，设计预览 `/design-panel.html`。
 
 ```sh
-pnpm verify
-pnpm exec playwright install chromium
-pnpm test:e2e
+npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm verify
+npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm exec playwright install chromium
+npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm test:e2e
 ```
 
-`verify` 包含 lint、TypeScript、单元测试、合同测试和生产构建。最终以对应提交的 Actions 日志为准；旧 B1 基线的116/25/74等历史结果保留在 `IMPLEMENTATION_REPORT.md`，不能冒充后续提交的固定测试数。
+`verify` 包含 lint、TypeScript、单元测试、合同测试、HTTP 集成测试和生产构建。最终以对应提交的 Actions 日志为准；旧 B1 基线的116/25/74等历史结果保留在 `IMPLEMENTATION_REPORT.md`，不能冒充后续提交的固定测试数。
 
 真实 Agnes 测试只通过手动受控入口，默认恢复，不自动生成。密钥只在服务器进程环境/GitHub Secret 中，操作方式见 [Provider README](packages/provider-agnes/README.md)。
+
+### B2.1A 本地 HTTP 演示
+
+需要服务端持久化 Batch/Item、同进程确定性 Fake Worker 或真实 MP4 播放证据时，运行：
+
+```sh
+npm exec --cache .cache/npm --yes --package pnpm@12.3.4 -- pnpm http:dev
+```
+
+它提供 `http://127.0.0.1:5173`（不会自动打开浏览器），API 监听 `127.0.0.1:8788`，状态写入被忽略的 `artifacts/local-generation`。停止时按 `Ctrl+C` 让服务正常释放锁；重启会恢复未完成的确定性 Fake Worker 工作。自定义前端端口只能使用 `node packages/generation-api/scripts/start.ts --port 4174` 形式，API 端口和数据目录通过服务端进程变量 `GENERATION_API_PORT`、`GENERATION_DATA_DIR` 指定。不要把状态目录放在 `apps/web/public` 或公开目录。
+
+默认开发、生产构建（包括 `--mode local-http`）和在线 Pages 仍为 B1 Mock；本地 HTTP 的路由、鉴权、锁恢复、媒体哈希和不支持操作见 [B2.1A 本地 HTTP 演示平台](docs/14_B21A_HTTP_PLATFORM.md)。本地 HTTP 只使用仓库演示夹具，不调用付费 Provider，不提供公网服务。
 
 ## 文档导航
 
@@ -127,6 +146,7 @@ pnpm test:e2e
 | [11 Agnes 接入](docs/11_AGNES_PROVIDER_INTEGRATION.md) | 安全运行与真实路由阻塞项 |
 | [12 Agnes 实测复盘](docs/12_AGNES_SMOKE_RECOVERY.md) | 真实结果、哈希、时延与参数差异 |
 | [13 Pages 线上回归](docs/13_PAGES_LIVE_VALIDATION.md) | 子路径媒体加载问题 |
+| [14 B2.1A 本地 HTTP](docs/14_B21A_HTTP_PLATFORM.md) | 本地 API、Fake Worker、代理安全与边界 |
 
 ## 目录与明确未完成项
 
@@ -134,7 +154,7 @@ pnpm test:e2e
 
 演示媒体由仓库脚本生成，来源与逐文件SHA-256见 `apps/web/public/demo/MEDIA_MANIFEST.json`。
 
-当前不声称完成：生产HTTP服务、登录与Workspace隔离、真实Router上线、统一实际计费、充值支付、广告平台连接、任意上传视频的服务端FFmpeg切片、客户生产验收或广告转化提升。
+当前不声称完成：生产HTTP服务、登录与Workspace隔离、真实Router上线、统一实际计费、充值支付、广告平台连接、任意上传视频的服务端FFmpeg切片、客户生产验收或广告转化提升。B2.1A 的本地 HTTP 仅是受控演示增量，不能替代这些生产能力。
 
 ## 本机交付验收台（独立于公开 B1）
 

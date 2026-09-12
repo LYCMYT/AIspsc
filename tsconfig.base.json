@@ -6,6 +6,6 @@
     "allowImportingTsExtensions": true, "noEmit": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"], "types": ["node"]
   },
-  "include": ["packages/**/*.ts", "vitest.config.ts", "apps/web/e2e/**/*.ts", "apps/web/playwright.config.ts", "apps/web/vite.config.ts"],
+  "include": ["packages/**/*.ts", "vitest.config.ts", "apps/web/e2e/**/*.ts", "apps/web/e2e-http/**/*.ts", "apps/web/playwright*.config.ts", "apps/web/vite.config.ts"],
   "exclude": ["node_modules", "apps/web/dist", ".cache"]
 }

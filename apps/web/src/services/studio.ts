@@ -31,8 +31,16 @@ export const useStudioStore = defineStore('studio', () => {
   function stop() { clearInterval(timer); timer = undefined; }
   async function act<T>(work: () => Promise<Result<T>>): Promise<Result<T>> {
     error.value = undefined;
-    try { const result = await work(); if (!result.ok) error.value = result.error; await refresh(); return result; }
+    let result: Result<T>;
+    try { result = await work(); }
     catch (cause) { const failure: DomainFailure = { code: 'NETWORK_ERROR', message: cause instanceof Error ? cause.message : '请求失败，请重试' }; error.value = failure; return { ok: false, error: failure }; }
+    if (!result.ok) error.value = result.error;
+    try { await refresh(); }
+    catch (cause) {
+      // A snapshot failure is independent of an already confirmed mutation result.
+      error.value = { code: 'STORAGE_UNAVAILABLE', message: cause instanceof Error ? cause.message : '无法恢复演示状态' };
+    }
+    return result;
   }
   function buildRequest(): CreateGenerationRequest {
     const base = { prompt: draft.prompt, count: draft.count, references: draft.references.map(({ assetId, role }) => ({ assetId, role })) };
