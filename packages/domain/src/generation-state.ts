@@ -50,7 +50,7 @@ export function createGenerationState(epoch: string, now: number): GenerationSta
 export function projectGenerationSnapshot(state: GenerationState): DemoSnapshot {
   return structuredClone({ version: state.version, epoch: state.epoch, scenario: state.scenario,
     batches: state.batches.map(batch => { const items = state.items.filter(item => item.batchId === batch.id); return { ...batch, items, status: deriveBatchStatus(items) }; }),
-    items: state.items, evaluations: state.evaluations, assets: state.assets, mediaMetadata: state.mediaMetadata, credits: state.credits, ledger: state.ledger, attempts: state.attempts, reconciliations: state.reconciliations, splits: state.splits,
+    items: state.items, evaluations: state.evaluations, assets: state.assets, mediaMetadata: state.mediaMetadata, credits: state.credits, ledger: state.ledger, attempts: state.attempts.map(({ itemId, attemptNo, providerBindingId, externalJobId, externalIdempotencyKey, submissionState, createdAt, updatedAt }) => ({ itemId, attemptNo, providerBindingId, ...(externalJobId ? { externalJobId } : {}), externalIdempotencyKey, submissionState: (["polling", "result_ready", "downloading"].includes(submissionState) ? "submitted" : submissionState === "needs_reconciliation" ? "outcome_unknown" : submissionState === "failed" ? "settled" : submissionState), createdAt, updatedAt })), reconciliations: state.reconciliations, splits: state.splits,
   });
 }
 

@@ -16,6 +16,8 @@ export interface PendingGeneration {
   downloadRetry: boolean;
 }
 export interface GenerationState extends DemoSnapshot {
+  /** Private HTTP schema; absent only before lifecycle adoption. */
+  schemaVersion?: 2;
   sequence: number;
   pending: PendingGeneration[];
   memo: Record<string, { hash: string; value: unknown }>;

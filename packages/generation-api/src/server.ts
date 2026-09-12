@@ -5,7 +5,10 @@ import { validateHttpBody } from '../../contracts/src/index.js';
 import { GenerationStore } from './store.js';
 import { GenerationApiService } from './service.js';
 import { FixtureCatalog } from './fixtures.js';
-import { FakeWorker } from './worker.js';
+import { GenerationWorker } from './worker.js';
+import { GenerationMediaRepository } from './media-repository.js';
+import { assertProviderStage, composeProvider } from './provider/composition.js';
+import type { GenerationProvider } from './provider/port.js';
 
 const limit = 64 * 1024;
 class TransportError extends Error {
@@ -66,8 +69,9 @@ function readJson(request: IncomingMessage): Promise<unknown> {
 
 export async function startGenerationApi(options: {
   directory: string; fixtureRoot: string; token: string; port: number;
-  allowedOrigins: string[]; workerIntervalMs?: number;
-}): Promise<{ url: string; store: GenerationStore; service: GenerationApiService; worker: FakeWorker; close(): Promise<void> }> {
+  allowedOrigins: string[]; workerIntervalMs?: number; provider?: GenerationProvider;
+}): Promise<{ url: string; store: GenerationStore; service: GenerationApiService; worker: GenerationWorker; close(): Promise<void> }> {
+  assertProviderStage();
   if (!options.token || /[\r\n]/.test(options.token) || !Number.isInteger(options.port) || options.port < 0 || options.port > 65535) throw Error('INVALID_API_CONFIGURATION');
   const origins = new Set(options.allowedOrigins);
   for (const origin of origins) {
@@ -75,9 +79,15 @@ export async function startGenerationApi(options: {
     if (parsed.origin !== origin || parsed.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname)) throw Error('INVALID_API_CONFIGURATION');
   }
   const fixtures = await FixtureCatalog.open(options.fixtureRoot);
+  const provider = options.provider ?? composeProvider({ fixtures });
   const store = await GenerationStore.open(options.directory);
-  const service = new GenerationApiService(store, fixtures);
-  const worker = new FakeWorker(store, fixtures);
+  let repository: GenerationMediaRepository;
+  try { repository = await GenerationMediaRepository.open(options.directory, fixtures); }
+  catch (error) { await store.close(); throw error; }
+  const reader: Pick<FixtureCatalog, 'readMedia'> = { readMedia: media => repository.readMedia(media,
+    store.read().attempts.find(attempt => attempt.derivativeEvidence?.media.id === media.id)?.derivativeEvidence) };
+  const service = new GenerationApiService(store, fixtures, Date.now, reader);
+  const worker = new GenerationWorker(store, provider, fixtures, repository);
   const expectedAuth = Buffer.from(`Bearer ${options.token}`);
   let host = '';
   const server = createServer((request, response) => {
@@ -113,7 +123,7 @@ export async function startGenerationApi(options: {
           const media = snapshot.mediaMetadata.find(row => row.id === match[2]);
           if (!media) throw new TransportError(404, 'MEDIA_UNAVAILABLE');
           try {
-            const verified = await fixtures.readMedia(media);
+            const verified = await reader.readMedia(media);
             if (match[3]) {
               response.writeHead(200, { 'Content-Type': verified.media.mime, 'Content-Length': verified.bytes.length, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
               response.end(verified.bytes);

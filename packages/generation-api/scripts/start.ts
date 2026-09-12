@@ -3,6 +3,7 @@ import { resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer, normalizePath, type ViteDevServer } from 'vite';
 import type { startGenerationApi } from '../src/server.js';
+import type { GenerationProvider } from '../src/provider/port.js';
 import { privateFilesPlugin } from '../../../apps/web/vite.config.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
@@ -13,7 +14,7 @@ function port(value: string, allowZero = false): number {
   return parsed;
 }
 
-export async function startLocalGeneration(options: { port?: number; apiPort?: number; directory?: string; token?: string } = {}) {
+export async function startLocalGeneration(options: { port?: number; apiPort?: number; directory?: string; token?: string; provider?: GenerationProvider } = {}) {
   const frontendPort = port(String(options.port ?? 5173));
   const apiPort = port(String(options.apiPort ?? 8788), true);
   const directory = resolve(root, options.directory ?? 'artifacts/local-generation');
@@ -39,7 +40,7 @@ export async function startLocalGeneration(options: { port?: number; apiPort?: n
   })();
   try {
     const module = await loader.ssrLoadModule('/packages/generation-api/src/server.ts') as { startGenerationApi: typeof startGenerationApi };
-    api = await module.startGenerationApi({ directory, fixtureRoot: resolve(root, 'apps/web/public/demo'), token, port: apiPort, allowedOrigins: [origin] });
+    api = await module.startGenerationApi({ directory, fixtureRoot: resolve(root, 'apps/web/public/demo'), token, port: apiPort, allowedOrigins: [origin], provider: options.provider });
     web = await createServer({
       configFile: resolve(root, 'apps/web/vite.config.ts'), mode: 'local-http',
       server: {

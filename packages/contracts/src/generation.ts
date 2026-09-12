@@ -1,3 +1,4 @@
+import type { RawProviderMedia, ProviderDerivativeEvidence } from './provider-media.js';
 import generationRequestSchemaSource from '../../../contracts/generation-request.schema.json';
 
 export type GenerationMode = 'video' | 'image' | 'copy';
@@ -301,9 +302,27 @@ export type ProviderSubmissionState =
   | 'submitting'
   | 'submitted'
   | 'outcome_unknown'
+  | 'polling'
+  | 'result_ready'
+  | 'downloading'
+  | 'needs_reconciliation'
+  | 'failed'
   | 'settled';
 
+export type ProviderStatus = 'queued' | 'running' | 'result_ready' | 'failed' | 'cancelled' | 'unknown';
+export type ProviderErrorCategory = 'invalid_request' | 'unauthorized' | 'not_found' | 'rate_limited' | 'transient' | 'unknown';
+
 export interface ProviderAttempt {
+  lifecycleVersion?: 1;
+  attemptId?: string;
+  providerStatus?: ProviderStatus;
+  submittedAt?: string;
+  lastPolledAt?: string;
+  nextPollAt?: string;
+  errorCategory?: ProviderErrorCategory;
+  actualCost?: null;
+  rawMedia?: RawProviderMedia;
+  derivativeEvidence?: ProviderDerivativeEvidence;
   itemId: string;
   attemptNo: number;
   providerBindingId: string;

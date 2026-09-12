@@ -1,14 +1,15 @@
 import type { Asset, CreateGenerationRequest, DemoSnapshot, Evaluation, FixtureLoadInput, GenerationBatchSnapshot, GenerationItem, GenerationState, ItemReconcileInput, ItemReviewInput, ItemSaveInput, ItemVersionInput, Result, ScenarioInput } from '../../contracts/src/index.js';
 import { canonicalJson, validateHttpBody } from '../../contracts/src/index.js';
 import { checkedItem, createBatch, failure, iso, nextId, outputFixtureKey, projectGenerationSnapshot } from '../../domain/src/generation-state.js';
-import { cancelItem, reconcileItem, retryItem, retryItemDownload } from '../../domain/src/generation-commands.js';
+import { retryItem } from '../../domain/src/generation-commands.js';
+import { cancelProviderItem, reconcileProviderItem, retryProviderDownload } from '../../domain/src/provider-commands.js';
 import { saveItemAsset, saveItemReview } from '../../domain/src/generation-review.js';
 import { validateGenerationRequest } from '../../domain/src/validation.js';
 import { FixtureCatalog, sha256 } from './fixtures.js';
 import { GenerationStore } from './store.js';
 type Work<T> = (state: GenerationState) => Result<T>;
 export class GenerationApiService {
-    constructor(private readonly store: GenerationStore, private readonly fixtures: FixtureCatalog, private readonly clock: () => number = Date.now) {
+    constructor(private readonly store: GenerationStore, private readonly fixtures: FixtureCatalog, private readonly clock: () => number = Date.now, private readonly mediaReader: Pick<FixtureCatalog, 'readMedia'> = fixtures) {
     }
     snapshot(): DemoSnapshot {
         return projectGenerationSnapshot(this.store.read());
@@ -81,7 +82,7 @@ export class GenerationApiService {
                 const media = state.mediaMetadata.find(m => m.id === asset.mediaFileId);
                 if (!media)
                     return failure('MEDIA_UNAVAILABLE', '引用文件不可用');
-                await this.fixtures.readMedia(media);
+                await this.mediaReader.readMedia(media);
                 checked.push({
                     assetId: asset.id, asset: canonicalJson(asset), media: canonicalJson(media)
                 });
@@ -149,7 +150,7 @@ export class GenerationApiService {
         return this.command(`cancel/${id}`, key, input, async () => {
             const v = validateHttpBody('version', input);
             return v.ok ? {
-                ok: true, value: s => cancelItem(s, id, v.value, this.clock())
+                ok: true, value: s => cancelProviderItem(s, id, v.value, this.clock())
             } : v;
         });
     }
@@ -185,7 +186,7 @@ export class GenerationApiService {
         return this.command(`reconcile/${id}`, key, input, async () => {
             const v = validateHttpBody('reconcile', input);
             return v.ok ? {
-                ok: true, value: s => reconcileItem(s, id, v.value, this.clock())
+                ok: true, value: s => reconcileProviderItem(s, id, v.value, this.clock())
             } : v;
         });
     }
@@ -193,7 +194,7 @@ export class GenerationApiService {
         return this.command(`retry-download/${id}`, key, input, async () => {
             const v = validateHttpBody('version', input);
             return v.ok ? {
-                ok: true, value: s => retryItemDownload(s, id, v.value, this.clock())
+                ok: true, value: s => retryProviderDownload(s, id, v.value, this.clock())
             } : v;
         });
     }
@@ -215,7 +216,7 @@ export class GenerationApiService {
             const media = state.mediaMetadata.find(m => m.id === item.resultMediaId);
             if (!media)
                 return failure('MEDIA_UNAVAILABLE', '演示产物不可用');
-            const verified = await this.fixtures.readMedia(media);
+            const verified = await this.mediaReader.readMedia(media);
             digest = verified.media.sha256;
             metadata = canonicalJson(media);
         }
