@@ -230,7 +230,7 @@ HTTP Create
  → review revision invalidates old asset
 ```
 
-测试使用合成的 `1280×704`、121 帧、带 AAC 的输入，最终 derivative 为 `1280×720`、120 帧、约 5 秒、无音轨。审核通过不会自动产生 Asset；点击入库才增加资产；改判会使既有资产 `review_invalidated`。测试还断言真实外部请求为 0、浏览器无 Provider Authorization、state/public snapshot 无 secret/signed URL/private raw evidence、视频可播放且无 page/console error。
+测试使用合成的 `1280×704`、121 帧、带 AAC 的输入，最终 derivative 为 `1280×720`、120 帧、约 5 秒、无音轨。审核通过不会自动产生 Asset；点击入库才增加资产；改判会使既有资产 `review_invalidated`。测试还断言真实外部请求为 0、浏览器无 Provider Authorization、state 和 public snapshot 均无 secret/signed URL，public snapshot 额外排除 private raw evidence、视频可播放且无 page/console error。
 
 ## 本地门禁与远端验收要求
 
