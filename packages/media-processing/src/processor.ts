@@ -54,6 +54,16 @@ export async function probeVideo(path: string): Promise<VideoFacts> {
 export async function decodeVideo(path: string) {
   await tool('ffmpeg', ['-v', 'error', '-xerror', '-nostdin', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', resolve(path), '-map', '0:v:0', '-threads', '1', '-f', 'null', '-']);
 }
+/** Isolated codec query never reads free-form stream tags into durable evidence. */
+export async function probeVideoCodec(path: string): Promise<'h264' | 'hevc' | 'av1' | 'vp9' | 'mpeg4'> {
+  await readMp4(path);
+  const stdout = await tool('ffprobe', ['-v','error','-protocol_whitelist','file,pipe','-f','mov','-select_streams','v','-show_entries','stream=codec_name','-of','json',resolve(path)]);
+  const probe = object(JSON.parse(stdout));
+  if (!Array.isArray(probe.streams) || probe.streams.length !== 1) throw Error('INVALID_PROBE');
+  const codec = object(probe.streams[0]).codec_name;
+  if (codec !== 'h264' && codec !== 'hevc' && codec !== 'av1' && codec !== 'vp9' && codec !== 'mpeg4') throw Error('INVALID_PROBE');
+  return codec;
+}
 export interface DeliveryReport {
   version: typeof DELIVERY_VERSION;
   startedAt: string;

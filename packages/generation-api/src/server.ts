@@ -9,6 +9,8 @@ import { GenerationWorker } from './worker.js';
 import { GenerationMediaRepository } from './media-repository.js';
 import { assertProviderStage, composeProvider } from './provider/composition.js';
 import type { GenerationProvider } from './provider/port.js';
+import { assertAuthorizedSession, type AuthorizedSession } from './provider/authorized-session.js';
+import { assertControlledEnvironment } from './provider/authorized-request.js';
 
 const limit = 64 * 1024;
 class TransportError extends Error {
@@ -69,9 +71,16 @@ function readJson(request: IncomingMessage): Promise<unknown> {
 
 export async function startGenerationApi(options: {
   directory: string; fixtureRoot: string; token: string; port: number;
-  allowedOrigins: string[]; workerIntervalMs?: number; provider?: GenerationProvider;
+  allowedOrigins: string[]; workerIntervalMs?: number; provider?: GenerationProvider; authorizedSession?: AuthorizedSession;
 }): Promise<{ url: string; store: GenerationStore; service: GenerationApiService; worker: GenerationWorker; close(): Promise<void> }> {
-  assertProviderStage();
+  const session = options.authorizedSession;
+  if (session) {
+    assertControlledEnvironment(process.env); assertAuthorizedSession(session);
+    if (options.directory !== session.directory || options.provider || (options.workerIntervalMs !== undefined && options.workerIntervalMs !== 5000)) throw Error('INVALID_AUTHORIZED_SESSION');
+  } else {
+    assertProviderStage();
+    if (options.provider?.bindingId === 'agnes-authorized-real') throw Error('INVALID_AUTHORIZED_SESSION');
+  }
   if (!options.token || /[\r\n]/.test(options.token) || !Number.isInteger(options.port) || options.port < 0 || options.port > 65535) throw Error('INVALID_API_CONFIGURATION');
   const origins = new Set(options.allowedOrigins);
   for (const origin of origins) {
@@ -79,14 +88,15 @@ export async function startGenerationApi(options: {
     if (parsed.origin !== origin || parsed.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname)) throw Error('INVALID_API_CONFIGURATION');
   }
   const fixtures = await FixtureCatalog.open(options.fixtureRoot);
-  const provider = options.provider ?? composeProvider({ fixtures });
-  const store = await GenerationStore.open(options.directory);
+  const provider = session?.provider ?? options.provider ?? composeProvider({ fixtures });
+  const store = session?.store ?? await GenerationStore.open(options.directory);
+  const closeStore = () => session ? session.close() : store.close();
   let repository: GenerationMediaRepository;
   try { repository = await GenerationMediaRepository.open(options.directory, fixtures); }
-  catch (error) { await store.close(); throw error; }
+  catch (error) { await closeStore(); throw error; }
   const reader: Pick<FixtureCatalog, 'readMedia'> = { readMedia: media => repository.readMedia(media,
     store.read().attempts.find(attempt => attempt.derivativeEvidence?.media.id === media.id)?.derivativeEvidence) };
-  const service = new GenerationApiService(store, fixtures, Date.now, reader);
+  const service = new GenerationApiService(store, fixtures, Date.now, reader, session?.policy);
   const worker = new GenerationWorker(store, provider, fixtures, repository);
   const expectedAuth = Buffer.from(`Bearer ${options.token}`);
   let host = '';
@@ -177,18 +187,18 @@ export async function startGenerationApi(options: {
     const address = server.address();
     if (!address || typeof address === 'string') throw Error('API_START_FAILED');
     host = `127.0.0.1:${address.port}`;
-    worker.start(options.workerIntervalMs);
+    if (session?.mode !== 'observe') worker.start(session ? 5000 : options.workerIntervalMs);
   } catch {
     if (server.listening) await new Promise<void>(resolve => server.close(() => resolve()));
     await worker.stop();
-    await store.close();
+    await closeStore();
     throw Error('API_START_FAILED');
   }
   let closing: Promise<void> | undefined;
   return { url: `http://${host}`, store, service, worker, close() {
     closing ??= (async () => {
       await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
-      try { await worker.stop(); } finally { await store.close(); }
+      try { await worker.stop(); } finally { await closeStore(); }
     })();
     return closing;
   } };

@@ -141,6 +141,7 @@ describe('Agnes provider adapter contract', () => {
     const client = new AgnesVideoClient({ apiKey: 'test-secret', fetchImpl: fakeFetch });
 
     await expect(client.getVideo('video_1')).resolves.toEqual({
+      id: 'task_1',
       taskId: 'task_1',
       videoId: 'video_1',
       model: 'agnes-video-v2.0',
@@ -149,11 +150,85 @@ describe('Agnes provider adapter contract', () => {
       progress: 100,
       seconds: 5,
       size: '1280x720',
+      sizeMapping: { ratio: '16:9', resolution: '720p' },
       resultUrl: 'https://platform-outputs.agnes-ai.space/videos/result.mp4',
       errorMessage: undefined,
     });
     expect(calls).toEqual([
       'https://apihub.agnes-ai.com/agnesapi?video_id=video_1&model_name=agnes-video-v2.0',
     ]);
+  });
+
+  it('normalizes provider identifiers, timestamps, and the allowlisted size mapping', async () => {
+    const client = new AgnesVideoClient({
+      apiKey: 'test-secret',
+      fetchImpl: async () => jsonResponse({
+        id: 'upstream-id',
+        task_id: 'task_1',
+        video_id: 'video_1',
+        created_at: '1700000000',
+        status: 'queued',
+        metadata: {
+          size_mapping: {
+            adjusted: true,
+            width: 1280,
+            height: 720,
+            requested_width: 1280,
+            requested_height: 720,
+            ratio: '16:9',
+            resolution: '720p',
+            message: 'drop this arbitrary text',
+            extra: { secret: 'drop this arbitrary object' },
+          },
+        },
+      }),
+    });
+
+    await expect(client.createVideo({
+      prompt: 'A blue cube rotates slowly.',
+      durationSeconds: 5,
+      ratio: '16:9',
+      resolution: '720p',
+      audio: false,
+    })).resolves.toMatchObject({
+      id: 'upstream-id',
+      taskId: 'task_1',
+      videoId: 'video_1',
+      createdAt: 1700000000,
+      sizeMapping: {
+        adjusted: true,
+        width: 1280,
+        height: 720,
+        requestedWidth: 1280,
+        requestedHeight: 720,
+        ratio: '16:9',
+        resolution: '720p',
+      },
+    });
+  });
+
+  it('requires an injected fetch implementation instead of falling back to global fetch', () => {
+    expect(() => new AgnesVideoClient({ apiKey: 'test-secret' })).toThrow(/fetch/i);
+  });
+
+  it('rejects redirected API responses and sends redirect:error without retrying', async () => {
+    let calls = 0;
+    const client = new AgnesVideoClient({
+      apiKey: 'test-secret',
+      fetchImpl: async (_input, init) => {
+        calls += 1;
+        expect(init?.redirect).toBe('error');
+        return { ok: true, redirected: true, json: async () => ({ status: 'queued', video_id: 'video_1' }) } as Response;
+      },
+    });
+
+    await expect(client.createVideo({
+      prompt: 'A blue cube rotates slowly.',
+      durationSeconds: 5,
+      ratio: '16:9',
+      resolution: '720p',
+      audio: false,
+    })).rejects.toMatchObject({ kind: 'transient' });
+    expect(calls).toBe(1);
   });
 });

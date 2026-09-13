@@ -1,3 +1,4 @@
+import { validateProviderReportedFacts } from '../../domain/src/provider-attempt.js';
 import { createHash } from 'node:crypto';
 import type { GenerationState, GenerationItem, Result } from '../../contracts/src/index.js';
 import { applyProviderEvent, adoptProviderAttempt, type ProviderEvent, PROVIDER_PAUSED } from '../../domain/src/provider-commands.js';
@@ -96,7 +97,10 @@ export class GenerationWorker {
                     await this.event(id, { kind: 'unknown' }, context.attemptId);
                     continue;
                 }
-                await this.event(id, { kind: 'accepted', externalJobId: accepted.externalJobId, status: accepted.status }, context.attemptId);
+                try { if (accepted.reported !== undefined) validateProviderReportedFacts(accepted.reported); } catch {
+                    await this.event(id, { kind: 'accepted', externalJobId: accepted.externalJobId, status: 'unknown' }, context.attemptId); continue;
+                }
+                await this.event(id, { kind: 'accepted', externalJobId: accepted.externalJobId, status: accepted.status, ...(accepted.reported ? { reported: accepted.reported } : {}) }, context.attemptId);
                 continue;
             }
             if (a.submissionState === 'submitting') {
@@ -133,19 +137,23 @@ export class GenerationWorker {
                     await this.event(id, { kind: 'poll', status: 'running', category: readProviderOperationError(error)?.category ?? 'transient' }, a.attemptId);
                 continue;
             }
+            try { if (poll.reported !== undefined) validateProviderReportedFacts(poll.reported); } catch {
+                await this.event(id, { kind: 'unknown' }, a.attemptId); continue;
+            }
+            const reported = poll.reported ? { reported: poll.reported } : {};
             if (poll.status === 'unknown') {
-                await this.event(id, { kind: 'unknown' }, a.attemptId);
+                await this.event(id, { kind: 'unknown', ...reported }, a.attemptId);
                 continue;
             }
             if (poll.status === 'failed' || poll.status === 'cancelled') {
-                await this.event(id, { kind: 'failed', cancelled: poll.status === 'cancelled' }, a.attemptId);
+                await this.event(id, { kind: 'failed', cancelled: poll.status === 'cancelled', ...reported }, a.attemptId);
                 continue;
             }
             if (poll.status === 'queued' || poll.status === 'running') {
                 if (['downloading', 'result_ready'].includes(a.submissionState))
-                    await this.event(id, { kind: 'download_failed' }, a.attemptId);
+                    await this.event(id, { kind: 'download_failed', ...reported }, a.attemptId);
                 else
-                    await this.event(id, { kind: 'poll', status: poll.status }, a.attemptId);
+                    await this.event(id, { kind: 'poll', status: poll.status, ...reported }, a.attemptId);
                 continue;
             }
             if (poll.status !== 'result_ready') {
@@ -153,13 +161,13 @@ export class GenerationWorker {
                 continue;
             }
             if (!poll.result) {
-                await this.event(id, { kind: 'download_failed' }, a.attemptId);
+                await this.event(id, { kind: 'download_failed', ...reported }, a.attemptId);
                 continue;
             }
             const expectedVersion = state.items.find(i => i.id === id)!.version;
             const durableMedia = poll.result.kind === 'https';
             if (durableMedia) {
-                const started = await this.event(id, { kind: 'downloading' }, a.attemptId);
+                const started = await this.event(id, { kind: 'downloading', ...reported }, a.attemptId);
                 if (!started.ok)
                     continue;
             }
@@ -170,6 +178,11 @@ export class GenerationWorker {
             catch (error) {
                 await this.event(id, { kind: 'download_failed', storage: readProviderOperationError(error)?.code === 'PROVIDER_STORAGE_FAILED' }, a.attemptId, durableMedia ? undefined : expectedVersion);
                 continue;
+            }
+            const real = a.providerBindingId === 'agnes-authorized-real';
+            if ((real && (poll.result.kind !== 'https' || downloaded.kind !== 'media' || downloaded.fixtureMedia !== undefined)) ||
+                (downloaded.kind === 'media' && downloaded.provenance !== (real ? 'real_provider_output' : 'synthetic_provider_simulation'))) {
+                await this.event(id, { kind: 'download_failed' }, a.attemptId); continue;
             }
             if (downloaded.kind === 'text') {
                 await this.event(id, { kind: 'success', text: downloaded.text }, a.attemptId, expectedVersion);

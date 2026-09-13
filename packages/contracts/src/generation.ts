@@ -1,4 +1,4 @@
-import type { RawProviderMedia, ProviderDerivativeEvidence } from './provider-media.js';
+import type { RawProviderMedia, ProviderDerivativeEvidence, ProviderReportedFacts } from './provider-media.js';
 import generationRequestSchemaSource from '../../../contracts/generation-request.schema.json';
 
 export type GenerationMode = 'video' | 'image' | 'copy';
@@ -321,6 +321,7 @@ export interface ProviderAttempt {
   nextPollAt?: string;
   errorCategory?: ProviderErrorCategory;
   actualCost?: null;
+  reported?: ProviderReportedFacts;
   rawMedia?: RawProviderMedia;
   derivativeEvidence?: ProviderDerivativeEvidence;
   itemId: string;

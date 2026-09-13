@@ -1,3 +1,4 @@
+import { selectAuthorizedAgnesBinding } from '../../domain/src/authorized-agnes.js';
 import { validateProviderAttempt } from '../../domain/src/provider-attempt.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, open, readFile, realpath, rename, rm } from 'node:fs/promises';
@@ -10,6 +11,7 @@ import { applyCreditAction, createQuotaState } from '../../domain/src/quota.js';
 import { deriveBatchStatus } from '../../domain/src/state.js';
 import { decideReview } from '../../domain/src/review.js';
 import { classifyTask, DEMO_MODEL_REGISTRY, selectBinding } from '../../domain/src/routing.js';
+import { renameSnapshot } from './store-rename.js';
 import { validateGenerationRequest } from '../../domain/src/validation.js';
 function invalid(): never {
     throw new Error('INVALID_STORE');
@@ -116,7 +118,8 @@ function validateState(value: unknown): asserts value is GenerationState {
         if (![i.routingSnapshot.modelKey, i.routingSnapshot.bindingId, i.routingSnapshot.ruleVersion, i.routingSnapshot.reason].every(text) || !i.routingSnapshot.capabilitySnapshot || typeof i.routingSnapshot.capabilitySnapshot !== 'object')
             invalid();
         const request = s.batches.find(b => b.id === i.batchId)!.requestSnapshot;
-        const routing = selectBinding(request, classifyTask(request), DEMO_MODEL_REGISTRY, 'mock');
+        const realAttempt = s.attempts.find(a => a.itemId === i.id && a.providerBindingId === 'agnes-authorized-real');
+        const routing = realAttempt ? selectAuthorizedAgnesBinding(request) : selectBinding(request, classifyTask(request), DEMO_MODEL_REGISTRY, 'mock');
         if (!routing.ok || canonicalJson(routing.value) !== canonicalJson(i.routingSnapshot))
             invalid();
         if (i.retryOfItemId && (!s.items.some(item => item.id === i.retryOfItemId) || i.retryOfItemId === i.id))
@@ -149,6 +152,7 @@ function validateState(value: unknown): asserts value is GenerationState {
             if (s.schemaVersion !== 2) invalid();
             const item = s.items.find(i => i.id === a.itemId);
             if (!item) invalid();
+            if ((a.providerBindingId === 'agnes-authorized-real' || item.routingSnapshot.bindingId === 'agnes-authorized-real') && a.providerBindingId !== item.routingSnapshot.bindingId) invalid();
             const compatible: Record<string, string[]> = { not_submitted: ['queued'], submitting: ['running','cancel_requested'], submitted: ['running','cancel_requested'], polling: ['running','cancel_requested'], result_ready: ['finalizing','cancel_requested'], downloading: ['finalizing','cancel_requested'], needs_reconciliation: ['needs_reconciliation'], settled: ['succeeded','failed','cancelled'], failed: ['failed','cancelled'] };
             if (!compatible[a.submissionState]?.includes(item.status)) invalid();
             if ((a.rawMedia || a.derivativeEvidence) && item.mode !== 'video') invalid();
@@ -189,8 +193,9 @@ function validateState(value: unknown): asserts value is GenerationState {
     }
     for (const m of s.mediaMetadata) {
         if (m.id.startsWith('provider-') && !s.attempts.some(a => a.derivativeEvidence?.media.id === m.id && s.items.some(i => i.id === a.itemId && i.resultMediaId === m.id && i.status === 'succeeded'))) invalid();
-        fields(m, ['id', 'workspaceId', 'mediaType', 'mime', 'byteSize', 'sha256', 'availability', 'objectKey', 'width', 'height', 'hasAudio', 'isDemo', 'fixtureKey'], ['durationMs']);
-        if (m.workspaceId !== 'demo' || !['image', 'video'].includes(m.mediaType) || !hash(m.sha256) || !integer(m.byteSize) || !m.byteSize || !integer(m.width) || !m.width || !integer(m.height) || !m.height || typeof m.hasAudio !== 'boolean' || m.isDemo !== true || !text(m.fixtureKey) || !text(m.objectKey) || m.objectKey.includes('..') || /^[\\/]|:/.test(m.objectKey) || m.availability !== 'available' || (m.mediaType === 'image' ? m.mime !== 'image/png' : m.mime !== 'video/mp4') || (m.durationMs !== undefined && (!integer(m.durationMs) || !m.durationMs)))
+        const realMedia = s.attempts.some(a => a.providerBindingId === 'agnes-authorized-real' && a.rawMedia?.provenance === 'real_provider_output' && a.derivativeEvidence && canonicalJson(a.derivativeEvidence.media) === canonicalJson(m));
+        fields(m, ['id', 'workspaceId', 'mediaType', 'mime', 'byteSize', 'sha256', 'availability', 'objectKey', 'width', 'height', 'hasAudio', 'isDemo', ...(realMedia ? [] : ['fixtureKey'])], ['durationMs']);
+        if (m.workspaceId !== 'demo' || !['image', 'video'].includes(m.mediaType) || !hash(m.sha256) || !integer(m.byteSize) || !m.byteSize || !integer(m.width) || !m.width || !integer(m.height) || !m.height || typeof m.hasAudio !== 'boolean' || (realMedia ? m.isDemo !== false || Object.hasOwn(m,'fixtureKey') : m.isDemo !== true || !text(m.fixtureKey)) || !text(m.objectKey) || m.objectKey.includes('..') || /^[\\/]|:/.test(m.objectKey) || m.availability !== 'available' || (m.mediaType === 'image' ? m.mime !== 'image/png' : m.mime !== 'video/mp4') || (m.durationMs !== undefined && (!integer(m.durationMs) || !m.durationMs)))
             invalid();
     }
     for (const e of s.evaluations) {
@@ -407,7 +412,7 @@ export class GenerationStore {
             finally {
                 await handle.close();
             }
-            await this.fs.rename(temp, join(this.root, 'state.json'));
+            await renameSnapshot(temp, join(this.root, 'state.json'), { rename: (source, destination) => this.fs.rename(source, destination) });
         }
         catch {
             throw new Error('STORAGE_UNAVAILABLE');

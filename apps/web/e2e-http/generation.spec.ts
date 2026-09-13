@@ -361,3 +361,60 @@ test('launcher rejects frontend-served data directories before creating state', 
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+// Synthetic local FakeProvider output only. The overridden metadata exercises source identity;
+// these bytes are never evidence of an actual Agnes result.
+for (const isDemo of [true, false]) {
+  test(`synthetic preview identity: isDemo=${isDemo} in history and review`, async ({ page, request }) => {
+    await scenario(request, 'success');
+    const prompt = `synthetic-preview-${isDemo}-${randomUUID()}`;
+    await generate(page, prompt);
+    const card = page.getByTestId('batch-card').filter({ has: page.getByRole('heading', { name: prompt, exact: true }) });
+    await expect(card.getByLabel('演示视频', { exact: true })).toBeVisible();
+    const original = await snapshot(request);
+    const item = original.batches.find(batch => batch.requestSnapshot.prompt === prompt)!.items[0]!;
+    expect(original.mediaMetadata.find(media => media.id === item.resultMediaId)?.isDemo).toBe(true);
+    await page.route('**/api/v1/snapshot', async route => {
+      const response = await route.fetch();
+      const body = await response.json();
+      const metadata = (body.value as DemoSnapshot).mediaMetadata.find(media => media.id === item.resultMediaId)!;
+      metadata.isDemo = isDemo;
+      await route.fulfill({ response, json: body });
+    });
+    await page.reload();
+    const label = isDemo ? '演示视频' : '视频生成';
+    const preview = card.getByLabel(label, { exact: true });
+    await expect(preview).toBeVisible();
+    await expect(card.locator('.demo-watermark')).toHaveCount(isDemo ? 1 : 0);
+    await expect(card.getByLabel('上传的源视频', { exact: true })).toHaveCount(0);
+    await preview.evaluate(async node => { const video = node as HTMLVideoElement; video.muted = true; await video.play(); });
+    await expect.poll(() => preview.evaluate(node => (node as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
+    await card.getByRole('button', { name: '人工审核', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByLabel(label, { exact: true })).toBeVisible();
+    await expect(dialog.locator('.demo-watermark')).toHaveCount(isDemo ? 1 : 0);
+    await expect(dialog.getByText('演示结果', { exact: true })).toHaveCount(isDemo ? 1 : 0);
+    // Opening review alone must not approve or save this synthetic result.
+    const after = await snapshot(request);
+    expect(after.items.find(entry => entry.id === item.id)?.reviewState).toBe('pending');
+    expect(after.assets).toHaveLength(original.assets.length);
+  });
+}
+
+test('synthetic uploaded source video retains uploaded identity', async ({ browser }) => {
+  // Upload is intentionally unsupported in HTTP mode; exercise its actual MockPlatform UI.
+  const server = await createServer({ configFile: resolve('apps/web/vite.config.ts'), mode: 'development', server: { host: '127.0.0.1', port: 4175, strictPort: true } });
+  await server.listen();
+  const context = await browser.newContext({ baseURL: 'http://127.0.0.1:4175' });
+  try {
+    const page = await context.newPage();
+    const manifest = JSON.parse(await readFile('apps/web/public/demo/MEDIA_MANIFEST.json', 'utf8'));
+    const entry = manifest.files.find((file: { key: string }) => file.key === 'scene-source');
+    const buffer = Buffer.concat([await readFile(`apps/web/public/demo/${entry.path}`), Buffer.from('synthetic-preview-upload')]);
+    await page.goto('/decompose');
+    await expect(page.getByLabel('上传拆解视频')).toBeEnabled();
+    await page.getByLabel('上传拆解视频').setInputFiles({ name: 'synthetic-upload.mp4', mimeType: 'video/mp4', buffer });
+    await expect(page.getByLabel('上传的源视频', { exact: true })).toBeVisible();
+    await expect(page.locator('.demo-watermark')).toHaveCount(0);
+  } finally { try { await context.close(); } finally { await server.close(); } }
+});

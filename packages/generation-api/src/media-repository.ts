@@ -5,7 +5,7 @@ import type { MediaFile } from '../../contracts/src/index.js';
 import type { RawProviderMedia, ProviderDerivativeEvidence } from '../../contracts/src/provider-media.js';
 import { canonicalJson } from '../../contracts/src/index.js';
 import { checkedMediaUrl } from '../../provider-agnes/src/download.ts';
-import { MAX_MEDIA_BYTES, decodeVideo, probeVideo, processDelivery, readMp4 } from '../../media-processing/src/processor.ts';
+import { MAX_MEDIA_BYTES, decodeVideo, probeVideo, probeVideoCodec, processDelivery, readMp4 } from '../../media-processing/src/processor.ts';
 import type { DeliveryReport } from '../../media-processing/src/processor.ts';
 import { FixtureCatalog } from './fixtures.js';
 
@@ -22,13 +22,16 @@ async function syncDirectory(path: string): Promise<void> {
   const directory = await open(path, 'r');
   try { await directory.sync(); } finally { await directory.close(); }
 }
-function metadata(report: DeliveryReport, id: string): MediaFile {
+type RepositoryReport = DeliveryReport & { providerProvenance?: 'real_provider_output' };
+function metadata(report: RepositoryReport, id: string): MediaFile {
+  if (Object.hasOwn(report, 'providerProvenance') && report.providerProvenance !== 'real_provider_output') unavailable();
+  const real = report.providerProvenance === 'real_provider_output';
   const facts = report.result.media;
   return { id: `provider-${id}`, workspaceId: 'demo', mediaType: 'video', mime: 'video/mp4',
     byteSize: report.result.byteSize, sha256: report.result.sha256, width: facts.width, height: facts.height,
     durationMs: Math.round(facts.durationSeconds * 1000), hasAudio: facts.hasAudio,
-    objectKey: `media/delivery-${id}/result.mp4`, availability: 'available', isDemo: true,
-    fixtureKey: 'synthetic-provider-simulation' };
+    objectKey: `media/delivery-${id}/result.mp4`, availability: 'available', isDemo: !real,
+    ...(real ? {} : { fixtureKey: 'synthetic-provider-simulation' }) };
 }
 
 /** Files stay below the already private Store root; this owns no review, quota or task state. */
@@ -57,11 +60,13 @@ export class GenerationMediaRepository {
     if (resolve(await realpath(path)).toLowerCase() !== path.toLowerCase()) unavailable();
     return path;
   }
-  async captureRaw(download: { bytes: Uint8Array; sha256: string }, reference: {
+  async captureRaw(download: { bytes: Uint8Array; sha256: string; provenance?: 'synthetic_provider_simulation' | 'real_provider_output' }, reference: {
     kind: 'https'; url: string; providerReportedSeconds?: number; providerReportedSize?: string;
   }, provider: string, externalJobId: string, now: number): Promise<RawProviderMedia> {
     try {
       const host = checkedMediaUrl(reference.url).hostname;
+      const real = provider === 'agnes-authorized-real';
+      if (!['agnes-simulated','agnes-authorized-real','fake-local'].includes(provider) || (real ? download.provenance !== 'real_provider_output' : download.provenance !== undefined && download.provenance !== 'synthetic_provider_simulation')) unavailable();
       if (!identifier(provider) || !identifier(externalJobId) || !Number.isFinite(now) ||
         download.bytes.length < 12 || download.bytes.length > MAX_MEDIA_BYTES || digest(download.bytes) !== download.sha256 ||
         Buffer.from(download.bytes).toString('ascii', 4, 8) !== 'ftyp') unavailable();
@@ -75,6 +80,7 @@ export class GenerationMediaRepository {
       const path = await this.checkedPath(key);
       const facts = await probeVideo(path);
       await decodeVideo(path);
+      const rawCodec = real ? await probeVideoCodec(path) : undefined;
       if (digest(await readMp4(path)) !== download.sha256) unavailable();
       const date = new Date(now).toISOString();
       return { provider, externalJobId, providerResultReferenceKind: 'https', resultHost: host, retrievedAt: date,
@@ -82,22 +88,36 @@ export class GenerationMediaRepository {
         ...(reference.providerReportedSize !== undefined ? { providerReportedSize: reference.providerReportedSize } : {}),
         rawSha256: download.sha256, rawActualWidth: facts.width, rawActualHeight: facts.height, rawDuration: facts.durationSeconds,
         rawHasAudio: facts.hasAudio, rawFps: facts.fps, rawFrames: facts.frames, rawDecodeVerified: true,
-        rawObjectKey: key, rawByteSize: download.bytes.length, downloadedAt: date, provenance: 'synthetic_provider_simulation' };
+        rawObjectKey: key, rawByteSize: download.bytes.length, downloadedAt: date, provenance: real ? 'real_provider_output' : 'synthetic_provider_simulation', ...(rawCodec ? { rawCodec } : {}) };
     } catch { return unavailable(); }
   }
   async verifyRaw(raw: RawProviderMedia): Promise<void> {
     try {
-      const bytes = await readMp4(await this.checkedPath(raw.rawObjectKey));
+      const path = await this.checkedPath(raw.rawObjectKey);
+      const bytes = await readMp4(path);
       if (bytes.length !== raw.rawByteSize || digest(bytes) !== raw.rawSha256) unavailable();
+      const real = raw.provider === 'agnes-authorized-real';
+      if (raw.provenance !== (real ? 'real_provider_output' : 'synthetic_provider_simulation')) unavailable();
+      if (real) {
+        const facts = await probeVideo(path);
+        if (raw.rawCodec !== await probeVideoCodec(path) || raw.rawActualWidth !== facts.width || raw.rawActualHeight !== facts.height || raw.rawDuration !== facts.durationSeconds || raw.rawFps !== facts.fps || raw.rawFrames !== facts.frames || raw.rawHasAudio !== facts.hasAudio || raw.rawDecodeVerified !== true) unavailable();
+        await decodeVideo(path);
+      }
     } catch { unavailable(); }
   }
   async finalize(raw: RawProviderMedia, target: unknown): Promise<ProviderDerivativeEvidence> {
+    if (raw.provenance !== (raw.provider === 'agnes-authorized-real' ? 'real_provider_output' : 'synthetic_provider_simulation')) unavailable();
     await this.verifyRaw(raw);
     const source = await this.checkedPath(raw.rawObjectKey);
     const id = randomUUID();
     try {
       if ((await lstat(join(this.root, 'media'))).isSymbolicLink()) unavailable();
-      const report = await processDelivery(source, join(this.root, `media/delivery-${id}`), target);
+      const report: RepositoryReport = await processDelivery(source, join(this.root, `media/delivery-${id}`), target);
+      if (raw.provenance === 'real_provider_output') {
+        report.providerProvenance = 'real_provider_output';
+        const manifest = await open(await this.checkedPath(`media/delivery-${id}/delivery.json`), 'r+');
+        try { await manifest.truncate(0); await manifest.writeFile(JSON.stringify(report, null, 2) + '\n'); await manifest.sync(); } finally { await manifest.close(); }
+      }
       if (report.source.sha256 !== raw.rawSha256) unavailable();
       for (const name of ['result.mp4', 'delivery.json']) {
         const file = await open(await this.checkedPath(`media/delivery-${id}/${name}`), 'r+');
@@ -123,7 +143,7 @@ export class GenerationMediaRepository {
       if ((await lstat(reportPath)).size > 64 * 1024) unavailable();
       const reportBytes = await readFile(reportPath);
       if (reportBytes.length > 64 * 1024 || digest(reportBytes) !== evidence.reportSha256) unavailable();
-      const report = JSON.parse(reportBytes.toString('utf8')) as DeliveryReport;
+      const report = JSON.parse(reportBytes.toString('utf8')) as RepositoryReport;
       if (report.version !== 'delivery-v1' || report.validation !== 'passed' || evidence.policy !== 'delivery-v1' ||
         report.source.sha256 !== evidence.sourceSha256 || report.completedAt !== evidence.completedAt ||
         canonicalJson(metadata(report, match[1]!)) !== canonicalJson(media)) unavailable();
