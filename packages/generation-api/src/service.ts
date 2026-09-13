@@ -7,14 +7,16 @@ import { saveItemAsset, saveItemReview } from '../../domain/src/generation-revie
 import { validateGenerationRequest } from '../../domain/src/validation.js';
 import { FixtureCatalog, sha256 } from './fixtures.js';
 import { GenerationStore } from './store.js';
+import type { ControlledServicePolicy } from './provider/authorized-session.js';
 type Work<T> = (state: GenerationState) => Result<T>;
 export class GenerationApiService {
-    constructor(private readonly store: GenerationStore, private readonly fixtures: FixtureCatalog, private readonly clock: () => number = Date.now, private readonly mediaReader: Pick<FixtureCatalog, 'readMedia'> = fixtures) {
+    constructor(private readonly store: GenerationStore, private readonly fixtures: FixtureCatalog, private readonly clock: () => number = Date.now, private readonly mediaReader: Pick<FixtureCatalog, 'readMedia'> = fixtures, private readonly controlledPolicy?: ControlledServicePolicy) {
     }
     snapshot(): DemoSnapshot {
         return projectGenerationSnapshot(this.store.read());
     }
     private async command<T>(scope: string, key: string, input: unknown, prepare: (state: GenerationState, hash: string) => Promise<Result<Work<T>>>): Promise<Result<T>> {
+        if (this.controlledPolicy && !this.controlledPolicy.command(scope)) return failure('FORBIDDEN', '本次受控执行不允许此操作');
         if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(key))
             return failure('INVALID_PARAMETERS', '必须提供有效幂等标识');
         let hash: string;
@@ -40,6 +42,7 @@ export class GenerationApiService {
             if (!prepared.ok)
                 return prepared;
             return await this.store.transact(current => {
+                if (this.controlledPolicy && !this.controlledPolicy.command(scope)) return failure('FORBIDDEN', '本次受控执行不允许此操作');
                 const prior = replay(current);
                 if (prior)
                     return prior;
@@ -136,6 +139,7 @@ export class GenerationApiService {
                 return verified;
             return {
                 ok: true, value: current => {
+                    if (this.controlledPolicy && !this.controlledPolicy.create(current, input, key)) return failure('FORBIDDEN', '本次受控执行仅允许原始请求');
                     const checked = verified.value.check(current);
                     if (!checked.ok)
                         return checked;

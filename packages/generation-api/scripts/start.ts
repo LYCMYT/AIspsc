@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer, normalizePath, type ViteDevServer } from 'vite';
 import type { startGenerationApi } from '../src/server.js';
 import type { GenerationProvider } from '../src/provider/port.js';
+import type { AuthorizedSession, AuthorizedSessionOptions, openAuthorizedSession } from '../src/provider/authorized-session.js';
 import { privateFilesPlugin } from '../../../apps/web/vite.config.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
@@ -14,10 +15,19 @@ function port(value: string, allowZero = false): number {
   return parsed;
 }
 
-export async function startLocalGeneration(options: { port?: number; apiPort?: number; directory?: string; token?: string; provider?: GenerationProvider } = {}) {
+type LocalOptions = { port?: number; apiPort?: number; directory?: string; token?: string; provider?: GenerationProvider };
+export async function startLocalGeneration(options: LocalOptions = {}) {
+  return launch(options);
+}
+export async function startAuthorizedLocalGeneration(options: { port?: number; apiPort?: number; session: AuthorizedSessionOptions }) {
+  const running = await launch({ port: options.port, apiPort: options.apiPort }, options.session);
+  if (!running.session) { await running.close(); throw Error('INVALID_AUTHORIZED_SESSION'); }
+  return { ...running, session: running.session };
+}
+async function launch(options: LocalOptions, controlled?: AuthorizedSessionOptions) {
   const frontendPort = port(String(options.port ?? 5173));
   const apiPort = port(String(options.apiPort ?? 8788), true);
-  const directory = resolve(root, options.directory ?? 'artifacts/local-generation');
+  let directory = resolve(root, options.directory ?? 'artifacts/local-generation');
   const within = relative(root, directory);
   if (!within || within.startsWith('..') || isAbsolute(within)) throw Error('LOCAL_DATA_MUST_BE_IN_WORKSPACE');
   // Vite public files bypass fs.deny and are copied into builds; state must never live there.
@@ -33,19 +43,31 @@ export async function startLocalGeneration(options: { port?: number; apiPort?: n
   });
   let api: Awaited<ReturnType<typeof startGenerationApi>> | undefined;
   let web: ViteDevServer | undefined;
+  let session: AuthorizedSession | undefined;
   let closing: Promise<void> | undefined;
   const close = () => closing ??= (async () => {
     try { await web?.close(); }
-    finally { try { await api?.close(); } finally { await loader.close(); } }
+    finally { try { await api?.close(); } finally { try { await session?.close(); } finally { await loader.close(); } } }
   })();
   try {
+    if (controlled) {
+      const fixedDirectory = resolve(controlled.location?.worktree ?? controlled.worktree ?? root, '.ai/evidence/B21C/live');
+      const contained = relative(root, fixedDirectory);
+      const publicPart = relative(resolve(root, 'apps/web/public'), fixedDirectory);
+      if (!contained || contained.startsWith('..') || isAbsolute(contained)) throw Error('LOCAL_DATA_MUST_BE_IN_WORKSPACE');
+      if (!publicPart || (!isAbsolute(publicPart) && publicPart !== '..' && !publicPart.startsWith('..' + sep))) throw Error('LOCAL_DATA_MUST_BE_PRIVATE');
+      const factory = await loader.ssrLoadModule('/packages/generation-api/src/provider/authorized-session.ts') as { openAuthorizedSession: typeof openAuthorizedSession };
+      session = await factory.openAuthorizedSession(controlled);
+      directory = session.directory;
+      if (directory !== fixedDirectory) throw Error('LOCAL_DATA_MUST_BE_IN_WORKSPACE');
+    }
     const module = await loader.ssrLoadModule('/packages/generation-api/src/server.ts') as { startGenerationApi: typeof startGenerationApi };
-    api = await module.startGenerationApi({ directory, fixtureRoot: resolve(root, 'apps/web/public/demo'), token, port: apiPort, allowedOrigins: [origin], provider: options.provider });
+    api = await module.startGenerationApi({ directory, fixtureRoot: resolve(root, 'apps/web/public/demo'), token, port: apiPort, allowedOrigins: [origin], provider: options.provider, ...(session ? { authorizedSession: session, workerIntervalMs: 5000 } : {}) });
     web = await createServer({
       configFile: resolve(root, 'apps/web/vite.config.ts'), mode: 'local-http',
       server: {
         host: '127.0.0.1', port: frontendPort, strictPort: true,
-        fs: { deny: [`${normalizePath(directory)}/**`] },
+        fs: { deny: [directory, ...(session ? [session.commonDir] : [])].map(path => `${normalizePath(path)}/**`) },
         proxy: {
           '^/api/v1(?:/|$)': {
             target: api.url, changeOrigin: true, rewrite: path => path.slice(4),
@@ -53,7 +75,7 @@ export async function startLocalGeneration(options: { port?: number; apiPort?: n
           },
         },
       },
-      plugins: [privateFilesPlugin([directory]), { name: 'local-api-boundary', configureServer(server) {
+      plugins: [privateFilesPlugin([directory, ...(session ? [session.commonDir] : [])]), { name: 'local-api-boundary', configureServer(server) {
         server.middlewares.use((request, response, next) => {
           if (!request.url?.startsWith('/api/')) return next();
           if (request.headers.host !== `127.0.0.1:${frontendPort}`
@@ -68,7 +90,7 @@ export async function startLocalGeneration(options: { port?: number; apiPort?: n
       } }],
     });
     await web.listen();
-    return { url: origin, apiUrl: api.url, close };
+    return { url: origin, apiUrl: api.url, session, stopWorker: () => api!.worker.stop(), close };
   } catch (error) { await close(); throw error; }
 }
 
