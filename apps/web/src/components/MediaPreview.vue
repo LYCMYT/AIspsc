@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { platform } from '../services/platform';
-const props = withDefaults(defineProps<{ mediaId?: string; text?: string; demo?: boolean; compact?: boolean }>(), { mediaId: undefined, text: undefined, demo: true, compact: false });
+const props = withDefaults(defineProps<{ mediaId?: string; text?: string; demo?: boolean; generated?: boolean; compact?: boolean }>(), { mediaId: undefined, text: undefined, demo: true, generated: false, compact: false });
 const url = ref(''); const mime = ref(''); const missing = ref(false); let version = 0;
 function dispose() { if (url.value) URL.revokeObjectURL(url.value); url.value = ''; }
 watch(() => props.mediaId, async (id) => {
@@ -32,7 +32,7 @@ onBeforeUnmount(() => { version += 1; dispose(); });
       :controls="!compact"
       preload="metadata"
       playsinline
-      :aria-label="demo ? '演示视频' : '上传的源视频'"
+      :aria-label="demo ? '演示视频' : generated ? '视频生成' : '上传的源视频'"
     />
     <img
       v-else-if="url"

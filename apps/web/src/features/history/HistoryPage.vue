@@ -282,7 +282,8 @@ function errorMessage(item: GenerationItem) {
             v-if="item.status === 'succeeded'"
             :media-id="item.resultMediaId"
             :text="item.text"
-            demo
+            :demo="studio.snapshot?.mediaMetadata.find((media) => media.id === item.resultMediaId)?.isDemo !== false"
+            generated
           />
           <div
             v-else

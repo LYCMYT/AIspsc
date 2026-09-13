@@ -16,6 +16,7 @@ function newVideo(): VideoReviewInput { return { rubricVersion: 'rubric-v2-rebui
 const video = ref(newVideo());
 const basic = ref<BasicMediaReviewInput>({ rubricVersion: 'basic-media-review-v1', humanDecision: 'approved', readable: false, followsTask: false, reason: '' });
 const evaluations = computed(() => studio.snapshot?.evaluations.filter((evaluation) => evaluation.itemId === props.item?.id) ?? []);
+const isDemo = computed(() => studio.snapshot?.mediaMetadata.find((media) => media.id === props.item?.resultMediaId)?.isDemo !== false);
 const batch = computed(() => studio.batches.find((entry) => entry.id === props.item?.batchId));
 watch(() => [props.open, props.item?.id], () => { if (!props.open) return; video.value = newVideo(); basic.value = { rubricVersion: 'basic-media-review-v1', humanDecision: 'approved', readable: false, followsTask: false, reason: '' }; failure.value = ''; revisionReason.value = ''; });
 async function save() {
@@ -40,8 +41,13 @@ async function save() {
         <MediaPreview
           :media-id="item.resultMediaId"
           :text="item.text"
+          :demo="isDemo"
+          generated
         /><div class="stack">
-          <span class="badge demo">演示结果</span><h3>审核结果 {{ item.index + 1 }}</h3><p>{{ batch?.requestSnapshot.prompt }}</p><p class="notice">
+          <span
+            v-if="isDemo"
+            class="badge demo"
+          >演示结果</span><h3>审核结果 {{ item.index + 1 }}</h3><p>{{ batch?.requestSnapshot.prompt }}</p><p class="notice">
             通过后仍需返回历史记录手动入库。
           </p>
         </div>
