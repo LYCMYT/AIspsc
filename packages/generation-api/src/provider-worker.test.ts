@@ -6,6 +6,7 @@ import { FixtureCatalog } from './fixtures.js';
 import { GenerationApiService } from './service.js';
 import { GenerationWorker } from './worker.js';
 import { ProviderOperationError, type GenerationProvider } from './provider/port.js';
+import { B21C_REQUEST } from '../../domain/src/authorized-agnes.js';
 const opened: GenerationStore[] = [];
 afterEach(async () => {
     for (const s of opened.splice(0))
@@ -23,6 +24,26 @@ async function setup(provider: GenerationProvider, video = false) {
     const worker = new GenerationWorker(store, provider, fixtures, undefined, () => now);
     return { dir, store, fixtures, service, worker, advance: () => { now += 101; }, clock: () => now };
 }
+it('retains a valid accepted job if private reported facts are malformed', async () => {
+    const provider: GenerationProvider = { bindingId: 'agnes-simulated', create: async () => ({ externalJobId: 'recoverable-job', status: 'queued', reported: { status: 'queued', seconds: -1 } }), get: async () => ({ status: 'unknown' }), download: async () => { throw Error('unexpected'); } };
+    const s = await setup(provider); s.advance(); await s.worker.tick();
+    expect(s.store.read().attempts[0]).toMatchObject({ externalJobId: 'recoverable-job', submissionState: 'needs_reconciliation' });
+    expect(s.store.read().attempts[0]).not.toHaveProperty('reported');
+});
+it.each(['text', 'fixture', 'provenance'] as const)('rejects real %s outputs before publishing any media', async kind => {
+    const fixtures = await FixtureCatalog.open(resolve('apps/web/public/demo'));
+    const fixture = await fixtures.readFixture('video-5-16x9-720p-silent');
+    const provider: GenerationProvider = { bindingId: 'agnes-authorized-real', create: async () => ({ externalJobId: 'one-job', status: 'queued' }), get: async () => ({ status: 'result_ready', result: { kind: 'https', url: 'https://platform-outputs.agnes-ai.space/synthetic.mp4' } }), download: async () => kind === 'text' ? { kind: 'text', text: 'invalid real video' } : { kind: 'media', bytes: fixture.bytes, sha256: fixture.media.sha256, mime: 'video/mp4', provenance: kind === 'provenance' ? 'synthetic_provider_simulation' : 'real_provider_output', ...(kind === 'fixture' ? { fixtureMedia: fixture.media } : {}) } };
+    await mkdir(resolve('.cache/generation-tests'), { recursive: true });
+    const dir = await mkdtemp(resolve('.cache/generation-tests/real-invalid-'));
+    const store = await GenerationStore.open(join(dir, 'state')); opened.push(store);
+    let now = 1000; const service = new GenerationApiService(store, fixtures, () => now);
+    expect((await service.create(structuredClone(B21C_REQUEST), 'one')).ok).toBe(true);
+    const worker = new GenerationWorker(store, provider, fixtures, undefined, () => now);
+    now += 101; await worker.tick(); now += 101; await worker.tick();
+    expect(store.read().items[0]).toMatchObject({ status: 'finalizing', errorCode: 'MEDIA_UNAVAILABLE', reviewState: 'pending', libraryState: 'not_saved' });
+    expect(store.read().attempts[0]).not.toHaveProperty('rawMedia'); expect(store.read().mediaMetadata).toEqual([]);
+});
 it('durable ambiguous create never repeats across ticks or reopening and retains reserve without secret', async () => {
     let creates = 0;
     const provider: GenerationProvider = { bindingId: 'agnes-simulated', create: async () => { creates++; throw Error('sentinel-secret-url'); }, get: async () => { throw Error('unexpected GET'); }, download: async () => { throw Error('unexpected download'); } };

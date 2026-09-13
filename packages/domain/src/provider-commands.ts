@@ -1,11 +1,12 @@
+import { selectAuthorizedAgnesBinding } from './authorized-agnes.js';
 import type { GenerationState, GenerationItem, GenerationContext, ProviderAttempt, MediaFile, Result, ItemVersionInput, ItemReconcileInput } from '../../contracts/src/index.js';
-import type { RawProviderMedia, ProviderDerivativeEvidence } from '../../contracts/src/provider-media.js';
+import type { RawProviderMedia, ProviderDerivativeEvidence, ProviderReportedFacts } from '../../contracts/src/provider-media.js';
 import { cancelItem, reconcileItem, retryItemDownload, validateOutput } from './generation-commands.js';
 import { checkedItem, failure, iso, publishItem, settleCredits } from './generation-state.js';
-import { normalizeProviderAttempt, transitionAttempt } from './provider-attempt.js';
+import { normalizeProviderAttempt, transitionAttempt, mergeProviderReportedFacts } from './provider-attempt.js';
 export const PROVIDER_PAUSED = Number.MAX_SAFE_INTEGER;
 type Category = NonNullable<ProviderAttempt['errorCategory']>;
-export type ProviderEvent = {
+export type ProviderEvent = ({
     kind: 'claim';
     bindingId: string;
 } | {
@@ -36,7 +37,7 @@ export type ProviderEvent = {
     media?: MediaFile;
     text?: string;
     derivative?: ProviderDerivativeEvidence;
-};
+}) & { reported?: ProviderReportedFacts };
 /** Pure transaction orchestration: persisted identities, terminal quota, and private lifecycle. */
 export function applyProviderEvent(state: GenerationState, id: string, event: ProviderEvent, context: GenerationContext, identity?: string, expectedVersion?: number): Result<GenerationItem> {
     const item = state.items.find(i => i.id === id);
@@ -54,6 +55,11 @@ export function applyProviderEvent(state: GenerationState, id: string, event: Pr
     if (event.kind === 'claim') {
         if (attempt.submissionState !== 'not_submitted' || pending.dueAt > now)
             return failure('ITEM_NOT_READY', '任务已开始提交');
+        if (event.bindingId === 'agnes-authorized-real') {
+            const routing = selectAuthorizedAgnesBinding(state.batches.find(b => b.id === item.batchId)!.requestSnapshot);
+            if (!routing.ok) return routing;
+            item.routingSnapshot = routing.value;
+        }
         saveAttempt(normalizeProviderAttempt(attempt, event.bindingId));
         state.schemaVersion = 2;
         saveAttempt(transitionAttempt(attempt, 'submitting', now, { submittedAt: iso(now) }));
@@ -64,6 +70,7 @@ export function applyProviderEvent(state: GenerationState, id: string, event: Pr
     else {
         if (attempt.lifecycleVersion !== 1)
             return failure('ITEM_NOT_READY', '缺少执行生命周期');
+        if (event.reported !== undefined) saveAttempt({ ...attempt, reported: mergeProviderReportedFacts(attempt.reported, event.reported) });
         if (event.kind === 'accepted') {
             saveAttempt(transitionAttempt(attempt, 'submitted', now, { externalJobId: event.externalJobId, submittedAt: attempt.submittedAt ?? iso(now), providerStatus: event.status, nextPollAt: iso(now + 100) }));
             pending.phase = 'complete';

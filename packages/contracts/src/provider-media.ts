@@ -39,7 +39,8 @@ export interface RawProviderMedia {
   rawObjectKey: string;
   rawByteSize: number;
   downloadedAt: string;
-  provenance: 'synthetic_provider_simulation';
+  rawCodec?: 'h264' | 'hevc' | 'av1' | 'vp9' | 'mpeg4';
+  provenance: 'synthetic_provider_simulation' | 'real_provider_output';
 }
 export interface ProviderDerivativeEvidence {
   policy: 'delivery-v1';
