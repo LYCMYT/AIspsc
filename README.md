@@ -4,6 +4,8 @@
 
 **在线 B1 Demo：** https://lycmyt.github.io/AIspsc/
 
+历史设计交接另见 [DOC01 公开设计总览](PROJECT_DESIGN_OVERVIEW.md)与[仅含说明文档的资料包](deliverables/DOC01-public-design-2026-09-12.zip)。它们是 2026-09-12 的归档说明；当前实现和验收仍以下文为准。
+
 ## 本轮进展：B1.5 证据、B2.1A 本地 HTTP、B2.1B Provider Worker 与真实模型边界
 
 Agnes Video V2.0 已完成文生视频和单图片生视频的真实技术测试，包括认证、创建、轮询、下载、SHA-256、实际文件元数据和全片解码。

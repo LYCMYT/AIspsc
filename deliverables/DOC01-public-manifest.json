@@ -1,0 +1,27 @@
+{
+  "kind": "public-documentation-only",
+  "historicalSnapshotDate": "2026-09-12",
+  "publicCodeReference": "0d6d500a7a494082c6876bf9be1a081bc32c2a2a",
+  "included": [
+    {
+      "file": "PROJECT_DESIGN_OVERVIEW.md",
+      "byteSize": 34496,
+      "sha256": "9a4de2c8370477d9dfd2798494f1436157cdac31e69914efdb94617efa584adf"
+    },
+    {
+      "file": "DOC01_PUBLIC_README.md",
+      "byteSize": 698,
+      "sha256": "07d773b89c8d4770eb4d37b14b36f02331f8c68e1a46f5b176f0ca93238396e5"
+    }
+  ],
+  "excluded": [
+    "application-source",
+    "runtime-evidence",
+    "screenshots",
+    "logs",
+    "task-state",
+    "original-delivery-archive",
+    "credentials",
+    "real-provider-output"
+  ]
+}
