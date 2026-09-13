@@ -2,7 +2,9 @@
 
 ## 当前阶段
 
-Phase A Preflight。授权状态 **NOT AUTHORIZED**；本次真实 Agnes Create 调用数 **0**。本文件是可审查设计，不是已实现或已执行真实模式的证明。Phase A 只完成代码/文档核对、模拟测试与 Spec/Plan；真实执行前必须落实并测试下述 One-Create Guard。
+Phase B 实施与模拟验证。用户已在会话中明确授权一次 Agnes Video V2.0 T2V Create，count=1、duration=5s，任何超时、下载或后处理失败均不得再次 Create；授权记录时间为 `2026-09-13T14:25:42Z`。当前真实 Create 调用数仍为 **0**。授权记录与运行证据仅保存在 ignored 本地目录，本文不代表真实执行已完成。
+
+Phase A 的 `NOT AUTHORIZED` 为此前预检阶段的历史状态。真实执行仍须先完成一次性预算、来源与状态校验、受控入口、模拟回归及代码审查。
 
 基线：`0d6d500a7a494082c6876bf9be1a081bc32c2a2a`，隔离分支 `codex/b21c-real-agnes-e2e`。Node `24.19.x`、pnpm `12.3.4`，不更换依赖。DOC01、deliverables、原目录文件与本地证据不进入本分支提交。
 
@@ -53,6 +55,10 @@ Phase A Preflight。授权状态 **NOT AUTHORIZED**；本次真实 Agnes Create 
 5. 增加持久化 One-Create Guard 与单 Item 限制，并证明并发、重启和失败均无法二次创建。未通过模拟回归与代码审查，不得到 REAL CREATE。
 
 ## One-Create Guard 可执行设计
+
+执行目录固定为当前 worktree 的 `.ai/evidence/B21C/live`；永久预算、会话锁与计数器从规范化 Git common directory 派生，并绑定实验、worktree、数据目录、请求、授权记录和源码 SHA。换 worktree 不能获得新预算。已有状态不完整或锁陈旧时拒绝自动初始化；不自动删除预算或锁。受控能力必须在同一个服务端 SSR 模块图内创建与验证，普通启动和 CI 保持拒绝真实模式。
+
+真实结果预览应依据已验证媒体来源显示：模拟结果保留演示标记，真实生成结果使用现有“视频生成”用语，上传源视频保留原标记。此修正只保证来源文案准确，不增加评分、自动审核或自动入库。
 
 固定实验 `B21C-2026-09-13`；`createBudget=1`，`maxRealGenerationItems=1`。只有受控入口持有真实 transport；普通入口与 CI 不导入或构造它。Provider 调用前原系统已经落盘 Batch、Item、Attempt、quota reservation、submission intent。
 
