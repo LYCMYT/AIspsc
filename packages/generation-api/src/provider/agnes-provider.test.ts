@@ -132,4 +132,99 @@ describe('Agnes adapter with injected transport only', () => {
   it('requires an explicit transport at runtime', () => {
     expect(() => new AgnesProvider({ apiKey: secret } as never)).toThrow('REAL_PROVIDER_CREATE_DISABLED');
   });
+
+  it('reports allowlisted provider facts and real identity only when explicitly injected', async () => {
+    const calls: string[] = [];
+    const p = new AgnesProvider({
+      apiKey: secret,
+      executionKind: 'authorized-real',
+      fetchImpl: async (_input, init) => {
+        if (String(_input) === url) return new Response(new Uint8Array([1, 2, 3]), { status: 200, headers: { 'content-type': 'video/mp4' } });
+        calls.push(init?.method ?? 'GET');
+        if (init?.method === 'POST') {
+          return new Response(JSON.stringify({
+            id: 'upstream-id',
+            task_id: 'task-1',
+            video_id: 'job-1',
+            created_at: 1700000000,
+            status: 'queued',
+            seconds: 5,
+            size: '1280x720',
+            metadata: { size_mapping: { adjusted: true, width: 1280, height: 720, requested_width: 1280, requested_height: 720, ratio: '16:9', resolution: '720p', message: 'drop me', url } },
+          }), { status: 200 });
+        }
+        return new Response(JSON.stringify({
+          id: 'different-upstream-id',
+          task_id: 'task-2',
+          video_id: 'different-video-id',
+          created_at: '1700000001',
+          status: 'completed',
+          seconds: '5.04',
+          size: '1280x704',
+          metadata: { size_mapping: { adjusted: false, width: 1280, height: 704, requested_width: 1280, requested_height: 720, ratio: '16:9', resolution: '720p', message: 'drop me', url } },
+          url,
+        }), { status: 200 });
+      },
+    });
+
+    expect(p.bindingId).toBe('agnes-authorized-real');
+    await expect(p.create(ctx, ctx)).resolves.toEqual({
+      externalJobId: 'job-1',
+      status: 'queued',
+      reported: {
+        id: 'upstream-id',
+        taskId: 'task-1',
+        videoId: 'job-1',
+        status: 'queued',
+        createdAt: 1700000000,
+        seconds: 5,
+        size: '1280x720',
+        sizeMapping: { adjusted: true, width: 1280, height: 720, requestedWidth: 1280, requestedHeight: 720, ratio: '16:9', resolution: '720p' },
+      },
+    });
+    await expect(p.get('job-1', ctx)).resolves.toEqual({
+      status: 'result_ready',
+      reported: {
+        id: 'different-upstream-id',
+        taskId: 'task-2',
+        videoId: 'job-1',
+        status: 'completed',
+        createdAt: 1700000001,
+        seconds: 5.04,
+        size: '1280x704',
+        sizeMapping: { adjusted: false, width: 1280, height: 704, requestedWidth: 1280, requestedHeight: 720, ratio: '16:9', resolution: '720p' },
+      },
+      result: { kind: 'https', url, providerReportedSeconds: 5.04, providerReportedSize: '1280x704' },
+    });
+    const downloaded = await p.download({ kind: 'https', url }, ctx);
+    expect(downloaded).toMatchObject({ kind: 'media', provenance: 'real_provider_output' });
+    if (downloaded.kind !== 'media') throw Error('expected media');
+    expect(Array.from(downloaded.bytes)).toEqual([1, 2, 3]);
+    expect(calls).toEqual(['POST', 'GET']);
+  });
+
+  it('omits malformed or secret-echo reported fields and never exposes response metadata', async () => {
+    const p = new AgnesProvider({
+      apiKey: secret,
+      executionKind: 'authorized-real',
+      fetchImpl: async () => new Response(JSON.stringify({
+        id: `id-${secret}`,
+        task_id: `task-${secret}`,
+        video_id: `video-${secret}`,
+        created_at: -1,
+        status: `completed-${secret}`,
+        seconds: 61,
+        size: `1280x${secret}`,
+        metadata: { message: secret, url: `${url}?key=${secret}`, size_mapping: { adjusted: 'true', width: 'bad', height: 0, requested_width: 999999, requested_height: 720, ratio: '10:1', resolution: '4k', message: secret } },
+      }), { status: 200 }),
+    });
+
+    const result = await p.get('job-1', ctx);
+    expect(result).toEqual({ status: 'unknown', reported: { status: 'unknown', videoId: 'job-1', sizeMapping: { requestedHeight: 720 } } });
+    expect(JSON.stringify(result)).not.toContain(secret);
+  });
+
+  it('rejects invalid execution identity values', () => {
+    expect(() => new AgnesProvider({ apiKey: secret, executionKind: 'unexpected' as never, fetchImpl: async () => new Response() })).toThrow('PROVIDER_INVALID_REQUEST');
+  });
 });

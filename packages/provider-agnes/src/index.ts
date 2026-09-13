@@ -29,7 +29,18 @@ export interface AgnesVideoCreateBody {
   negative_prompt?: string;
 }
 
+export interface AgnesSizeMapping {
+  adjusted?: boolean;
+  width?: number;
+  height?: number;
+  requestedWidth?: number;
+  requestedHeight?: number;
+  ratio?: '16:9' | '9:16' | '1:1' | '4:3' | '3:4';
+  resolution?: '480p' | '720p' | '1080p';
+}
+
 export interface AgnesVideoTask {
+  id?: string;
   taskId?: string;
   videoId?: string;
   model: string;
@@ -38,6 +49,8 @@ export interface AgnesVideoTask {
   progress?: number;
   seconds?: number;
   size?: string;
+  createdAt?: number;
+  sizeMapping?: AgnesSizeMapping;
   resultUrl?: string;
   errorMessage?: string;
 }
@@ -142,6 +155,39 @@ function numberField(record: Record<string, unknown>, key: string): number | und
   return typeof record[key] === 'number' && Number.isFinite(record[key]) ? record[key] : undefined;
 }
 
+const maxReportedDimension = 9999;
+const reportedRatios = new Set<AgnesSizeMapping['ratio']>(['16:9', '9:16', '1:1', '4:3', '3:4']);
+const reportedResolutions = new Set<AgnesSizeMapping['resolution']>(['480p', '720p', '1080p']);
+
+function safeNonNegativeInteger(value: unknown): number | undefined {
+  const candidate = typeof value === 'number'
+    ? value
+    : typeof value === 'string' && value.trim() ? Number(value) : undefined;
+  return typeof candidate === 'number' && Number.isSafeInteger(candidate) && candidate >= 0 ? candidate : undefined;
+}
+
+function safeDimension(value: unknown): number | undefined {
+  const candidate = safeNonNegativeInteger(value);
+  return candidate !== undefined && candidate > 0 && candidate <= maxReportedDimension ? candidate : undefined;
+}
+
+function normalizeSizeMapping(value: unknown): AgnesSizeMapping | undefined {
+  if (!isRecord(value)) return undefined;
+  const result: AgnesSizeMapping = {};
+  if (typeof value.adjusted === 'boolean') result.adjusted = value.adjusted;
+  const width = safeDimension(value.width);
+  const height = safeDimension(value.height);
+  const requestedWidth = safeDimension(value.requested_width ?? value.requestedWidth);
+  const requestedHeight = safeDimension(value.requested_height ?? value.requestedHeight);
+  if (width !== undefined) result.width = width;
+  if (height !== undefined) result.height = height;
+  if (requestedWidth !== undefined) result.requestedWidth = requestedWidth;
+  if (requestedHeight !== undefined) result.requestedHeight = requestedHeight;
+  if (typeof value.ratio === 'string' && reportedRatios.has(value.ratio as AgnesSizeMapping['ratio'])) result.ratio = value.ratio as AgnesSizeMapping['ratio'];
+  if (typeof value.resolution === 'string' && reportedResolutions.has(value.resolution as AgnesSizeMapping['resolution'])) result.resolution = value.resolution as AgnesSizeMapping['resolution'];
+  return Object.keys(result).length ? result : undefined;
+}
+
 function providerErrorMessage(payload: unknown): string | undefined {
   if (!isRecord(payload)) return undefined;
   const direct = stringField(payload, 'message');
@@ -179,8 +225,12 @@ function normalizeTask(payload: unknown): AgnesVideoTask {
     : typeof secondsRaw === 'string' && secondsRaw.trim() && Number.isFinite(Number(secondsRaw))
       ? Number(secondsRaw)
       : undefined;
+  const id = stringField(payload, 'id');
+  const createdAt = safeNonNegativeInteger(payload.created_at);
+  const sizeMapping = normalizeSizeMapping(metadata?.size_mapping);
   return {
-    taskId: stringField(payload, 'task_id') ?? stringField(payload, 'id'),
+    ...(id ? { id } : {}),
+    taskId: stringField(payload, 'task_id') ?? id,
     videoId: stringField(payload, 'video_id'),
     model: stringField(payload, 'model') ?? AGNES_VIDEO_MODEL,
     providerStatus,
@@ -188,6 +238,8 @@ function normalizeTask(payload: unknown): AgnesVideoTask {
     progress: numberField(payload, 'progress'),
     seconds,
     size: stringField(payload, 'size'),
+    ...(createdAt !== undefined ? { createdAt } : {}),
+    ...(sizeMapping ? { sizeMapping } : {}),
     // The live /agnesapi response can be flat, unlike the documented envelope.
     resultUrl: (metadata ? stringField(metadata, 'url')?.trim() : undefined) || stringField(payload, 'url')?.trim() || undefined,
     errorMessage: providerErrorMessage(payload),
@@ -210,8 +262,9 @@ export class AgnesVideoClient {
   constructor(options: AgnesVideoClientOptions) {
     const apiKey = options.apiKey.trim();
     if (!apiKey) throw new AgnesProviderError('unauthorized', 'AGNES_API_KEY is required.');
+    if (typeof options.fetchImpl !== 'function') throw new AgnesProviderError('invalid_request', 'An injected fetch implementation is required.');
     this.apiKey = apiKey;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = options.fetchImpl;
     this.baseUrl = (options.baseUrl ?? AGNES_API_BASE_URL).replace(/\/$/, '');
     this.timeoutMs = options.timeoutMs ?? 30_000;
   }
@@ -251,11 +304,14 @@ export class AgnesVideoClient {
     try {
       response = await this.fetchImpl(url, {
         ...init,
+        redirect: 'error',
         signal: init.signal ?? AbortSignal.timeout(this.timeoutMs),
       });
     } catch {
       throw new AgnesProviderError('transient', 'Agnes request failed before a response was received.');
     }
+
+    if (response.redirected) throw new AgnesProviderError('transient', 'Agnes request redirected unexpectedly.');
 
     let payload: unknown;
     try {
