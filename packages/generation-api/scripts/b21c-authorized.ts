@@ -35,6 +35,10 @@ export async function runAuthorizedExperiment(options: AuthorizedRunOptions): Pr
     if (response.status !== 202) throw Error('AUTHORIZED_HTTP_REFUSED');
     await options.onStarted?.(app);
     for (;;) {
+      if (app.workerStatus().errorCode === 'STORAGE_UNAVAILABLE') {
+        options.session.env.AGNES_REAL_CREATE_ENABLED = 'false';
+        code = 'AUTHORIZED_STORAGE_STOPPED'; break;
+      }
       const state = app.session.store.read(); const item = state.items[0]; const attempt = state.attempts[0];
       if (state.items.length !== 1 || !item || !attempt || state.assets.length || state.evaluations.length || item.reviewState !== 'pending' || item.libraryState !== 'not_saved') throw Error('AUTHORIZED_STATE_INVALID');
       const current = `${item.status}/${attempt.submissionState}`;
@@ -56,7 +60,7 @@ export async function runAuthorizedExperiment(options: AuthorizedRunOptions): Pr
       const state = app.session.store.read(); const attempt = state.attempts[0];
       const summary = { version: 1, code, productTarget: app.session.request(),
         providerRequest: { model: 'agnes-video-v2.0', prompt: app.session.request().prompt, width: 1280, height: 720, num_frames: 121, frame_rate: 24 },
-        counters: app.session.budget.snapshot(), observation: app.session.status(), timeline,
+        counters: app.session.budget.snapshot(), observation: app.session.status(), workerStatus: app.workerStatus(), timeline,
         ...(state.items[0] ? { itemId: state.items[0].id, itemStatus: state.items[0].status, reviewState: state.items[0].reviewState, libraryState: state.items[0].libraryState } : {}),
         ...(attempt?.reported ? { reported: attempt.reported } : {}), ...(attempt?.rawMedia ? { raw: attempt.rawMedia } : {}), ...(attempt?.derivativeEvidence ? { derivative: attempt.derivativeEvidence } : {}),
         evaluationCount: state.evaluations.length, assetCount: state.assets.length, actualCost: null,

@@ -107,6 +107,35 @@ describe('atomic generation store', () => {
         expect(store.read()).toEqual(before);
         expect(JSON.parse(await readFile(join(dir, 'state.json'), 'utf8'))).toEqual(before);
     });
+    it('retries only the flushed snapshot rename without rerunning its reducer or publishing partial state', async () => {
+        const dir = await directory(); let inject = false; let remaining = process.platform === 'win32' ? 2 : 0;
+        const attempts: Array<{ source: string; destination: string; bytes: string }> = [];
+        const store = await GenerationStore.open(dir, { rename: async (source, destination) => {
+            if (inject) {
+                const bytes = await readFile(source, 'utf8'); attempts.push({ source, destination, bytes });
+                expect(JSON.parse(await readFile(destination, 'utf8'))).toEqual(before);
+                if (remaining-- > 0) throw Object.assign(Error('synthetic transient rename'), { code: 'EPERM' });
+            }
+            await rename(source, destination);
+        } }); stores.push(store); const before = store.read(); inject = true;
+        let reductions = 0;
+        await store.transact(state => { reductions++; state.sequence++; return { ok: true, value: null }; });
+        expect(reductions).toBe(1); expect(attempts).toHaveLength(process.platform === 'win32' ? 3 : 1);
+        expect(attempts.every(attempt => attempt.source === attempts[0]!.source && attempt.destination === attempts[0]!.destination && attempt.bytes === attempts[0]!.bytes)).toBe(true);
+        expect(store.read().sequence).toBe(before.sequence + 1);
+        expect(JSON.parse(await readFile(join(dir, 'state.json'), 'utf8'))).toEqual(store.read());
+    });
+    it('preserves old disk and memory after permanent errno exhaustion without rerunning the reducer', async () => {
+        const dir = await directory(); let inject = false; let attempts = 0;
+        const store = await GenerationStore.open(dir, { rename: async (source, destination) => {
+            if (inject) { attempts++; throw Object.assign(Error('synthetic permanent rename'), { code: 'EPERM' }); }
+            await rename(source, destination);
+        } }); stores.push(store); const before = store.read(); inject = true;
+        let reductions = 0;
+        await expect(store.transact(state => { reductions++; state.sequence++; return { ok: true, value: null }; })).rejects.toThrow('STORAGE_UNAVAILABLE');
+        expect(reductions).toBe(1); expect(attempts).toBe(process.platform === 'win32' ? 5 : 1);
+        expect(store.read()).toEqual(before); expect(JSON.parse(await readFile(join(dir, 'state.json'), 'utf8'))).toEqual(before);
+    });
     it('rejects inconsistent quota and unknown state fields on reload', async () => {
         const dir = await directory();
         const store = await opened(dir);

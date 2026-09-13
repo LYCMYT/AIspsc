@@ -90,7 +90,7 @@ async function launch(options: LocalOptions, controlled?: AuthorizedSessionOptio
       } }],
     });
     await web.listen();
-    return { url: origin, apiUrl: api.url, session, stopWorker: () => api!.worker.stop(), close };
+    return { url: origin, apiUrl: api.url, session, workerStatus: () => api!.worker.status(), stopWorker: () => api!.worker.stop(), close };
   } catch (error) { await close(); throw error; }
 }
 

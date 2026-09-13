@@ -9,6 +9,7 @@ import { consumeCreateBudget } from './one-create-guard.js';
 import { ProviderOperationError, type GenerationProvider, type ProviderContext, type ProviderResultReference } from './port.js';
 import { assertControlledEnvironment, validateAuthorization, EXPERIMENT_ID, IDEMPOTENCY_KEY } from './authorized-request.js';
 import { discoverAuthorizedLocation, openAuthorizedPersistence, privatePath, type AuthorizedLocation } from './authorized-persistence.js';
+import type { StoreFileSystem } from '../store.js';
 
 export interface ControlledServicePolicy {
   command(scope: string): boolean;
@@ -19,6 +20,8 @@ export interface AuthorizedSessionOptions {
   authorization: () => Promise<unknown>; fetchImpl: typeof fetch;
   /** Only the executable supplies its fixed worktree. Synthetic tests inject location. */
   worktree?: string; location?: AuthorizedLocation; clock?: () => number;
+  /** Existing Store filesystem seam for synthetic faults; the executable never supplies this. */
+  storeFileSystem?: StoreFileSystem;
 }
 type Persistence = Awaited<ReturnType<typeof openAuthorizedPersistence>>;
 export interface AuthorizedSession {
@@ -47,7 +50,7 @@ export async function openAuthorizedSession(options: AuthorizedSessionOptions): 
   const clock = options.clock ?? Date.now;
   // Retain immutable configuration and transport identities; external option mutation grants nothing.
   options = { ...options, location: { ...location }, fetchImpl: options.fetchImpl, mode: options.mode };
-  const persistence = await openAuthorizedPersistence(location, auth, options.mode, clock);
+  const persistence = await openAuthorizedPersistence(location, auth, options.mode, clock, options.storeFileSystem);
   const { store, budget, directory } = persistence;
   if (budget.snapshot().create || options.mode === 'observe') options.env.AGNES_REAL_CREATE_ENABLED = 'false';
   let stopCode: string | undefined; let closed = false; let attempted = false; let permit = false;

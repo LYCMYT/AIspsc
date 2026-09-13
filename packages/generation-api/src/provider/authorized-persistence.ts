@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { GenerationStore } from '../store.js';
+import { GenerationStore, type StoreFileSystem } from '../store.js';
 import { EXPERIMENT_ID, digest, type AuthorizationRecord } from './authorized-request.js';
 
 export interface AuthorizedLocation { worktree: string; commonDir: string; sourceSha: string }
@@ -115,7 +115,7 @@ function validateCounters(value: unknown, registry: Registry): asserts value is 
   if (Boolean(c.itemId) !== Boolean(c.attemptId) || (c.originalId && (!c.itemId || !c.create))) throw Error();
   if (c.resultHost !== undefined && !/^[a-z0-9.-]{1,253}$/.test(c.resultHost)) throw Error();
 }
-export async function openAuthorizedPersistence(location: AuthorizedLocation, auth: AuthorizationRecord, mode: 'create' | 'observe', clock: () => number) {
+export async function openAuthorizedPersistence(location: AuthorizedLocation, auth: AuthorizationRecord, mode: 'create' | 'observe', clock: () => number, storeFileSystem?: StoreFileSystem) {
   const worktree = await privatePath(location.worktree); const commonDir = await privatePath(location.commonDir);
   if (!(await fs.stat(worktree)).isDirectory() || !(await fs.stat(commonDir)).isDirectory()) throw Error('AUTHORIZED_PATH_INVALID');
   const directory = await privatePath(join(worktree, '.ai/evidence/B21C/live'));
@@ -140,7 +140,7 @@ export async function openAuthorizedPersistence(location: AuthorizedLocation, au
       counters = { version: 1, startedAt, deadline: registry.deadline, create: 0, get: 0, media: 0, createInvocations: 0, lastGetAt: null };
       await exclusive(join(root, 'counters.json'), counters);
       await fs.mkdir(join(root, 'counter-receipts'), { mode: 0o700 });
-      store = await GenerationStore.open(directory);
+      store = await GenerationStore.open(directory, storeFileSystem);
       registry = { ...registry, phase: 'ready', epoch: store.read().epoch }; await exclusive(join(root, 'ready.json'), registry);
     } else {
       const initializing = await read(registryPath) as Registry;
@@ -169,7 +169,7 @@ export async function openAuthorizedPersistence(location: AuthorizedLocation, au
       if (state.epoch !== registry.epoch) throw Error('AUTHORIZED_STATE_INVALID');
       const marker = await exists(join(root, 'create-budget.json'));
       if (marker && !counters.create) throw Error('AUTHORIZED_STATE_INVALID');
-      store = await GenerationStore.open(directory);
+      store = await GenerationStore.open(directory, storeFileSystem);
       const s = store.read();
       if (s.items.length > 1 || s.assets.length || s.evaluations.length || (counters.itemId && !s.items.some(i => i.id === counters.itemId)) || (counters.attemptId && !s.attempts.some(a => a.attemptId === counters.attemptId)) || (counters.originalId && s.attempts[0]?.externalJobId !== counters.originalId)) throw Error('AUTHORIZED_STATE_INVALID');
       if (counters.create && !counters.itemId) throw Error('AUTHORIZED_STATE_INVALID');

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { mkdir, mkdtemp, readFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rename } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -104,3 +104,45 @@ it('ordinary launcher refuses a real flag with no capability', async () => {
   try { await expect(startLocalGeneration({ port: await freePort(), apiPort: 0 })).rejects.toThrow('REAL_PROVIDER_CALL_OUTSIDE_STAGE'); }
   finally { process.env.AGNES_REAL_CREATE_ENABLED = prior; }
 });
+it.each(['claim', 'accepted'] as const)('runner promptly stops on persisted %s failure without inventing Provider acceptance', async phase => {
+  const transport = vi.fn(async (_input, init) => {
+    if (init?.method !== 'POST') throw Error('UNEXPECTED_SYNTHETIC_GET');
+    return new Response(JSON.stringify({ video_id: 'safe-accepted-video', status: 'queued' }));
+  });
+  const fixture = await setup(transport);
+  let injected = false;
+  const storeFileSystem = { rename: async (source: string, destination: string) => {
+    const next = JSON.parse(await readFile(source, 'utf8')) as GenerationState;
+    const attempt = next.attempts[0];
+    if (!injected && (phase === 'claim' ? attempt?.submissionState === 'submitting' : attempt?.externalJobId === 'safe-accepted-video')) {
+      injected = true; throw Object.assign(Error('SYNTHETIC_PERSISTENCE_FAILURE'), { code: 'EIO' });
+    }
+    await rename(source, destination);
+  } };
+  const sessionOptions = { ...fixture.options, storeFileSystem };
+  let app: Awaited<ReturnType<typeof startAuthorizedLocalGeneration>> | undefined;
+  const timeout = new AbortController(); const watchdog = setTimeout(() => timeout.abort(), 12000);
+  const started = Date.now();
+  let result;
+  try {
+    result = await runAuthorizedExperiment({ session: sessionOptions, port: await freePort(), apiPort: 0, signal: timeout.signal,
+      onStarted: async value => { app = value; opened.push(value); },
+    });
+  } finally { clearTimeout(watchdog); }
+  expect(injected).toBe(true); expect(result.code).toBe('AUTHORIZED_STORAGE_STOPPED');
+  expect(Date.now() - started).toBeLessThan(10000);
+  expect(fixture.options.env.AGNES_REAL_CREATE_ENABLED).toBe('false');
+  expect(transport).toHaveBeenCalledTimes(phase === 'claim' ? 0 : 1);
+  const state = app!.session.store.read(); const budget = app!.session.budget.snapshot();
+  expect(state.attempts[0]!.submissionState).toBe(phase === 'claim' ? 'not_submitted' : 'submitting');
+  expect(state.attempts[0]).not.toHaveProperty('externalJobId');
+  expect(state.credits.reservations[state.items[0]!.id]!.finalState).toBe('reserved');
+  expect(budget.create).toBe(phase === 'claim' ? 0 : 1);
+  expect(budget.createInvocations).toBe(phase === 'claim' ? 0 : 1);
+  expect(budget.originalId).toBe(phase === 'claim' ? undefined : 'safe-accepted-video');
+  const summary = JSON.parse(await readFile(join(fixture.directory, result.evidenceFile), 'utf8'));
+  expect(summary.workerStatus).toMatchObject({ running: false, errorCode: 'STORAGE_UNAVAILABLE' });
+  expect(summary).toMatchObject({ code: 'AUTHORIZED_STORAGE_STOPPED', evaluationCount: 0, assetCount: 0 });
+  expect(summary).not.toHaveProperty('reported');
+  if (phase === 'accepted') await expect(startAuthorizedLocalGeneration({ session: { ...fixture.options, mode: 'observe', env: {} }, port: await freePort(), apiPort: 0 })).rejects.toThrow('AUTHORIZED_STATE_INVALID');
+}, 20000);

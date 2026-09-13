@@ -11,6 +11,7 @@ import { applyCreditAction, createQuotaState } from '../../domain/src/quota.js';
 import { deriveBatchStatus } from '../../domain/src/state.js';
 import { decideReview } from '../../domain/src/review.js';
 import { classifyTask, DEMO_MODEL_REGISTRY, selectBinding } from '../../domain/src/routing.js';
+import { renameSnapshot } from './store-rename.js';
 import { validateGenerationRequest } from '../../domain/src/validation.js';
 function invalid(): never {
     throw new Error('INVALID_STORE');
@@ -411,7 +412,7 @@ export class GenerationStore {
             finally {
                 await handle.close();
             }
-            await this.fs.rename(temp, join(this.root, 'state.json'));
+            await renameSnapshot(temp, join(this.root, 'state.json'), { rename: (source, destination) => this.fs.rename(source, destination) });
         }
         catch {
             throw new Error('STORAGE_UNAVAILABLE');
