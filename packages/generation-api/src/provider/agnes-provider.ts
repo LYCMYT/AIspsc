@@ -26,7 +26,7 @@ export class AgnesProvider implements GenerationProvider {
   constructor(options: AgnesProviderOptions) {
     if (typeof options.fetchImpl !== 'function') throw new ProviderOperationError('REAL_PROVIDER_CREATE_DISABLED', 'invalid_request', 'not_submitted');
     if (!options.apiKey?.trim()) throw new ProviderOperationError('PROVIDER_UNAUTHORIZED', 'unauthorized', 'not_submitted');
-    const executionKind = options.executionKind ?? 'simulation';
+    const executionKind = options.executionKind === undefined ? 'simulation' : options.executionKind;
     if (executionKind !== 'simulation' && executionKind !== 'authorized-real') throw new ProviderOperationError('PROVIDER_INVALID_REQUEST', 'invalid_request', 'not_submitted');
     this.#secret = options.apiKey.trim();
     this.#transport = options.fetchImpl;
@@ -66,8 +66,8 @@ export class AgnesProvider implements GenerationProvider {
       const candidate = value[source];
       if (typeof candidate === 'number' && Number.isSafeInteger(candidate) && candidate > 0 && candidate <= 9999) mapping[target] = candidate;
     }
-    if (value.ratio === '16:9' || value.ratio === '9:16' || value.ratio === '1:1' || value.ratio === '4:3' || value.ratio === '3:4') mapping.ratio = value.ratio;
-    if (value.resolution === '480p' || value.resolution === '720p' || value.resolution === '1080p') mapping.resolution = value.resolution;
+    if ((value.ratio === '16:9' || value.ratio === '9:16' || value.ratio === '1:1' || value.ratio === '4:3' || value.ratio === '3:4') && !value.ratio.includes(this.#secret)) mapping.ratio = value.ratio;
+    if ((value.resolution === '480p' || value.resolution === '720p' || value.resolution === '1080p') && !value.resolution.includes(this.#secret)) mapping.resolution = value.resolution;
     return Object.keys(mapping).length ? mapping : undefined;
   }
   #reported(task: AgnesVideoTask): ProviderReportedFacts {

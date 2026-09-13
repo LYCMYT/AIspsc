@@ -224,7 +224,28 @@ describe('Agnes adapter with injected transport only', () => {
     expect(JSON.stringify(result)).not.toContain(secret);
   });
 
+  it.each([
+    { apiKey: '16:9', expected: { resolution: '720p' } },
+    { apiKey: '16', expected: { resolution: '720p' } },
+    { apiKey: '720p', expected: { ratio: '16:9' } },
+  ])('filters reported enum values that equal or contain the injected key ($apiKey)', async ({ apiKey, expected }) => {
+    const p = new AgnesProvider({
+      apiKey,
+      executionKind: 'authorized-real',
+      fetchImpl: async () => new Response(JSON.stringify({
+        status: 'queued',
+        metadata: { size_mapping: { ratio: '16:9', resolution: '720p' } },
+      }), { status: 200 }),
+    });
+
+    await expect(p.get('job-1', ctx)).resolves.toEqual({ status: 'queued', reported: { status: 'queued', videoId: 'job-1', sizeMapping: expected } });
+  });
+
   it('rejects invalid execution identity values', () => {
     expect(() => new AgnesProvider({ apiKey: secret, executionKind: 'unexpected' as never, fetchImpl: async () => new Response() })).toThrow('PROVIDER_INVALID_REQUEST');
+  });
+
+  it('rejects null execution identity values at runtime', () => {
+    expect(() => new AgnesProvider({ apiKey: secret, executionKind: null as never, fetchImpl: async () => new Response() })).toThrow('PROVIDER_INVALID_REQUEST');
   });
 });
